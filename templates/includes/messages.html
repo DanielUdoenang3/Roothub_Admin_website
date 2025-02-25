@@ -1,0 +1,41 @@
+{% csrf_token %}    
+    {% for msg in messages %}
+        {% if msg.tags == 'error' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>{{msg}}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% else %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>{{msg}}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+<script>
+    // Wait until the document is fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+        // Select all elements with the class 'alert fade' 
+        var messages = document.querySelectorAll('.fade');
+  
+        // Loop through each element and apply the fade-out effect
+        messages.forEach(function(message) {
+            setTimeout(function() {
+                // Apply the fade-out transition
+                message.style.transition = 'opacity 1s ease-out'; // 1-second fade-out effect
+                message.style.opacity = 0;
+  
+                // After the fade, hide the message entirely by setting display to 'none'
+                setTimeout(function() {
+                    message.style.display = 'none';
+                }, 1000); // 1 second after opacity reaches 0
+            }, 4500); // 4.5 seconds before starting the fade-out
+        });
+    });
+  </script>
+  

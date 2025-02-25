@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Trainees</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}">Trainees</a></li>
+                <li class="breadcrumb-item active">View Trainee</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card card-table">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table border-0 star-student table-hover table-center mb-0 datatable table-striped dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                        {% include "includes/messages.html" %}
+                        <thead class="student-thread">
+                            <tr role="row">
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Username</th>
+                                <th>Gender</th>
+                                <th>Phone Number</th>
+                                <th>Date Joined</th>
+                                <th>Last Login</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trainee in trainees %}
+                            <tr role="row" class="{% cycle 'odd' 'even' %}">
+                                <td>
+                                    <h2 class="table-avatar">
+                                        <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{% static 'assets/img/profiles/avatar-07.jpg' %}" alt="User Image"></a>
+                                        <a href="#">{{ trainee.first_name }} {{ trainee.last_name }}</a>
+                                    </h2>
+                                </td>
+                                <td>{{ trainee.email }}</td>
+                                <td>{{ trainee.username }}</td>
+                                <td>{{ trainee.gender }}</td>
+                                <td>{{ trainee.phone }}</td>
+                                <td>{{ trainee.date_joined }}</td>
+                                <td>{{ trainee.last_login }}</td>
+                                <td class="text-end">
+                                    <div class="actions">
+                                        <a href="#" class="btn btn-sm bg-success-light me-2">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm bg-danger-light">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info">
+                            Showing {{ trainees|length }} of {{ total_trainees }} entries
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_simple_numbers">
+                            <ul class="pagination">
+                                <li class="paginate_button page-item previous disabled">
+                                    <a href="#" class="page-link">Previous</a>
+                                </li>
+                                <li class="paginate_button page-item active">
+                                    <a href="#" class="page-link">1</a>
+                                </li>
+                                <li class="paginate_button page-item next disabled">
+                                    <a href="#" class="page-link">Next</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

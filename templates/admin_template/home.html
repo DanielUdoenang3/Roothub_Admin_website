@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-sub-header">
+                <h3 class="page-title">Welcome {{ user.username|capfirst }}!</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                    <li class="breadcrumb-item active">Admin Dashboard</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "includes/messages.html" %}
+
+{% endblock main_content %}

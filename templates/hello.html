@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if request.user.user_type == "HOD" %}
+<div class="page-header">
+    <div class="row">
+    <div class="col-sm-12">
+    <h3 class="page-title">Student Details</h3>
+    <ul class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url "view_student" %}">Student</a></li>
+    <li class="breadcrumb-item active">{{student.user.username|capfirst}}</li>
+    <li class="breadcrumb-item active"> Details</li>
+    </ul>
+    </div>
+    </div>
+    </div>
+    <div class="card">
+    <div class="card-body">
+    <div class="row">
+    <div class="col-md-12">
+    <div class="about-info">
+    {% include "includes/messages.html" %}
+    <h4>About {{student.user.first_name|capfirst}} {{student.user.middle_name|capfirst}} {{student.user.last_name|capfirst}}</h4>
+
+    {% if student.user.is_active == False %}
+        <a href="{% url "activate_user" student.user %}" class="btn btn-sm bg-success">
+        Reactivate User
+        </a>
+    {% endif %}
+    <div class="media mt-3">
+    <img src="{{student.user.profile_pic.url}}" class="mr-3" alt="...">
+    <div class="media-body">
+    <ul>
+    <li>
+    <span class="title-span">Full Name : </span>
+    <span class="info-span">{{student.user.first_name|capfirst}} {{student.user.middle_name|capfirst}} {{student.user.last_name|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">Class/Form : </span>
+    <span class="info-span">{{student.class_id.name}}</span>
+    </li>
+    <li>
+    <span class="title-span">Mobile : </span>
+    <span class="info-span">{{student.phone}}</span>
+    </li>
+    <li>
+    <span class="title-span">Email : </span>
+    <span class="info-span"><a href="mailto:{{student.user.email}}" class="__cf_email__" data-cfemail="{{student.user.email}}">{{student.user.email|capfirst}}</a></span>
+    </li>
+    <li>
+    <span class="title-span">Gender : </span>
+    <span class="info-span">{{student.gender|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">DOB : </span>
+    <span class="info-span">{{student.dob}}</span>
+    </li>
+    <li>
+    <span class="title-span">Religion : </span>
+    <span class="info-span">{{student.religion|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">Father's Name : </span>
+    <span class="info-span">{{student.father_name|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">Contact : </span>
+    <span class="info-span"> {{student.father_email|capfirst}} / {{student.father_number}}</span>
+    </li>
+
+    <li>
+        <span class="title-span">Mother's Name : </span>
+        <span class="info-span">{{student.mother_name|capfirst}}</span>
+        </li>
+    <li>
+    <span class="title-span">Contact : </span>
+    <span class="info-span">{{student.mother_email|capfirst}} / {{student.mother_number}}</span>
+    </li>
+    <li>
+    <span class="title-span">Date Joined : </span>
+    <span class="info-span">{{student.created_at}}</span>
+    </li>
+    </ul>
+    </div>
+    </div>
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <h5>Permanent Address</h5>
+    <p>{{student.address2}}</p>
+    </div>
+    </div>
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <h5>Present Address</h5>
+    <p>{{student.address1}}</p>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <div class="skill-info">
+    <h4>Subjects</h4>
+    <p></p>
+    <ul>
+
+    {% for subject in student.subjects.all %}
+    <li>
+    <label>{{ subject.subject_name }}</label><br>
+    </li>
+    {% endfor %}
+    </ul>
+    
+    </div>
+    </div>
+    </div>
+    {% if user.user_type == 'HOD' %}
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <div class="skill-info">
+    <h4>Settings</h4>
+    <form method="POST">
+    {% csrf_token %}
+    <div class="row mt-3">
+    <div class="col-12 col-sm-6">
+    <div class="form-group">
+    <label>Password</label>
+    <input type="password" name="password" class="form-control">
+    </div>
+    </div>
+    <div class="col-12 col-sm-6">
+    <div class="form-group">
+    <label>Retype Password</label>
+    <input type="password" name="password2" class="form-control">
+    </div>
+    </div>
+    <div class="col-12">
+    <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+    </div>
+    </form>
+</div>
+</div>
+</div>
+{% endif %}
+    </div>
+    </div>
+    </div>
+{% endif %}
+{% endblock content %}

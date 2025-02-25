@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Add Trainees</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}">Trainees</a></li>
+                <li class="breadcrumb-item active">Add Trainee</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+    <div class="card">
+    <div class="card-body">
+    <form method="POST" enctype="multipart/form-data" action="{% url "add_trainee_save" %}">
+    {% csrf_token %}
+    {% include "includes/messages.html" %}
+    <div class="row">
+    <div class="col-12">
+    <h5 class="form-title"><span>Basic Details</span></h5>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="form-group local-forms">
+            <label>First Name </span></label>
+            <input type="text" class="form-control" name="first_name" placeholder="Enter First Name">
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="form-group local-forms">
+            <label> Middle Name</span></label>
+            <input type="text" class="form-control" name="middle_name" placeholder="Enter Second Name">
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="form-group local-forms">
+            <label> Last Name</span></label>
+            <input type="text" class="form-control" name="last_name" placeholder="Enter Last Name">
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="form-group local-forms">
+            <label>Gender </span></label>
+            <select name="gender" class="form-control form-select" aria-hidden="true">
+                <option value="Select Gender" disabled selected hidden>Select Gender</option>
+                <option value="Male" >Male</option>
+                <option value="Female" >Female</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Mobile </span></label>
+    <input type="text" class="form-control" name="phone" placeholder="Enter Phone">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Religion </span></label>
+    <input class="form-control" name="religion" type="text" placeholder="Enter Religion">
+    </div>
+    </div>
+    <div class="col-12 col-sm-6">
+        <div class="form-group students-up-files">
+            <label>Upload Trainer Photo (150px X 150px)</label>
+            <div class="uplod">
+            <label class="file-upload image-upbtn mb-0">
+            Choose File <input type="file" accept="image/*" name="profile_pic">
+            </label>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12">
+    <h5 class="form-title"><span>Login Details</span></h5>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Username </span></label>
+    <input type="text" class="form-control" name="username" placeholder="Enter Username">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Email</span></label>
+    <input type="email" class="form-control" name="email" placeholder="Enter Email">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Password </span></label>
+    <input type="text" class="form-control" name="password1" placeholder="Enter Password">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Repeat Password </span></label>
+    <input type="text" class="form-control" name="password2" placeholder="Repeat Password">
+    </div>
+    </div>
+    <div class="col-12">
+    <h5 class="form-title"><span>Address</span></h5>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Address </span></label>
+    <input type="text" class="form-control" name="address" placeholder="Enter address">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>City </span></label>
+    <input type="text" class="form-control" name="city" placeholder="Enter City">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>State </span></label>
+    <input type="text" class="form-control" name="state" placeholder="Enter State">
+    </div>
+    </div>
+    <div class="col-12 col-sm-4">
+    <div class="form-group local-forms">
+    <label>Country </span></label>
+    <input type="text" class="form-control" name="country" placeholder="Enter Country">
+    </div>
+    </div>
+    <div class="col-12">
+        <h5 class="form-title"><span>Choice of Course</span></h5>
+    </div>
+    <div class="col-12">
+        <div class="form-group local-forms">
+            <label>Select a Course</label>
+            <select name="course" class="form-control form-select" required>
+            <option selected disabled hidden>Select a Course you would love to Study</option>
+            {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.course_name }} ---- {{course.price_name}} </option>
+            {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="col-12">
+    <div class="student-submit">
+    <button type="submit" class="btn btn-primary">Add Trainee</button>
+    </div>
+    </div>
+    </div>
+    </form>
+    </div>
+    </div>
+    </div>
+</div>
+
+{% endblock main_content %}

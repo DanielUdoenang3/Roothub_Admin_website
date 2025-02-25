@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Assign Trainer</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_trainer' %}">Trainers</a></li>
+                <li class="breadcrumb-item active">Assign Trainer</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            {% include "includes/messages.html" %}
+            <div class='row'>
+                <div class="col-12">
+                    <h5 class="form-title"><span>Assign Trainer to a Course</span></h5>
+                </div>
+                <div class="col-12 col-sm-8">
+                <div class="form-group local-forms">
+                <label for="course">Course </span></label>
+                <select name="course_id" id="course" class="form-control form-select" aria-hidden="true" required>
+                    <option value="" disabled selected>Select a course</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                </div>
+                
+                <div class="col-12 col-sm-8">
+                <div class="form-group local-forms">
+                <label for="trainer">Trainer</label>
+                <select name="trainer_id" id="trainer" class="form-control form-select" required>
+                    <option value="" disabled selected>Select a trainer</option>
+                    {% for trainer in trainers %}
+                    <option value="{{ trainer.id }}">{{ trainer.admin.first_name }} {{ trainer.admin.last_name }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                </div>
+
+                <div class="form-group">
+                    <div id="current-trainer-info" class="form-group" style="display:none;">
+                        <label>Current Trainer Assigned:</label>
+                            <strong style="color: darkslateblue;">
+                                <p id="current-trainer-name"></p>
+                            </strong>
+                        <label>Do you want to remove the current trainer and assign a new one?</label>
+                        <select name="confirmation" class="form-control" id="confirmation">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="student-submit">
+                    <button type="submit" class="btn btn-primary">Assign Trainer</button>
+                </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock main_content %}
