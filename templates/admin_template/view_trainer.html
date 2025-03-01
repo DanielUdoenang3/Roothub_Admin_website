@@ -22,87 +22,89 @@
         <div class="card card-table">
             <div class="card-body">
                 <div class="table-responsive">
-                    <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
-                        <div class="row">
-                            <div class="col-sm-12 col-md-6">
-                                <div class="dataTables_length" id="DataTables_Table_0_length">
-                                    <label>Show <select name="DataTables_Table_0_length" aria-controls="DataTables_Table_0" class="custom-select custom-select-sm  form-control-sm">
-                                            <option value="10">10</option>
-                                            <option value="25">25</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                        </select> entries
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-md-6"></div>
+                    <table class="table border-0 star-student table-hover table-center mb-0 datatable table-striped dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                        {% include "includes/messages.html" %}
+                        <thead class="student-thread">
+                            <tr role="row">
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Username</th>
+                                <th>Gender</th>
+                                <th>Phone Number</th>
+                                <th>Date Joined</th>
+                                <th>Last Login</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trainer in page_obj %}
+                            <tr role="row" class="{% cycle 'odd' 'even' %}">
+                                <td>
+                                    <h2 class="table-avatar">
+                                        <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{{ trainer.trainer_name.profile_pic.url }}" alt="User Image"></a>
+                                        <a href="#">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</a>
+                                    </h2>
+                                </td>
+                                <td>{{ trainer.trainer_name.email }}</td>
+                                <td>{{ trainer.trainer_name.username }}</td>
+                                <td>{{ trainer.gender }}</td>
+                                <td>{{ trainer.phone }}</td>
+                                <td>{{ trainer.trainer_name.date_joined }}</td>
+                                <td>{{ trainer.trainer_name.last_login }}</td>
+                                <td class="text-end">
+                                    <div class="actions">
+                                        <a href="{% url "edit_trainer" trainer.trainer_name.username %}" class="btn btn-sm bg-success-light me-2">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm bg-danger-light">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">
+                            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ total_trainers }} entries
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <table class="table border-0 star-student table-hover table-center mb-0 datatable table-striped dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
-                                    {% include "includes/messages.html" %}
-                                    <thead class="student-thread">
-                                        <tr role="row">
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 135.625px;">Name</th>
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 135.625px;">Email Address</th>
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 135.625px;">Username</th>
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 135.625px;">Gender</th>
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 47.1562px;">Phone Number</th>
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 76.5469px;">Date Joined</th>
-                                            <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 76.5469px;">Last Login</th>
-                                            <th class="text-end sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 81.4375px;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr role="row" class="odd">
-                                            <td>
-                                                <h2 class="table-avatar">
-                                                    <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{% static 'assets/img/profiles/avatar-07.jpg' %}" alt="User Image"></a>
-                                                    <a href="#">Vincent</a>
-                                                </h2>
-                                            </td>
-                                            <td>6</td>
-                                            <td>Botony</td>
-                                            <td>10:00 AM</td>
-                                            <td>01:00 PM</td>
-                                            <td>01:00 PM</td>
-                                            <td>02 Jun 2020</td>
-                                            <td class="text-end">
-                                                <div class="actions">
-                                                    <a href="#" class="btn btn-sm bg-success-light me-2">
-                                                        <i class="fas fa-pen"></i>
-                                                    </a>
-                                                    <a href="#" class="btn btn-sm bg-danger-light">
-                                                        <i class="fas fa-trash"></i>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12 col-md-5">
-                                <div class="dataTables_info" id="DataTables_Table_0_info" role="status" aria-live="polite">
-                                    Showing 1 to 8 of 8 entries
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-md-7">
-                                <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
-                                    <ul class="pagination">
-                                        <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous">
-                                            <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
-                                        </li>
-                                        <li class="paginate_button page-item active">
-                                            <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="1" tabindex="0" class="page-link">1</a>
-                                        </li>
-                                        <li class="paginate_button page-item next disabled" id="DataTables_Table_0_next">
-                                            <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
+                            <ul class="pagination">
+                                {% if page_obj.has_previous %}
+                                <li class="paginate_button page-item previous" id="DataTables_Table_0_previous">
+                                    <a href="?page={{ page_obj.previous_page_number }}" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                                {% else %}
+                                <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous">
+                                    <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="paginate_button page-item active">
+                                    <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="{{ num }}" tabindex="0" class="page-link">{{ num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="paginate_button page-item">
+                                    <a href="?page={{ num }}" aria-controls="DataTables_Table_0" data-dt-idx="{{ num }}" tabindex="0" class="page-link">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                <li class="paginate_button page-item next" id="DataTables_Table_0_next">
+                                    <a href="?page={{ page_obj.next_page_number }}" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                                {% else %}
+                                <li class="paginate_button page-item next disabled" id="DataTables_Table_0_next">
+                                    <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
                         </div>
                     </div>
                 </div>

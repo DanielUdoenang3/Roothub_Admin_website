@@ -132,15 +132,15 @@
     <div class="col-12">
         <h5 class="form-title"><span>Choice of Course</span></h5>
     </div>
-    <div class="col-12">
+    <div class="col-12 col-sm-8">
         <div class="form-group local-forms">
             <label>Select a Course</label>
             <select name="course" class="form-control form-select" required>
-            <option selected disabled hidden>Select a Course you would love to Study</option>
-            {% for course in courses %}
-                <option value="{{ course.id }}">{{ course.course_name }} ---- {{course.price_name}} </option>
-            {% endfor %}
-            </select>
+                <option value="" selected disabled >Select a Course you would love to Study </option>
+                {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.course_name }}  ------  {{course.price_name}} </option>
+                {% endfor %}
+            </select> 
         </div>
     </div>
     <div class="col-12">
@@ -154,5 +154,4 @@
     </div>
     </div>
 </div>
-
 {% endblock main_content %}

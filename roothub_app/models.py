@@ -53,9 +53,9 @@ class Trainers(models.Model):
   )
   country = models.CharField(max_length=255)
   created_at = models.DateTimeField(auto_now_add=True)
-#   course_id = models.ManyToManyField(
-#         'Courses',
-#         related_name='trainers')
+  course_id = models.ManyToManyField(
+        'Courses',
+        related_name='trainers')
   updated_at = models.DateTimeField(auto_now_add=True)
   
   def __str__(self):
@@ -174,9 +174,9 @@ def create_user_profile(sender, instance, created, **kwargs):
       if instance.user_type==1:
         Admin.objects.create(admin_name=instance)
       if instance.user_type==2:
-        Trainers.objects.create(trainer=instance)
+        Trainers.objects.create(trainer_name=instance)
       if instance.user_type==3:
-        Trainee.objects.create(trainee=instance)
+        Trainee.objects.create(trainee_name=instance)
 
 @receiver(post_save, sender=CustomUser)
 def save_user_profile(sender,instance,**kwargs):

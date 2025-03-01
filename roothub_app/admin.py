@@ -7,3 +7,4 @@ from roothub_app.models import *
 
 class UserModel(UserAdmin):
     pass
+

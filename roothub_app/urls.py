@@ -21,7 +21,19 @@ urlpatterns = [
     path('add_trainee_save', AdminView.add_trainee_save, name="add_trainee_save"),
     path('view_trainee', AdminView.view_trainee, name="view_trainee"),
 
+    # Course
+    path('add_course', AdminView.add_course, name="add_course"),
+    path('add_course_save', AdminView.add_course_save, name="add_course_save"),
+    path('view_course', AdminView.view_course, name="view_course"),
+
     # Asssign Trainer
     path('assign_trainer', AdminView.assign_trainer, name="assign_trainer"),
+    path('get_current_trainer/<int:course_id>', AdminView.get_current_trainer, name='get_current_trainer'),
+
+    # Edit Trainer
+    path('edit_trainer/<trainer>', AdminView.edit_trainer, name="edit_trainer"),
+
+    # Edit Trainee
+    path('edit_trainee/<trainee>', AdminView.edit_trainee, name="edit_trainee"),
 
 ]

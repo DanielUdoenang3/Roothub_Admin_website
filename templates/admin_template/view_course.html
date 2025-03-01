@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Course</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_course' %}">Courses</a></li>
+                <li class="breadcrumb-item active">View Course</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card card-table">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table border-0 star-student table-hover table-center mb-0 datatable table-striped dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                        {% include "includes/messages.html" %}
+                        <thead class="student-thread">
+                            <tr role="row">
+                                <th>Course</th>
+                                <th>Price tag</th>
+                                <th>Assigned Trainer</th>
+                                <th>No. of Trainee offering this Course</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr role="row" class="{% cycle 'odd' 'even' %}">
+                                <td>{{ course.course_name }}</td>
+                                <td>{{ course.price_name }}</td>
+                                {% if course.trainer_id %}
+                                <td>{{ course.trainer_id.trainer_name.first_name }} {{ course.trainer_id.trainer_name.last_name }}</td>
+                                {% else %}
+                                <h2>No Assigned Trainer</h2>
+                                {% endif %}
+                                {% comment %} <td>{{ course.course_name }}</td> {% endcomment %}
+                                <td class="text-end">
+                                    <div class="actions">
+                                        <a href="#" class="btn btn-sm bg-success-light me-2">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm bg-danger-light">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info">
+                            Showing 1 to {{ courses|length }} of {{ total_course }} entries
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_simple_numbers">
+                            <ul class="pagination">
+                                <li class="paginate_button page-item previous disabled">
+                                    <a href="#" class="page-link">Previous</a>
+                                </li>
+                                <li class="paginate_button page-item active">
+                                    <a href="#" class="page-link">1</a>
+                                </li>
+                                <li class="paginate_button page-item next disabled">
+                                    <a href="#" class="page-link">Next</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

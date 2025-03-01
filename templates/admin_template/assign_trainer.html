@@ -25,45 +25,47 @@
                     <h5 class="form-title"><span>Assign Trainer to a Course</span></h5>
                 </div>
                 <div class="col-12 col-sm-8">
-                <div class="form-group local-forms">
-                <label for="course">Course </span></label>
-                <select name="course_id" id="course" class="form-control form-select" aria-hidden="true" required>
-                    <option value="" disabled selected>Select a course</option>
-                    {% for course in courses %}
-                    <option value="{{ course.id }}">{{ course.course_name }}</option>
-                    {% endfor %}
-                </select>
-                </div>
+                  <div class="form-group local-forms">
+                    <label for="course">Course </span></label>
+                    <select name="course_id" id="course" class="form-control form-select" aria-hidden="true" required>
+                        <option value="" disabled selected>Select a course</option>
+                        {% for course in courses %}
+                        <option value="{{ course.id }}">{{ course.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
                 </div>
                 
                 <div class="col-12 col-sm-8">
-                <div class="form-group local-forms">
-                <label for="trainer">Trainer</label>
-                <select name="trainer_id" id="trainer" class="form-control form-select" required>
-                    <option value="" disabled selected>Select a trainer</option>
-                    {% for trainer in trainers %}
-                    <option value="{{ trainer.id }}">{{ trainer.admin.first_name }} {{ trainer.admin.last_name }}</option>
-                    {% endfor %}
-                </select>
+                  <div class="form-group local-forms">
+                    <label for="trainer">Trainer</label>
+                      <select name="trainer_id" id="trainer" class="form-control form-select" required>
+                          <option value="" disabled selected>Select a trainer</option>
+                          {% for trainer in trainers %}
+                          <option value="{{ trainer.id }}">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
                 </div>
-                </div>
-
-                <div class="form-group">
-                    <div id="current-trainer-info" class="form-group" style="display:none;">
-                        <label>Current Trainer Assigned:</label>
-                            <strong style="color: darkslateblue;">
-                                <p id="current-trainer-name"></p>
-                            </strong>
-                        <label>Do you want to remove the current trainer and assign a new one?</label>
-                        <select name="confirmation" class="form-control" id="confirmation">
-                            <option value="no">No</option>
-                            <option value="yes">Yes</option>
-                        </select>
-                    </div>
-                </div>
+                
+                <div class="col-12 col-sm-6">
+                  <div class="form-group local-form">
+                      <div id="current-trainer-info" class="form-group" style="display:none;">
+                          <label>Current Trainer Assigned:</label>
+                              <strong style="color: darkslateblue;">
+                                  <p id="current-trainer-name"></p>
+                              </strong>
+                          <label>Do you want to remove the current trainer and assign a new one?</label>
+                          <select name="confirmation" class="form-control form-select" id="confirmation">
+                              <option value="no">No</option>
+                              <option value="yes">Yes</option>
+                          </select>
+                      </div>
+                  </div>
+                </div> 
                 <div class="col-12">
-                    <div class="student-submit">
-                    <button type="submit" class="btn btn-primary">Assign Trainer</button>
+                  <div class="student-submit">
+                  <button type="submit" class="btn btn-primary">Assign Trainer</button>
                 </div>
             </div>
           </form>
@@ -71,5 +73,36 @@
       </div>
     </div>
 </div>
+<script>
+    const courseSelect = document.getElementById("course");
+    const trainerSelect = document.getElementById("trainer");
+    const currentTrainerInfo = document.getElementById("current-trainer-info");
+    const confirmationSelect = document.getElementById("confirmation");
+    const assignTrainerBtn = document.getElementById("assign-trainer-btn");
 
+    courseSelect.addEventListener("change", function() {
+      const courseId = courseSelect.value;
+      
+      // Make an AJAX request to get the current trainer assigned to this course
+      fetch(`/get_current_trainer/${courseId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.trainer) {
+            currentTrainerInfo.style.display = "block";
+            document.getElementById("current-trainer-name").innerText = data.trainer;
+          } else {
+            currentTrainerInfo.style.display = "none";
+          }
+        });
+    });
+
+    confirmationSelect.addEventListener("change", function() {
+      if (confirmationSelect.value === 'no') {
+        trainerSelect.disabled = true;
+      }
+      else {
+        trainerSelect.disabled = false;
+      }
+    });
+</script>
 {% endblock main_content %}

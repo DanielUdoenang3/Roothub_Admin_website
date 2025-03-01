@@ -29,6 +29,15 @@
                     </ul>
                 </li>
 
+                <li class="{% if request.path == '/add_course' %}active{% elif request.path == '/view_course' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-layer-group"></i> <span>Course</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "add_course" %}" class="{% if request.path == '/add_course' %}active{% endif %}"><span class="fas fa-plus"></span>Add Course</a></li>
+                        <li><a href="{% url "view_course" %}" class="{% if request.path == '/view_course' %}active{% endif %}"><span class="fas fa-table"></span>View Course</a></li>
+                    </ul>
+                </li>
+
                 <li class="{% if request.path == '/assign_trainer' %}active{% endif %}">
                     <a href="{% url "assign_trainer" %}" ><i class="fas fa-clipboard"></i> <span>Assign Trainer</span></a>
                 </li>
