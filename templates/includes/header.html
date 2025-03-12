@@ -15,12 +15,17 @@
             <i class="fas fa-bars"></i>
         </a>
     </div>
+
+    {% if request.user.user_type == "1" %}
     <div class="top-nav-search">
-        <form>
-            <input type="text" class="form-control" placeholder="Search here">
+        <form method="POST" action="{% url "search" %}">
+            {% csrf_token %}
+            <input type="text" value="{{ param }}" name="search" class="form-control" placeholder="Search here">
             <button class="btn" type="submit"><i class="fas fa-search"></i></button>
         </form>
     </div>
+    {% endif %}
+    
     <a class="mobile_btn" id="mobile_btn">
         <i class="fas fa-bars"></i>
     </a>
@@ -36,8 +41,8 @@
         <li class="nav-item dropdown has-arrow new-user-menus">
             <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
                 <span class="user-img">
-                    <img class="rounded-circle" src="{% static 'assets/img/profiles/avatar-01.jpg' %}" width="31"
-                        alt="Soeng Souy">
+                    <img class="rounded-circle" src="{{ user.profile_pic.url }}" width="31"
+                        alt="User Image">
                     <div class="user-text">
                         <h6>{{ user.username|capfirst }}</h6>
                         <p class="text-muted mb-0">
@@ -55,7 +60,7 @@
             <div class="dropdown-menu">
                 <div class="user-header">
                     <div class="avatar avatar-sm">
-                        <img src="{% static 'assets/img/profiles/avatar-01.jpg' %}" alt="User Image"
+                        <img src="{{ user.profile_pic.url }}" alt="User Image"
                             class="avatar-img rounded-circle">
                     </div>
                     <div class="user-text">

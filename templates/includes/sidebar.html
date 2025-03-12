@@ -42,6 +42,24 @@
                     <a href="{% url "assign_trainer" %}" ><i class="fas fa-clipboard"></i> <span>Assign Trainer</span></a>
                 </li>
 
+                <li class="{% if request.path == '/mark_attendance' %}active{% elif request.path == '/view_attendance' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-tags"></i> <span>Attendance</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "mark_attendance" %}" class="{% if request.path == '/mark_attendance' %}active{% endif %}"><span class="fas fa-tasks"></span>Mark Attendance</a></li>
+                        <li><a href="{% url "view_attendance" %}" class="{% if request.path == '/view_attendance' %}active{% endif %}"><span class="fas fa-chart-area"></span>View Attendance</a></li>
+                    </ul>
+                </li>
+
+                <li class="{% if request.path == '/mark_presentation' %}active{% elif request.path == '/view_presentation' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-braille"></i> <span>Presentation</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "mark_presentation" %}" class="{% if request.path == '/mark_presentation' %}active{% endif %}"><span class="fas fa-check"></span>Mark Presentation</a></li>
+                        <li><a href="{% url "view_presentation" %}" class="{% if request.path == '/view_presentation' %}active{% endif %}"><span class="fas fa-chart-area"></span>View Presentation</a></li>
+                    </ul>
+                </li>
+
                 <li>
                     <a href="{% url "doLogout" %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
                 </li>
@@ -49,8 +67,43 @@
         </div>
     </div>
 </div>
-{% endif %}
+{% elif user.user_type == "2" %}
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-inner slimscroll">
+        <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+                <li class="menu-title">
+                    <span>Main Menu</span>
+                </li>
+                <li class="{% if request.path == '/trainer_home' %}active{% endif %}">
+                    <a href="{% url "trainer_home" %}" ><i class="fas fa-home"></i> <span>Dashboard</span></a>
+                </li>
 
-{% if user.user_type == "2" %}
+                <li class="{% if request.path == '/mark_attendance' %}active{% elif request.path == '/view_attendance' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-tags"></i> <span>Attendance</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "mark_attendance" %}" class="{% if request.path == '/mark_attendance' %}active{% endif %}"><span class="fas fa-tasks"></span>Mark Attendance</a></li>
+                        <li><a href="{% url "view_attendance" %}" class="{% if request.path == '/view_attendance' %}active{% endif %}"><span class="fas fa-chart-area"></span>View Attendance</a></li>
+                    </ul>
+                </li>
+
+                <li class="{% if request.path == '/mark_presentation' %}active{% elif request.path == '/view_presentation' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-braille"></i> <span>Presentation</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "mark_presentation" %}" class="{% if request.path == '/mark_presentation' %}active{% endif %}"><span class="fas fa-check"></span>Mark Presentation</a></li>
+                        <li><a href="{% url "view_presentation" %}" class="{% if request.path == '/view_presentation' %}active{% endif %}"><span class="fas fa-chart-area"></span>View Presentation</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="{% url "doLogout" %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% else %}
 
 {% endif %}

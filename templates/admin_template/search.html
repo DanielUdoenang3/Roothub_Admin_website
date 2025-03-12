@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Showing results for "{{param}}"</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6 d-flex">
+        <div class="card card-table">
+            <div class="card-header">
+                {% if trainees.count <= 1 %}
+                        <h5 class="card-title">Trainee ({{trainees.count}})</h5>
+                {% else %}
+                        <h5 class="card-title">Trainees ({{trainees.count}})</h5>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if trainees %}
+                    <table class="table border-0 star-student table-hover table-center mb-0 datatable table-striped dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                        {% include "includes/messages.html" %}
+                        <thead class="student-thread">
+                            <tr role="row">
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Username</th>
+                                <th>Phone</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trainee in trainees %}
+                            <tr>
+                                <td>
+                                    <h2 class="table-avatar">
+                                        <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{{ trainee.trainee_name.profile_pic.url }}" alt="User Image"></a>
+                                        <a href="#">{{ trainee.trainee_name.first_name|capfirst }} {{ trainee.trainee_name.middle_name|capfirst }} {{ trainee.trainee_name.last_name|capfirst }}</a>
+                                    </h2>
+                                </td>
+                                <td>{{trainee.trainee_name.email|truncatechars:20}}</td>
+                                <td>{{trainee.trainee_name.username}}</td>
+                                <td>{{trainee.phone}}</td>
+                                <td class="text-end">
+                                    <div class="actions">
+                                        <a href="#" class="btn btn-sm bg-success-light me-2">
+                                            <i class="fas fa-user"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No Trainee found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 d-flex">
+        <div class="card card-table">
+            <div class="card-header">
+                {% if trainees.count <= 1 %}
+                        <h5 class="card-title">Trainer ({{trainers.count}})</h5>
+                {% else %}
+                        <h5 class="card-title">Trainers ({{trainers.count}})</h5>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if trainers %}
+                    <table class="table border-0 star-student table-hover table-center mb-0 datatable table-striped dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                        {% include "includes/messages.html" %}
+                        <thead class="student-thread">
+                            <tr role="row">
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Username</th>
+                                <th>Phone</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trainer in trainers %}
+                            <tr>
+                                <td>
+                                    <h2 class="table-avatar">
+                                        <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{{ trainer.trainer_name.profile_pic.url }}" alt="User Image"></a>
+                                        <a href="#">{{ trainer.trainer_name.first_name|capfirst }} {{ trainer.trainer_name.middle_name|capfirst }} {{ trainer.trainer_name.last_name|capfirst }}</a>
+                                    </h2>
+                                </td>
+                                <td>{{trainer.trainer_name.email|truncatechars:20}}</td>
+                                <td>{{trainer.trainer_name.username}}</td>
+                                <td>{{trainer.phone}}</td>
+                                <td class="text-end">
+                                    <div class="actions">
+                                        <a href="#" class="btn btn-sm bg-success-light me-2">
+                                            <i class="fas fa-user"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No Trainer found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

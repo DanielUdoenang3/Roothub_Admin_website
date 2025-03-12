@@ -138,7 +138,7 @@
             <select name="course" class="form-control form-select" required>
                 <option value="" selected disabled >Select a Course you would love to Study </option>
                 {% for course in courses %}
-                <option value="{{ course.id }}">{{ course.course_name }}  ------  {{course.price_name}} </option>
+                <option value="{{ course.id }}">{{ course.course_name }}  ------  {{course.price}} </option>
                 {% endfor %}
             </select> 
         </div>

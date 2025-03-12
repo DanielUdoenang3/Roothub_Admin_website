@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Attendance</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">View Attendance</li>
+            </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+            <a href="{% url 'mark_attendance' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                {% include "includes/messages.html" %}
+                <div class="row">
+                    <div class="col-12 col-sm-8">
+                        <div class="form-group local-forms">
+                            <label for="course">Course</label>
+                            <select name="course" id="course" class="form-control form-select" required>
+                                <option value="" disabled selected>Select a course</option>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div id="trainee-list" class="mt-3">
+                            <!-- trainees will appear here -->
+                        </div>
+                        
+                        <div id="chart-container" class="mt-3">
+                            <!-- Chart will appear here -->
+                        </div>
+                        <div id="percentage-container" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.getElementById("course").addEventListener("change", function () {
+        const courseId = this.value;
+        if (courseId) {
+            fetch(`/get-trainees/?course_id=${courseId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const traineeList = document.getElementById("trainee-list");
+                    traineeList.innerHTML = "";  // Clear previous list
+                    data.trainees.forEach(trainee => {
+                        const button = `<button class="btn btn-info btn-md mt-2" style="margin-right:10px;" onclick="viewChart(${trainee.id}, '${trainee.name}')">${trainee.name}</button>`;
+                        traineeList.innerHTML += button;
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching trainees:", error);
+                    alert("No Trainee found in this course.");
+                });
+        }
+    });
+
+    function viewChart(traineeId, trainee_name) {
+        fetch(`/get-attendance-data/${traineeId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const chartContainer = document.getElementById("chart-container");
+                const percentageContainer = document.getElementById("percentage-container");
+    
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+    
+                // Display trainee name and attendance summary
+                percentageContainer.innerHTML = `
+                    <h4>Attendance Summary for <strong>${data.trainee_name}</strong></h4>
+                    <p style="font-size: 1.2em; font-weight: bold;">
+                        <span style="color: green;">Present:</span> ${data.present_percentage}% &nbsp;&nbsp;
+                        <span style="color: red;">Absent:</span> ${data.absent_percentage}%
+                    </p>
+                `;
+    
+                // Debugging: Log the dates and status
+                console.log("Dates:", data.dates);
+                console.log("Status:", data.status);
+    
+                // Clear previous chart
+                chartContainer.innerHTML = `<canvas id="attendanceChart" style="height: 350px; width: 100%;"></canvas>`;
+                const ctx = document.getElementById("attendanceChart").getContext("2d");
+    
+                // Prepare data for chart
+                const dates = data.dates; // Attendance dates
+                const presentData = data.status.map(status => (status ? 1 : 0)); // Map true to 1 (Present), false to 0
+                const absentData = data.status.map(status => (status ? 0 : 1)); // Map true to 0, false to 1 (Absent)
+    
+                // Render Bar Chart
+                new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: "Present",
+                                data: presentData,
+                                backgroundColor: "rgba(0, 200, 83, 0.7)", // Green
+                                borderColor: "rgba(0, 200, 83, 1)",
+                                borderWidth: 1,
+                            },
+                            {
+                                label: "Absent",
+                                data: absentData,
+                                backgroundColor: "rgba(244, 67, 54, 0.7)", // Red
+                                borderColor: "rgba(244, 67, 54, 1)",
+                                borderWidth: 1,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Attendance Summary for ${data.trainee_name}`,
+                                font: { size: 18, weight: 'bold' },
+                                color: '#333',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const status = context.dataset.label;
+                                        return `${status} on ${context.label}`;
+                                    },
+                                },
+                            },
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Date",
+                                    color: "#555",
+                                    font: { size: 14, weight: "bold" },
+                                },
+                                ticks: {
+                                    font: { size: 12 },
+                                    color: "#555",
+                                },
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "Attendance Status",
+                                    color: "#555",
+                                    font: { size: 14, weight: "bold" },
+                                },
+                                ticks: {
+                                    stepSize: 1,
+                                    font: { size: 12 },
+                                    color: "#555",
+                                },
+                            },
+                        },
+                    },
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching attendance data:", error);
+                alert(`Failed to load attendance data. Please try again.${error}`);
+            });
+    }
+
+</script>
+{% endblock %}

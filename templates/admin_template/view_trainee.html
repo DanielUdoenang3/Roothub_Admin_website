@@ -7,9 +7,12 @@
         <div class="col">
             <h3 class="page-title">View Trainees</h3>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}">Trainees</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">View Trainee</li>
             </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+            <a href="{% url 'add_trainee' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
         </div>
     </div>
 </div>
@@ -43,7 +46,7 @@
                                     </h2>
                                 </td>
                                 <td>{{ trainee.trainee_name.email }}</td>
-                                <td>{{ trainee.trainee_name.username }}</td>
+                                <td>{{ trainee.trainee_name.username|capfirst }}</td>
                                 <td>{{ trainee.gender }}</td>
                                 <td>{{ trainee.phone }}</td>
                                 <td>{{ trainee.trainee_name.date_joined }}</td>
@@ -53,7 +56,7 @@
                                         <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-sm bg-success-light me-2">
                                             <i class="fas fa-pen"></i>
                                         </a>
-                                        <a href="#" class="btn btn-sm bg-danger-light">
+                                        <a href="{% url "delete_trainee" trainee.trainee_name.username %}" class="btn btn-sm bg-danger-light">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </div>

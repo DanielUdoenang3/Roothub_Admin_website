@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Mark Presentation</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_presentation' %}">Presentation</a></li>
+                <li class="breadcrumb-item active">Mark Presentation</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class="row">
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label for="course">Course</label>
+                                <select name="course" id="course" class="form-control form-select" required>
+                                    <option value="" disabled selected>Select a course</option>
+                                    {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Trainee</label>
+                                <select name="trainee" id="trainee-list" class="form-control form-select" required>
+                                    <option value="" disabled selected>Select course to select trainee</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Date</label>
+                                <input type="date" class="form-control" name="date" id="date" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Title</label>
+                                <input type="text" class="form-control" name="title" placeholder="Enter Title of the Presentation" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Trainee Appearance</label>
+                                <input type="number" class="form-control" name="score_appearance" placeholder="10.00" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Trainee Content</label>
+                                <input type="number" class="form-control" name="score_content" placeholder="10.00" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Comment</label>
+                                <input type="text" class="form-control" name="comment" placeholder="Enter Comment" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="student-submit">
+                                <button type="submit" class="btn btn-primary">Mark Presentation</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("course").addEventListener("change", function () {
+        const courseId = this.value;
+        const traineeList = document.getElementById("trainee-list");
+
+        if (courseId) {
+            fetch(`/get-trainees-by-course/${courseId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    traineeList.innerHTML = ""; // Clear existing list
+                    if (data.trainees.length === 0) {
+                        traineeList.innerHTML = "<option value='' disabled>No students found for this course.</option>";
+                    } else {
+                        data.trainees.forEach(trainee => {
+                            traineeList.innerHTML += `
+                                <option value="${trainee.id}">${trainee.name}</option>
+                            `;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching trainees data:", error);
+                    alert(`Failed to load trainees data. Please try again.${error}`);
+                });
+        }
+    });
+
+    document.getElementById("date").addEventListener("change", function () {
+        document.getElementById("course").dispatchEvent(new Event("change"));
+    });
+</script>
+{% endblock %}

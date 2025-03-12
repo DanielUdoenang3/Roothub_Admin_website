@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Edit Course</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_course' %}">Courses</a></li>
+                <li class="breadcrumb-item active">Edit Course</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{% url 'edit_course' courses.course_name %}">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class='row'>
+                        <div class="col-12">
+                            <h5 class="form-title"><span>Edit Course with their Corresponding Prices</span></h5>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Course</label>
+                                <input type="text" class="form-control" name="course" placeholder="Enter Course" value="{{ courses.course_name }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Price</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">NGN</span>
+                                    </div>
+                                    <input type="text" class="form-control" name="price" placeholder="Enter Price" value="{{ courses.price }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="student-submit">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main_content %} 

@@ -3,7 +3,7 @@
 
 {% block main_content %}
 <div class="page-header">
-    <div class="row align-items-cEdit">
+    <div class="row align-items-center">
         <div class="col">
             <h3 class="page-title">Edit {{ trainer.trainer_name.username }}'s details</h3>
             <ul class="breadcrumb">
@@ -15,134 +15,132 @@
 </div>
 <div class="row">
     <div class="col-sm-12">
-    <div class="card">
-    <div class="card-body">
-    <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {% include "includes/messages.html" %}
-    <div class="row">
-    <div class="col-12">
-    <h5 class="form-title"><span>Basic Details</span></h5>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>First Name </label>
-    <input type="text" class="form-control" name="first_name" placeholder="Edit First Name" value="{{ trainer.trainer_name.first_name }}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label> Middle Name</label>
-    <input type="text" class="form-control" name="middle_name" placeholder="Edit Middle Name" value="{{ trainer.trainer_name.middle_name }}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-        <div class="form-group local-forms">
-        <label> Last Name</label>
-        <input type="text" class="form-control" name="last_name" placeholder="Edit Last Name" value="{{ trainer.trainer_name.last_name }}">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="form-title"><span>Basic Details</span></h5>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>First Name </label>
+                                <input type="text" class="form-control" name="first_name" placeholder="Edit First Name" value="{{ trainer.trainer_name.first_name }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Middle Name</label>
+                                <input type="text" class="form-control" name="middle_name" placeholder="Edit Middle Name" value="{{ trainer.trainer_name.middle_name }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Last Name</label>
+                                <input type="text" class="form-control" name="last_name" placeholder="Edit Last Name" value="{{ trainer.trainer_name.last_name }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Gender </label>
+                                <select class="form-control form-select" aria-hidden="true" name="gender">
+                                    <option disabled selected hidden>Select Gender</option>
+                                    <option value="Male" {% if trainer.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if trainer.gender == "Female" %}selected{% endif %}>Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Mobile </label>
+                                <input type="text" class="form-control" name="phone" placeholder="Edit Phone" value="{{ trainer.phone }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Religion </label>
+                                <input class="form-control" name="religion" type="text" placeholder="Edit Religion" value="{{ trainer.religion }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Experience </label>
+                                <input class="form-control" type="text" name="experience" placeholder="Edit Experience" value="{{ trainer.experience }}">
+                            </div>
+                        </div>
+                        <center>
+                            <div class="col-12">
+                                <div class="form-group students-up-files">
+                                    <label>Current Profile Picture</label>
+                                    <div class="uplod">
+                                        <img src="{{ trainer.trainer_name.profile_pic.url }}" alt="Profile Picture" class="img-thumbnail" width="150px" height="150px">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group students-up-files">
+                                    <label>Upload New Profile Picture (150px X 150px)</label>
+                                    <div class="uplod">
+                                        <label class="file-upload image-upbtn mb-0">
+                                            Choose File <input type="file" accept="image/*" name="profile_pic">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </center>
+                        <div class="col-12">
+                            <h5 class="form-title"><span>Login Details</span></h5>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Username </label>
+                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainer.trainer_name.username }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Email</label>
+                                <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainer.trainer_name.email }}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <h5 class="form-title"><span>Address</span></h5>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Address </label>
+                                <input type="text" class="form-control" name="address" placeholder="Edit address" value="{{ trainer.address }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>City </label>
+                                <input type="text" class="form-control" name="city" placeholder="Edit City" value="{{ trainer.city }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>State </label>
+                                <input type="text" class="form-control" name="state" placeholder="Edit State" value="{{ trainer.state }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Country </label>
+                                <input type="text" class="form-control" name="country" placeholder="Edit Country" value="{{ trainer.country }}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="student-submit">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Gender </label>
-    <select class="form-control form-select" aria-hidden="true" name="gender">
-        <option disabled selected hidden>Select Gender</option>
-        <option value="Male" {% if trainer.gender == 'Male' %}selected{% endif %}>Male</option>
-        <option value="Female" {% if trainer.gender == "Female" %}selected{% endif %}>Female</option>
-    </select>
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Mobile </label>
-    <input type="text" class="form-control" name="phone" placeholder="Edit Phone" value="{{ trainer.phone }}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Religion </label>
-    <input class="form-control" name="religion" type="text" placeholder="Edit Religion" value="{{ trainer.religion }}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-        <div class="form-group local-forms">
-        <label>Experience </label>
-        <input class="form-control" type="text" name="experience" placeholder="Edit Experience" value="{{ trainer.experience }}">
-        </div>
-    </div>
-    <!-- <div class="col-12 col-sm-6">
-        <div class="form-group students-up-files">
-        <label>Upload Trainer Photo (150px X 150px)</label>
-        <div class="uplod">
-        <label class="file-upload image-upbtn mb-0">
-        Choose File <input type="file" accept="image/*" name="profile_pic">
-        </label>
-        </div>
-        </div>
-    </div> -->
-    <div class="col-12">
-    <h5 class="form-title"><span>Login Details</span></h5>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Username </label>
-    <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainer.trainer_name.username}}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Email</label>
-    <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainer.trainer_name.email }}">
-    </div>
-    </div>
-    <!-- <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Password </label>
-    <input type="text" class="form-control" name="password1" placeholder="Edit Password">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Repeat Password </label>
-    <input type="text" class="form-control" name="password2" placeholder="Repeat Password">
-    </div>
-    </div> -->
-    <div class="col-12">
-    <h5 class="form-title"><span>Address</span></h5>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Address </label>
-    <input type="text" class="form-control" name="address" placeholder="Edit address" value="{{ trainer.address }}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>City </label>
-    <input type="text" class="form-control" name="city" placeholder="Edit City" value="{{ trainer.city}}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>State </label>
-    <input type="text" class="form-control" name="state" placeholder="Edit State" value="{{ trainer.state }}">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Country </label>
-    <input type="text" class="form-control" name="country" placeholder="Edit Country" value="{{ trainer.country}}">
-    </div>
-    </div>
-    <div class="col-12">
-    <div class="student-submit">
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    </div>
-    </div>
-    </div>
-    </form>
-    </div>
-    </div>
     </div>
 </div>
 {% endblock main_content %}

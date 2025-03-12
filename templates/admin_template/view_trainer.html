@@ -5,10 +5,10 @@
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
-            <h2 class="page-title">Trainers</h2>
+            <h2 class="page-title">View Trainers</h2>
             <ul class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Trainer</li>
+                <li class="breadcrumb-item active">View Trainer</li>
             </ul>
         </div>
         <div class="col-auto text-right float-right ml-auto">
@@ -46,7 +46,7 @@
                                     </h2>
                                 </td>
                                 <td>{{ trainer.trainer_name.email }}</td>
-                                <td>{{ trainer.trainer_name.username }}</td>
+                                <td>{{ trainer.trainer_name.username|capfirst }}</td>
                                 <td>{{ trainer.gender }}</td>
                                 <td>{{ trainer.phone }}</td>
                                 <td>{{ trainer.trainer_name.date_joined }}</td>
@@ -56,7 +56,7 @@
                                         <a href="{% url "edit_trainer" trainer.trainer_name.username %}" class="btn btn-sm bg-success-light me-2">
                                             <i class="fas fa-pen"></i>
                                         </a>
-                                        <a href="#" class="btn btn-sm bg-danger-light">
+                                        <a href="{% url "delete_trainer" trainer.trainer_name.username %}" class="btn btn-sm bg-danger-light">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </div>

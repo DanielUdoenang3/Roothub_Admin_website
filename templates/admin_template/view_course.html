@@ -7,9 +7,12 @@
         <div class="col">
             <h3 class="page-title">View Course</h3>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_course' %}">Courses</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">View Course</li>
             </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+            <a href="{% url 'add_course' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
         </div>
     </div>
 </div>
@@ -34,19 +37,19 @@
                             {% for course in courses %}
                             <tr role="row" class="{% cycle 'odd' 'even' %}">
                                 <td>{{ course.course_name }}</td>
-                                <td>{{ course.price_name }}</td>
+                                <td>NGN {{ course.price }}</td>
                                 {% if course.trainer_id %}
                                 <td>{{ course.trainer_id.trainer_name.first_name }} {{ course.trainer_id.trainer_name.last_name }}</td>
                                 {% else %}
-                                <h2>No Assigned Trainer</h2>
+                                <td>No Assigned Trainer</td>
                                 {% endif %}
-                                {% comment %} <td>{{ course.course_name }}</td> {% endcomment %}
+                                <td>{{ course.num_trainees }}</td>
                                 <td class="text-end">
                                     <div class="actions">
-                                        <a href="#" class="btn btn-sm bg-success-light me-2">
+                                        <a href="{% url 'edit_course' course.course_name %}" class="btn btn-sm bg-success-light me-2">
                                             <i class="fas fa-pen"></i>
                                         </a>
-                                        <a href="#" class="btn btn-sm bg-danger-light">
+                                        <a href="{% url 'delete_course' course.course_name %}" class="btn btn-sm bg-danger-light" onclick="return confirm('Are you sure you want to delete this course?');">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </div>
@@ -59,21 +62,41 @@
                 <div class="row">
                     <div class="col-sm-12 col-md-5">
                         <div class="dataTables_info">
-                            Showing 1 to {{ courses|length }} of {{ total_course }} entries
+                            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
                         </div>
                     </div>
                     <div class="col-sm-12 col-md-7">
-                        <div class="dataTables_paginate paging_simple_numbers">
+                        <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
                             <ul class="pagination">
-                                <li class="paginate_button page-item previous disabled">
-                                    <a href="#" class="page-link">Previous</a>
+                                {% if page_obj.has_previous %}
+                                <li class="paginate_button page-item previous" id="DataTables_Table_0_previous">
+                                    <a href="?page={{ page_obj.previous_page_number }}" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
                                 </li>
+                                {% else %}
+                                <li class="paginate_button page-item previous disabled" id="DataTables_Table_0_previous">
+                                    <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
                                 <li class="paginate_button page-item active">
-                                    <a href="#" class="page-link">1</a>
+                                    <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="{{ num }}" tabindex="0" class="page-link">{{ num }}</a>
                                 </li>
-                                <li class="paginate_button page-item next disabled">
-                                    <a href="#" class="page-link">Next</a>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="paginate_button page-item">
+                                    <a href="?page={{ num }}" aria-controls="DataTables_Table_0" data-dt-idx="{{ num }}" tabindex="0" class="page-link">{{ num }}</a>
                                 </li>
+                                {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                <li class="paginate_button page-item next" id="DataTables_Table_0_next">
+                                    <a href="?page={{ page_obj.next_page_number }}" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                                {% else %}
+                                <li class="paginate_button page-item next disabled" id="DataTables_Table_0_next">
+                                    <a href="#" aria-controls="DataTables_Table_0" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>

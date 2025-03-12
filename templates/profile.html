@@ -50,10 +50,10 @@
    <div class="form-group">
    <label>Username</label>
    {% if user.user_type == "1" %}
-   <input type="text" value="{{user.username}}" name="username" class="form-control">
+   <input type="text" value="{{user.username|capfirst}}" name="username" class="form-control">
 
    {% else %}
-   <input type="text" disabled value="{{user.username}}" name="username" class="form-control">
+   <input type="text" disabled value="{{user.username|capfirst}}" name="username" class="form-control">
    {% endif %}
    </div>
    </div>

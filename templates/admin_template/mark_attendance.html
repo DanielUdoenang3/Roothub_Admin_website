@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Mark Attendance</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_attendance' %}">Attendance</a></li>
+                <li class="breadcrumb-item active">Mark Attendance</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class="row">
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label for="course">Course</label>
+                                <select name="course" id="course" class="form-control form-select" required>
+                                    <option value="" disabled selected>Select a course</option>
+                                    {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Date</label>
+                                <input type="date" class="form-control" name="date" id="date" required>
+                            </div>
+                        </div>
+                        <div id="trainee-list" class="form-group col-sm-8">
+                            <p>Select a course and date to view students.</p>
+                        </div>
+                        <div class="col-12">
+                            <div class="student-submit">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fetch trainees when course or date is selected
+    function fetchTrainees() {
+        const courseId = document.getElementById("course").value;
+        const date = document.getElementById("date").value;
+        const traineeList = document.getElementById("trainee-list");
+
+        if (courseId) {
+            fetch(`/get-trainees/?course_id=${courseId}&date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    traineeList.innerHTML = ""; // Clear existing list
+                    if (data.trainees && data.trainees.length > 0) {
+                        data.trainees.forEach(trainee => {
+                            traineeList.innerHTML += `
+                            <div class="form-group">
+                            <label class="d-block">${trainee.name}</label>
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input attendance-checkbox present-checkbox" type="checkbox" name="present" value="${trainee.id}" data-trainee-id="${trainee.id}">
+                            <label class="form-check-label">Present</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input attendance-checkbox absent-checkbox" type="checkbox" name="absent" value="${trainee.id}"data-trainee-id="${trainee.id}">
+                            <label class="form-check-label">Absent</label>
+                            </div>
+                            </div>`;
+                        });
+
+                        // Add event listeners to ensure only one checkbox can be marked
+                        document.querySelectorAll(".attendance-checkbox").forEach(checkbox => {
+                            checkbox.addEventListener("change", function () {
+                                const traineeId = this.dataset.traineeId;
+                                const presentCheckbox = document.querySelector(`.present-checkbox[data-trainee-id="${traineeId}"]`);
+                                const absentCheckbox = document.querySelector(`.absent-checkbox[data-trainee-id="${traineeId}"]`);
+
+                                if (this.checked) {
+                                    // Uncheck the other checkbox
+                                    if (this === presentCheckbox) {
+                                        absentCheckbox.checked = false;
+                                    } else {
+                                        presentCheckbox.checked = false;
+                                    }
+                                }
+                            });
+                        });
+                    } else {
+                        traineeList.innerHTML = "<p>No trainees found for this course and date.</p>";
+                    }
+                })
+                .catch(error => {
+                    traineeList.innerHTML = "<p>Error fetching trainees. Please try again.</p>";
+                    console.error(error);
+                });
+        }
+    }
+
+    // Event listeners for course and date fields
+    document.getElementById("course").addEventListener("change", fetchTrainees);
+    document.getElementById("date").addEventListener("change", fetchTrainees);
+</script>
+
+{% endblock %}

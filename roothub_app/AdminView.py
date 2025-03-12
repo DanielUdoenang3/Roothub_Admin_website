@@ -1,9 +1,12 @@
+from datetime import datetime
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render,redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import *
+from django.db.models import Q
 from django.core.paginator import Paginator
+from django.db.models import Count
 
 @login_required(login_url="/")
 def home(request):
@@ -25,7 +28,7 @@ def add_trainer_save(request):
             religion = request.POST.get("religion")
             experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-            username = request.POST.get("username")
+            username = request.POST.get("username").lower()
             email = request.POST.get("email").lower().replace(' ', '')
             password = request.POST.get("password1")
             address = request.POST.get("address")
@@ -88,7 +91,7 @@ def add_trainer_save(request):
 
 @login_required(login_url="/")
 def view_trainer(request):
-    trainers_list = Trainers.objects.all()
+    trainers_list = Trainers.objects.all().order_by('id')
     paginator = Paginator(trainers_list, 10)  # Show 10 trainers per page
 
     page_number = request.GET.get('page')
@@ -119,7 +122,7 @@ def add_trainee_save(request):
             phone  = request.POST.get("phone")
             religion = request.POST.get("religion")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-            username = request.POST.get("username")
+            username = request.POST.get("username").lower()
             email = request.POST.get("email").lower().replace(' ', '')
             password = request.POST.get("password1")
             address = request.POST.get("address")
@@ -189,7 +192,7 @@ def add_trainee_save(request):
                     
                 messages.success(request, "Trainee Added Successfully")
                 return redirect("add_trainee")
-
+            
         except Exception as excepts:
             print(excepts)
             messages.error(request, "An Unexcepted error occured")
@@ -199,8 +202,8 @@ def add_trainee_save(request):
 
 @login_required(login_url="/")
 def view_trainee(request):
-    trainees_list = Trainee.objects.all()
-    paginator = Paginator(trainees_list, 10)  # Show 10 trainees per page
+    trainees_list = Trainee.objects.all().order_by('id')
+    paginator = Paginator(trainees_list, 10)
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -254,7 +257,7 @@ def add_course_save(request):
 
             else:
                 try:
-                    new_course = Courses.objects.create(course_name=course_name , price_name=price_value)
+                    new_course = Courses.objects.create(course_name=course_name , price=price_value)
                     new_course.save()
                     messages.success(request, f"The Course: '{course_name}' has been added successfully with its corresponding price '{price}'!")
                     return redirect("add_course") 
@@ -271,13 +274,18 @@ def add_course_save(request):
 
 @login_required(login_url="/")
 def view_course(request):
-    courses = Courses.objects.all()
-    total_course = courses.count()
+    courses_list = Courses.objects.annotate(num_trainees=Count('trainees')).order_by('id')
+    paginator = Paginator(courses_list, 10)  # Show 10 courses per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        "total_course":total_course,
-        "courses":courses,
+        'total_course': paginator.count,
+        'courses': page_obj,
+        'page_obj': page_obj,
     }
-    return render(request, "admin_template/view_course.html", context)
+    return render(request, 'admin_template/view_course.html', context)
 
 @login_required(login_url="/")
 def assign_trainer(request):
@@ -319,6 +327,7 @@ def assign_trainer(request):
 
     return render(request, "admin_template/assign_trainer.html",content)
 
+@login_required(login_url="/")
 def get_current_trainer(request, course_id):
     course = get_object_or_404(Courses, id=course_id)
     if course.trainer_id:
@@ -352,56 +361,53 @@ def edit_trainer(request,trainer):
             
             if CustomUser.objects.filter(email__iexact=email).exists():
                 messages.error(request, "Email already exists!")
-                return redirect("add_trainer")
+                return redirect("edit_trainer",trainer)
             
             elif gender == "Select Gender":
                 messages.error(request, "Select Student Gender!")
-                return redirect('add_trainer')
+                return redirect("edit_trainer",trainer)
             
             elif len(password) < 11:
                 messages.error(request, "Password must be at least 8 characters long.")
-                return redirect("add_trainer")
+                return redirect("edit_trainer",trainer)
 
             elif 11>len(phone)>15:
                 messages.error(request,"Input an appropiate phone number")
-                return redirect("add_trainer")
+                return redirect("edit_trainer",trainer)
             
             elif CustomUser.objects.filter(username__iexact=username).exists():
                 messages.error(request, "Username already exists!")
-                return redirect("add_trainer")
+                return redirect("edit_trainer",trainer)
             
             else:
-                user = CustomUser.objects.create_user(
-                    first_name=first_name,
-                    middle_name=middle_name,
-                    last_name=last_name,
-                    email=email,
-                    password=password,
-                    username=username,
-                    profile_pic=profile_pic,
-                    user_type=2
-                )
-                
-                
-                trainer = user.trainers
-                trainer.gender = gender
-                trainer.address = address
-                trainer.religion = religion
-                trainer.state = state
-                trainer.city = city
-                trainer.experience = experience
-                trainer.country = country
-                trainer.phone = phone
-                trainer.save()
+                user.first_name = first_name
+                user.middle_name = middle_name
+                user.last_name = last_name
+                user.email = email
+                user.username = username
+                if profile_pic:
+                    user.profile_pic = profile_pic
+                else:
+                    user.profile_pic=user.profile_pic
                 user.save()
 
+                trainers.gender = gender
+                trainers.address = address
+                trainers.religion = religion
+                trainers.state = state
+                trainers.city = city
+                trainers.experience=experience
+                trainers.country = country
+                trainers.phone = phone
+                trainers.save()
+
                 messages.success(request, "Trainer Added Successfully")
-                return redirect("add_trainer")
+                return redirect("edit_trainer",trainer)
 
         except Exception as excepts:
             print(excepts)
             messages.error(request, "An Unexcepted error occured")
-            return redirect("add_trainer")
+            return redirect("edit_trainer",trainer)
     
     content = {
         "trainer":trainers,
@@ -409,16 +415,197 @@ def edit_trainer(request,trainer):
     return render(request, "admin_template/edit_trainer.html", content)
 
 @login_required(login_url="/")
-def edit_trainee(request,trainee):
+def edit_trainee(request, trainee):
     user = get_object_or_404(CustomUser, username=trainee)
     trainees = get_object_or_404(Trainee, trainee_name=user)
-    course = Courses.objects.all()
-    
-    if request.method == "POST":
-        pass
+    courses = Courses.objects.all()
+
+    try:
+        if request.method == "POST":
+            first_name = request.POST.get("first_name").capitalize()
+            middle_name = request.POST.get("middle_name").capitalize()
+            last_name = request.POST.get("last_name").capitalize()
+            gender = request.POST.get("gender")
+            phone = request.POST.get("phone")
+            religion = request.POST.get("religion")
+            profile_pic = request.FILES.get('profile_pic', 'blank.webp')
+            username = request.POST.get("username")
+            email = request.POST.get("email").lower().replace(' ', '')
+            address = request.POST.get("address")
+            city = request.POST.get("city")
+            state = request.POST.get("state")
+            country = request.POST.get("country")
+            course_choice = request.POST.get("course")
+
+            if CustomUser.objects.filter(email__iexact=email).exclude(id=user.id).exists():
+                messages.error(request, "Email already exists!")
+                return redirect("edit_trainee", trainee)
+
+            elif gender == "Select Gender":
+                messages.error(request, "Select Student Gender!")
+                return redirect("edit_trainee", trainee)
+
+            elif len(phone) < 11 or len(phone) > 15:
+                messages.error(request, "Input an appropriate phone number")
+                return redirect("edit_trainee", trainee)
+
+            elif CustomUser.objects.filter(username__iexact=username).exclude(id=user.id).exists():
+                messages.error(request, "Username already exists!")
+                return redirect("edit_trainee", trainee)
+
+            else:
+                user.first_name = first_name
+                user.middle_name = middle_name
+                user.last_name = last_name
+                user.email = email
+                user.username = username
+                if profile_pic:
+                    user.profile_pic = profile_pic
+                else:
+                    user.profile_pic=user.profile_pic
+                user.save()
+
+                trainees.gender = gender
+                trainees.address = address
+                trainees.religion = religion
+                trainees.state = state
+                trainees.city = city
+                trainees.country = country
+                trainees.phone = phone
+
+                selected_course = Courses.objects.get(id=course_choice)
+                trainees.course_id = selected_course
+                trainees.save()
+
+                messages.success(request, "Trainee details updated successfully")
+                return redirect("view_trainee")
+    except Exception as e:
+        print(e)
+        messages.error(request, "An Unexcepted error occured")
+        return redirect("edit_trainee", trainee)
+
 
     content = {
-        "trainee":trainees,
-        "courses":course,
+        "trainee": trainees,
+        "courses": courses,
     }
     return render(request, "admin_template/edit_trainee.html", content)
+
+@login_required(login_url="/")
+def edit_course(request, course):
+    courses = get_object_or_404(Courses, course_name=course)
+
+    if request.method == "POST":
+        course_name = request.POST.get("course")
+        price = request.POST.get("price")
+
+        if not course_name:
+            messages.error(request, "Course name cannot be empty.")
+            return redirect("edit_course", course)
+
+        if not price:
+            messages.error(request, "Price cannot be empty.")
+            return redirect("edit_course", course)
+
+        try:
+            price = float(price)
+        except ValueError:
+            messages.error(request, "Price must be a valid number.")
+            return redirect("edit_course", course)
+
+        if course_name != courses.course_name:
+            if Courses.objects.filter(course_name__iexact=course_name).exclude(id=courses.id).exists():
+                messages.error(request, "Course already exists!")
+                return redirect("edit_course", course)
+
+        courses.course_name = course_name
+        courses.price = price
+        courses.save()
+
+        messages.success(request, f"The course '{courses.course_name}' has been successfully updated to '{course_name}' with the price from 'NGN{courses.price} to NGN{price}'")
+        return redirect("edit_course", course)
+
+    context = {
+        'courses': courses
+    }
+    return render(request, 'admin_template/edit_course.html', context)
+
+@login_required(login_url="/")
+def search(request):
+    data=None
+    try:
+        if request.method == "POST":
+            search = request.POST.get("search")
+            if search:
+                trainer_search = Trainers.objects.filter(
+                    Q(trainer_name__username__icontains=search)|
+                    Q(trainer_name__first_name__icontains=search)|
+                    Q(trainer_name__middle_name__icontains=search)|
+                    Q(trainer_name__last_name__icontains=search)|
+                    Q(trainer_name__email__icontains=search)|
+                    Q(phone__icontains=search)|
+                    Q(state__icontains=search)|
+                    Q(religion__icontains=search)|
+                    Q(city__icontains=search)
+                )
+                trainee_search = Trainee.objects.filter(
+                    Q(trainee_name__username__icontains=search)|
+                    Q(trainee_name__first_name__icontains=search)|
+                    Q(trainee_name__middle_name__icontains=search)|
+                    Q(trainee_name__last_name__icontains=search)|
+                    Q(trainee_name__email__icontains=search)|
+                    Q(phone__icontains=search)|
+                    Q(state__icontains=search)|
+                    Q(religion__icontains=search)|
+                    Q(city__icontains=search)
+                )
+                data = {
+                    "trainers":trainer_search,
+                    "trainees":trainee_search,
+                    "param":search
+                }
+    except Exception as e:
+        print(e)
+        messages.error(request, f"An error was encountered {e}")
+    return render(request, "admin_template/search.html", data)
+
+
+@login_required(login_url="/")
+def delete_trainer(request, trainer):
+    try:
+        user = get_object_or_404(CustomUser, username=trainer)
+        trainer = get_object_or_404(Trainers, trainer_name=user)
+        trainer_user = str(user)
+        user.delete()
+        trainer.delete()
+        messages.success(request, f"Trainer{trainer_user.capitalize()} was deleted sucessfully")
+    except Exception as e:
+        print(e)
+        messages.error(request, f"Trainer{trainer_user.capitalize()} was not deleted sucessfully")
+    return redirect("view_trainer")
+
+@login_required(login_url="/")
+def delete_trainee(request, trainee):
+    try:
+        user = get_object_or_404(CustomUser, username=trainee)
+        trainee = get_object_or_404(Trainee, trainee_name=user)
+        trainee_user=str(user)
+        user.delete()
+        trainee.delete()
+        messages.success(request, f"Trainee {trainee_user.capitalize()} was deleted sucessfully")
+    except Exception as e:
+        print(e)
+        messages.error(request, f"Trainee {trainee_user.capitalize()} was not deleted sucessfully")
+    return redirect("view_trainee")
+
+
+def delete_course(request, course):
+    try:
+        course = get_object_or_404(Courses, course_name=course)
+        course_name = str(course)
+        course.delete()
+        messages.success(request, f"The Course {course_name.capitalize()} was deleted sucessfully")
+    except Exception as e:
+        print(e)
+        messages.error(request, f"The Course {course_name.capitalize()} was deleted successfully")
+    return redirect("view_course")
