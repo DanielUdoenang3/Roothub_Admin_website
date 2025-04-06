@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Attendance</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item active">View {{ trainee.trainee_name.username|capfirst }}'s Attendance Report</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <div id="chart-container" class="mt-3">
+                    <canvas id="attendanceChart" style="height: 350px; width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const attendanceChartCanvas = document.getElementById("attendanceChart");
+        let attendanceChartInstance = null; // Store the chart instance
+
+        // Fetch attendance data for the logged-in trainee
+        fetch('/get-trainee-attendance/')
+            .then(response => response.json())
+            .then(data => {
+                const dates = data.dates; // Attendance dates
+                const presentData = data.status.map(status => (status === 'Present' ? 1 : 0)); // Map 'Present' to 1
+                const absentData = data.status.map(status => (status === 'Absent' ? 1 : 0)); // Map 'Absent' to 1
+
+                // Destroy the existing chart instance if it exists
+                if (attendanceChartInstance) {
+                    attendanceChartInstance.destroy();
+                    attendanceChartInstance = null; // Reset the instance
+                }
+
+                // Render Bar Chart
+                const ctx = attendanceChartCanvas.getContext("2d");
+                attendanceChartInstance = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: "Present",
+                                data: presentData,
+                                backgroundColor: "rgba(0, 200, 83, 0.7)", // Green
+                                borderColor: "rgba(0, 200, 83, 1)",
+                                borderWidth: 1,
+                            },
+                            {
+                                label: "Absent",
+                                data: absentData,
+                                backgroundColor: "rgba(244, 67, 54, 0.7)", // Red
+                                borderColor: "rgba(244, 67, 54, 1)",
+                                borderWidth: 1,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "Attendance Summary",
+                                font: { size: 18, weight: 'bold' },
+                                color: '#333',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const status = context.dataset.label;
+                                        return `${status} on ${context.label}`;
+                                    },
+                                },
+                            },
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Date",
+                                    color: "#555",
+                                    font: { size: 14, weight: "bold" },
+                                },
+                                ticks: {
+                                    font: { size: 12 },
+                                    color: "#555",
+                                },
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "Attendance Status",
+                                    color: "#555",
+                                    font: { size: 14, weight: "bold" },
+                                },
+                                ticks: {
+                                    stepSize: 1,
+                                    font: { size: 12 },
+                                    color: "#555",
+                                },
+                            },
+                        },
+                    },
+                });
+            })
+            {% comment %} .catch(error => {
+                console.error("Error fetching attendance data:", error);
+                alert(`Failed to load attendance data. Please try again. ${error}`);
+            }); {% endcomment %}
+    });
+</script>
+{% endblock custom_js %}
+{% endblock %}

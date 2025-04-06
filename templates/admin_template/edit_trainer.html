@@ -5,7 +5,7 @@
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
-            <h3 class="page-title">Edit {{ trainer.trainer_name.username }}'s details</h3>
+            <h3 class="page-title">Edit {{ trainer.trainer_name.username|capfirst }}'s details</h3>
             <ul class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'view_trainer' %}">Trainers</a></li>
                 <li class="breadcrumb-item active">Edit / {{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</li>
@@ -96,7 +96,7 @@
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Username </label>
-                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainer.trainer_name.username }}">
+                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainer.trainer_name.username|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">

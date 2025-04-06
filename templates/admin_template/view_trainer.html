@@ -62,6 +62,10 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No Trainer added yet.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>

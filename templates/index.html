@@ -40,7 +40,7 @@
 <form action="{% url 'dologin' %}" method="Post">
     {% csrf_token %}
 <div class="form-group">
-<label>Username <span class="login-danger">*</span></label>
+<label>Username or Email <span class="login-danger">*</span></label>
 <input class="form-control" type="text" name="email">
 <span class="profile-views"><i class="fas fa-user-circle"></i></span>
 </div>

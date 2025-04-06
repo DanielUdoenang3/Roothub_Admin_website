@@ -4,6 +4,8 @@ from django.core.validators import RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.conf import settings
+from django.contrib.auth.models import User
 
 class CustomUser(AbstractUser):
     USER_CHOICE = (
@@ -52,7 +54,7 @@ class Trainers(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Trainer {self.trainer_name.first_name} {self.trainer_name.last_name} details"
+        return f"{self.trainer_name.first_name} {self.trainer_name.last_name}"
 
 class Courses(models.Model):
     id = models.AutoField(primary_key=True)
@@ -120,6 +122,9 @@ class Presentation_report(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Presentation Report for {self.trainee_id} - {self.presentation_id.title}"
+
 class AttendanceReport(models.Model):
     id = models.AutoField(primary_key=True)
     student_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
@@ -160,6 +165,78 @@ class NotificationTrainer(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+
+class Assignment(models.Model):
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    trainer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    file = models.FileField(upload_to='assignments', blank=True, null=True)
+    due_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.course}"
+
+class AssignmentSubmission(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="submissions", blank=True, null=True)
+    trainee = models.ForeignKey(Trainee, on_delete=models.CASCADE, related_name="submissions")
+    text_answer = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to="submissions", blank=True, null=True)
+    link = models.URLField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def is_late(self):
+        return self.submitted_at > self.assignment.due_date
+
+    def __str__(self):
+        return f"{self.assignment.title} - {self.trainee.username}"
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    file = models.FileField(upload_to='announcements', blank=True, null=True)
+    read_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="read_announcements", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.title} - {self.description}"
+    
+class PaymentHistory(models.Model):
+    id = models.AutoField(primary_key=True)
+    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"Payment of {self.amount} for {self.course_id} by {self.trainee_id}"
+    
+class PaymentMethod(models.Model):
+    id = models.AutoField(primary_key=True)
+    method_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.method_name
+    
+class PaymentTransaction(models.Model):
+    id = models.AutoField(primary_key=True)
+    payment_history = models.ForeignKey(PaymentHistory, on_delete=models.CASCADE)
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
+    transaction_id = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=50, choices=[('Success', 'Success'), ('Failed', 'Failed')])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"Transaction {self.transaction_id} - {self.status}"
+    
+class Payment(models.Model):
+    id = models.AutoField(primary_key=True)
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):

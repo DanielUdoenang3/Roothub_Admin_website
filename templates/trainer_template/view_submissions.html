@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block main_content %}
+{% if request.user.user_type == "2" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Submissions</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">All Submissions</a></li> 
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-10">
+        <div class="card">
+            <div class="card-body">
+                {% for submission in submissions %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h6>Assignment: {{ submission.assignment.title }}</h6>
+                        <p>Trainee: {{ submission.trainee.trainee_name.get_full_name }} ({{ submission.trainee.course_id.course_name }})</p>
+                        <p>Submitted on: {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+                        <p>Status:
+                            {% if submission.submitted_at > submission.assignment.due_date %}
+                                <span class="badge bg-danger">Late</span>
+                            {% else %}
+                                <span class="badge bg-success">On Time</span>
+                            {% endif %}
+                        </p>
+                        <p>Answer: {{ submission.text_answer }}</p>
+                        {% if submission.file %}
+                            <a href="{{ submission.file.url }}" target="_blank"><strong>View Attached File</strong></a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                    <p class="text-muted text-center"><h5>No Submissions yet.</h5></p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% include "includes/messages.html" %}
+
+<script>
+    const pAssignment = document.getElementById("pending-assignment");
+    const sAssignment = document.getElementById("submitted-assignment");
+</script>
+{% endif %}
+{% endblock %}

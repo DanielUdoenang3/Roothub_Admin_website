@@ -5,6 +5,7 @@ from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.utils.timezone import now
 from .models import *
 from datetime import datetime
 
@@ -17,6 +18,9 @@ EMAIL_PORT = settings.EMAIL_PORT
 
 schoolname=settings.SCHOOL_NAME
 
+def Announcement_View(request):
+    announcements = Announcement.objects.all()
+    return render(request, "base.html", {"announcements": announcements})
 
 def login_view(request):
     return render(request, "index.html")
@@ -46,7 +50,9 @@ def dologin (request):
                 return redirect("trainee_home")
         else:
             messages.error(request, "Invalid Login Details")
-            return redirect("/")
+            return render(request, 'index.html', {
+                        "entered_data": request.POST
+                    })
         
 def doLogout(request):
     logout(request)
@@ -55,7 +61,38 @@ def doLogout(request):
 
 @login_required(login_url="/")
 def profile_update(request):
+    # trainer = Trainers.objects.get(trainer_name=request.user)
+    # courses = Courses.objects.filter(trainer_id=trainer).all()
+    
+    # courses_with_trainees = []
+    # for course in courses:
+    #     courses_with_trainees.append({
+    #         'course': course,
+    #     })
+
+    # content = {
+    #     'trainer': trainer,
+    #     'courses_with_trainees': courses_with_trainees,
+    # }
     return render(request, "profile.html")
+@login_required(login_url="/")
+def get_unread_announcements(request):
+    user = request.user
+    unread_announcements = Announcement.objects.exclude(read_by=user).values(
+        "id", "title", "description", "created_at"
+    )
+    unread_count = unread_announcements.count()
+
+    return JsonResponse({"unread_count": unread_count, "unread_announcements": list(unread_announcements)})
+
+def mark_announcement_as_read(request, announcement_id):
+    user = request.user
+    try:
+        announcement = Announcement.objects.get(id=announcement_id)
+        announcement.read_by.add(user)  # Mark as read
+        return JsonResponse({"success": True})
+    except Announcement.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Announcement not found."}, status=404)
 
 @login_required(login_url="/")
 def mark_attendance(request):
@@ -83,7 +120,8 @@ def mark_attendance(request):
 
             course = get_object_or_404(Courses, id=course_id)
             attendance, created = Attendance.objects.get_or_create(
-                course=course, attendance_date=date
+                course=course,
+                attendance_date=date
             )
 
             present_ids = request.POST.getlist("present") 
@@ -225,11 +263,14 @@ def mark_presentation(request):
             
             course = get_object_or_404(Courses, id=course_id)
             trainee = get_object_or_404(Trainee, id=trainee_id)
-            presentation = Presentation.objects.create(
+            presentation, created = Presentation.objects.create(
                 course=course, date=date, title=title, trainee=trainee, comment=comment,
                 score_appearance = score_appearance,score_content = score_content
             )
-            presentation.save()
+            Presentation_report.objects.update_or_create(
+                trainee_id = trainee,
+                presentation_id = presentation 
+            )
             
             messages.success(request, "Presentation marked successfully!")
             return redirect("view_presentation")

@@ -4,13 +4,25 @@ from django.shortcuts import get_object_or_404, render,redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import *
+from .forms import SendAnnouncement
+from django.views.generic import CreateView
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
 
 @login_required(login_url="/")
 def home(request):
-    return render(request, "admin_template/home.html")
+    trainer = Trainers.objects.all().count()
+    trainee = Trainee.objects.all().count()
+    courses =Courses.objects.all().count()
+
+    content = {
+
+        "trainers":trainer,
+        "trainees":trainee,
+        "courses":courses,
+    }
+    return render(request, "admin_template/home.html",content)
 
 @login_required(login_url="/")
 def add_trainer(request):
@@ -44,7 +56,7 @@ def add_trainer_save(request):
                 messages.error(request, "Select Student Gender!")
                 return redirect('add_trainer')
             
-            elif len(password) < 11:
+            elif len(password) < 8:
                 messages.error(request, "Password must be at least 8 characters long.")
                 return redirect("add_trainer")
 
@@ -139,7 +151,7 @@ def add_trainee_save(request):
                 messages.error(request, "Select Student Gender!")
                 return redirect('add_trainee')
             
-            elif len(password) < 11:
+            elif len(password) < 8:
                 messages.error(request, "Password must be at least 8 characters long.")
                 return redirect("add_trainee")
 
@@ -493,7 +505,7 @@ def edit_trainee(request, trainee):
 
 @login_required(login_url="/")
 def edit_course(request, course):
-    courses = get_object_or_404(Courses, course_name=course)
+    courses = get_object_or_404(Courses, id=course)
 
     if request.method == "POST":
         course_name = request.POST.get("course")
@@ -514,7 +526,7 @@ def edit_course(request, course):
             return redirect("edit_course", course)
 
         if course_name != courses.course_name:
-            if Courses.objects.filter(course_name__iexact=course_name).exclude(id=courses.id).exists():
+            if Courses.objects.filter(course_name__iexact=course_name).exists():
                 messages.error(request, "Course already exists!")
                 return redirect("edit_course", course)
 
@@ -522,8 +534,8 @@ def edit_course(request, course):
         courses.price = price
         courses.save()
 
-        messages.success(request, f"The course '{courses.course_name}' has been successfully updated to '{course_name}' with the price from 'NGN{courses.price} to NGN{price}'")
-        return redirect("edit_course", course)
+        messages.success(request, f"The course '{courses.course_name}' has been successfully updated to '{course_name}' with the price NGN{price}'")
+        return redirect("view_course")
 
     context = {
         'courses': courses
@@ -598,7 +610,7 @@ def delete_trainee(request, trainee):
         messages.error(request, f"Trainee {trainee_user.capitalize()} was not deleted sucessfully")
     return redirect("view_trainee")
 
-
+@login_required(login_url="/")
 def delete_course(request, course):
     try:
         course = get_object_or_404(Courses, course_name=course)
@@ -609,3 +621,78 @@ def delete_course(request, course):
         print(e)
         messages.error(request, f"The Course {course_name.capitalize()} was deleted successfully")
     return redirect("view_course")
+
+@login_required(login_url="/")
+def send_announcement(request):
+    if request.method == "POST":
+        try:
+            title = request.POST.get("title")
+            description = request.POST.get("description")
+            file = request.FILES.get("file")
+
+            Announcement.objects.create(
+                title = title,
+                description = description,
+                file = file
+            )
+            messages.success(request, "Announcement sent successfully")
+            
+        except Exception as e:
+            print(e)
+            messages.error(request,f"Announcement not sent due to {e}")
+    return render(request, "admin_template/send_announcement.html")
+
+@login_required(login_url="/")
+def view_announcement(request):
+    announcements = Announcement.objects.all()
+
+    return render(request, "admin_template/view_announcement.html",{
+        "announcements":announcements,
+    })
+
+def edit_announcement(request, announcement_title):
+    announcement = get_object_or_404(Announcement, title=announcement_title)
+    try:
+        if request.method == "POST":
+            title = request.POST.get("title")
+            description = request.POST.get("description")
+            file = request.FILES.get("file")
+
+            announcement.title = title
+            announcement.description = description
+            if file:
+                announcement.file = file
+            announcement.save()
+            messages.success(request, "Announcement Updated suucessfully")
+            return redirect("view_announcement")
+    except Exception as e:
+        print(e)
+        messages.error(request, f"An error occured {e}")
+    return render(request, "admin_template/edit_announcement.html", {"announcement":announcement})
+
+@login_required(login_url="/")
+def delete_announcement(request, announcement_title):
+    try:
+        announcement = Announcement.objects.filter(title=announcement_title)
+        announcement.delete()
+        messages.success(request, f"The announcement {announcement_title} has been deleted successfully")
+    except Exception as e:
+        print(e)
+        messages.error(request, f"An error occured {e}")
+    return redirect("view_announcement")
+
+
+# from django.urls import reverse_lazy
+
+# class Send_Announcement(CreateView):
+#     model = Announcement
+#     form_class = SendAnnouncement
+#     template_name = 'admin_template/send_announcement.html'
+#     success_url = reverse_lazy('send_announcement')  # Use reverse_lazy for URL resolution
+
+#     def form_valid(self, form):
+#         self.object = form.save(commit=False)
+#         self.object.user = self.request.user
+#         self.object.save()
+#         messages.success(self.request, "Announcement sent successfully!")
+#         return super().form_valid(form)

@@ -46,7 +46,7 @@
                                     </h2>
                                 </td>
                                 <td>{{trainee.trainee_name.email|truncatechars:20}}</td>
-                                <td>{{trainee.trainee_name.username}}</td>
+                                <td>{{trainee.trainee_name.username|capfirst}}</td>
                                 <td>{{trainee.phone}}</td>
                                 <td class="text-end">
                                     <div class="actions">
@@ -99,7 +99,7 @@
                                     </h2>
                                 </td>
                                 <td>{{trainer.trainer_name.email|truncatechars:20}}</td>
-                                <td>{{trainer.trainer_name.username}}</td>
+                                <td>{{trainer.trainer_name.username|capfirst}}</td>
                                 <td>{{trainer.phone}}</td>
                                 <td class="text-end">
                                     <div class="actions">

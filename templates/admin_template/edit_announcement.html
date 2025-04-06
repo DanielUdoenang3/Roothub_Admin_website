@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+{% if request.user.user_type == "2" %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Send Announcement</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}">Announcement</a></li>
+                <li class="breadcrumb-item active">Send Announcement</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-10">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class="row">
+                        <div class="col-12 col-md-8">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" name="title" class="form-control" placeholder="Enter Title" value="{{ announcement.title }}" required />
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label>Message/Description</label>
+                                <textarea name="description" placeholder="Enter Description" class="form-control" rows="4" required>{{ announcement.description }}</textarea>
+                            </div>
+                        </div>
+                        {% if announcement.file %}
+                        <div class="col-8">
+                            <div class="form-group">
+                                <p >Current File: <a href="{{ announcement.file.url }}" target="_blank">{{ announcement.file.name}}</a></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label>Upload File (Optional)</label>
+                                <input type="file" name="file" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="student-submit">
+                                <button type="submit" class="btn btn-primary">Update Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% endif %}

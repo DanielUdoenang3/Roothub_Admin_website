@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'roothub_app.context_processors.current_year',
+                'roothub_app.context_processors.announcements_processor',
             ],
         },
     },

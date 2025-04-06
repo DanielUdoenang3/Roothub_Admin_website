@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block main_content %}
+{% if request.user.user_type == "3" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Assignment</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Assignment</a></li> 
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-10">
+        {% include "includes/messages.html" %}
+        <div class="card bg-white">
+            <div class="card-body">
+            <ul class="nav nav-tabs nav-tabs-bottom nav-justified">
+                <li class="nav-item"><a class="nav-link active" href="#bottom-justified-tab1" data-bs-toggle="tab"><h6>Pending Assignments <span class="badge bg-danger">{{ pending_count }}</h6></span></a></li>
+                <li class="nav-item"><a class="nav-link" href="#bottom-justified-tab2" data-bs-toggle="tab"><h6>Submitted Assignments <span class="badge bg-success">{{ submitted_count }}</h6></span></a></li>
+            </ul>
+            <div class="tab-content">
+            <div class="tab-pane show active" id="bottom-justified-tab1">
+                {% for assignment in pending_assignments %}
+                <div class="card mb-2">
+                    <div class="card-body col-sm-6">
+                        <h6>Title: {{ assignment.title }}</h6>
+                        <p>Description: {{ assignment.description }}</p>
+                        <p>Posted: {{ assignment.created_at }}</p>
+                        <p style="color:red;"><b>Due: {{ assignment.due_date}}</b></p>
+                        <p>Status:
+                            {% if assignment.submitted_at > assignment.assignment.due_date %}
+                                <span class="badge bg-danger">Late</span>
+                            {% else %}
+                                <span class="badge bg-success">On Time</span>
+                            {% endif %}
+                        </p>
+                        {% if assignment.file %}
+                            <a href="{{ assignment.file.url }}" target="_blank"><strong>View Attached File for Referrence</strong></a>
+                        {% endif %}
+                        <a href="{% url 'submit_assignment' assignment.id %}" class="btn btn-sm btn-primary">Submit</a>
+                    </div>
+                </div>
+                {% empty %}
+                    <p class="text-muted text-center">No Pending Assignment.</p>
+                {% endfor %}
+            </div>
+            <div class="tab-pane" id="bottom-justified-tab2">
+                {% for assignment in submitted_assignments %}
+                    <div class="card mb-2">
+                        <div class="card-body text-right">
+                            <h6>Title: {{ assignment.assignment.title }}</h6><p>
+                            <p>Submitted on: {{ assignment.submitted_at }}</p>
+                            <p>Due: {{ assignment.assignment.due_date }}</p>
+                            <p>Status: Submitted
+                                {% if assignment.submitted_at > assignment.assignment.due_date %}
+                                    <span class="badge bg-danger">Late</span>
+                                {% else %}
+                                    <span class="badge bg-success">On Time</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center">No submitted assignments</p>
+                {% endfor %}
+            </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+    <div class="alert alert-danger">
+        <strong>Access Denied!</strong> You do not have permission to view this page.
+    </div>
+{% endif %}
+{% endblock %}

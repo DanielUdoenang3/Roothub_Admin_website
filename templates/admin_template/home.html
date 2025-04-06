@@ -17,6 +17,175 @@
     </div>
 </div>
 {% include "includes/messages.html" %}
+<div class="row">
+    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+        <div class="card bg-comman w-100">
+            <div class="card-body">
+                <div class="db-widgets d-flex justify-content-between align-items-center">
+                    <div class="db-info">
+                        {% if trainers > 1 %}
+                        <h6> Total Trainers</h6> 
+                        {% else %}
+                        <h6> Total Trainer</h6>
+                        {% endif %}
+                        <p>
+                            <h3>{{ trainers }}</h3>
+                        </p>
+                    </div>
+                    <div class="db-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+        <div class="card bg-comman w-100">
+            <div class="card-body">
+                <div class="db-widgets d-flex justify-content-between align-items-center">
+                    <div class="db-info">
+                        
+                        {% if trainees > 1 %}
+                        <h6> Total Trainees</h6> 
+                        {% else %}
+                        <h6> Total Trainee</h6>
+                        {% endif %}
+                        <p>
+                            <h3>{{ trainees }}</h3>
+                        </p>
+                    </div>
+                    <div class="db-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+        <div class="card bg-comman w-100">
+            <div class="card-body">
+                <div class="db-widgets d-flex justify-content-between align-items-center">
+                    <div class="db-info">
+                        <h6> Total Courses</h6>
+                        <p>
+                            <h3>{{ courses }}</h3>
+                        </p>
+                    </div>
+                    <div class="db-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 col-lg-6">
+
+            <div class="card card-chart">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h5 class="card-title">Overview</h5>
+                        </div>
+                        <div class="col-6">
+                            <ul class="chart-list-out">
+                                <li><span class="circle-blue"></span>Trainer</li>
+                                <li><span class="circle-green"></span>Trainee</li>
+                                <li class="star-menus"><a href="javascript:;"><i
+                                            class="fas fa-ellipsis-v"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="apexcharts-area"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-12 col-lg-6">
+
+            <div class="card card-chart">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h5 class="card-title">Number of Trainees</h5>
+                        </div>
+                        <div class="col-6">
+                            <ul class="chart-list-out">
+                                <li><span class="circle-blue"></span>Girls</li>
+                                <li><span class="circle-green"></span>Boys</li>
+                                <li class="star-menus"><a href="javascript:;"><i
+                                            class="fas fa-ellipsis-v"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="bar"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-12 d-flex">
+
+            <div class="card flex-fill student-space comman-shadow">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="card-title">Star Trainees for the Presentation on {{ date }}</h5>
+                    <ul class="chart-list-out student-ellips">
+                        <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table
+                            class="table star-student table-hover table-center table-borderless table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th class="text-center">Apperance</th>
+                                    <th class="text-center">Content</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Percentage</th>
+                                    <th class="text-center">Course</th>
+                                    <th class="text-end">View Presentation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-nowrap">
+                                        <div>PRE2209</div>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <a href="profile.html">
+                                            <img class="rounded-circle"
+                                                src="static/assets/img/profiles/avatar-02.jpg" width="25"
+                                                alt="Star Students">
+                                            John Smith
+                                        </a>
+                                    </td>
+                                    <td class="text-center">1185</td>
+                                    <td class="text-center">98%</td>
+                                    <td class="text-end">
+                                        <div>2019</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock main_content %}
 {% endif %}

@@ -5,7 +5,7 @@
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
-            <h3 class="page-title">Edit {{ trainee.trainee_name.username }}'s details</h3>
+            <h3 class="page-title">Edit {{ trainee.trainee_name.username|capfirst }}'s details</h3>
             <ul class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}">Trainees</a></li>
                 <li class="breadcrumb-item active">Edit / {{ trainee.trainee_name.first_name }} {{ trainee.trainee_name.last_name }}</li>
@@ -27,19 +27,19 @@
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>First Name </label>
-                                <input type="text" class="form-control" name="first_name" placeholder="Edit First Name" value="{{ trainee.trainee_name.first_name }}">
+                                <input type="text" class="form-control" name="first_name" placeholder="Edit First Name" value="{{ trainee.trainee_name.first_name|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Middle Name</label>
-                                <input type="text" class="form-control" name="middle_name" placeholder="Edit Middle Name" value="{{ trainee.trainee_name.middle_name }}">
+                                <input type="text" class="form-control" name="middle_name" placeholder="Edit Middle Name" value="{{ trainee.trainee_name.middle_name|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Edit Last Name" value="{{ trainee.trainee_name.last_name }}">
+                                <input type="text" class="form-control" name="last_name" placeholder="Edit Last Name" value="{{ trainee.trainee_name.last_name|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
@@ -90,7 +90,7 @@
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Username </label>
-                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainee.trainee_name.username }}">
+                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainee.trainee_name.username|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">

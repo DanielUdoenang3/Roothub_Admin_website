@@ -60,6 +60,15 @@
                     </ul>
                 </li>
 
+                <li class="{% if request.path == '/send_announcement' %}active{% elif request.path == '/view_announcement' %}active{% endif %}">
+                    <a href="#"><i class="fa fa-bell"></i> <span>Announcement</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "send_announcement" %}" class="{% if request.path == '/send_announcement' %}active{% endif %}"><span class="fas fa-volume-up"></span>Send Announcement</a></li>
+                        <li><a href="{% url "view_announcement" %}" class="{% if request.path == '/view_announcement' %}active{% endif %}"><span class="fas fa-align-left"></span>View Announcement</a></li>
+                    </ul>
+                </li>
+
                 <li>
                     <a href="{% url "doLogout" %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
                 </li>
@@ -67,7 +76,8 @@
         </div>
     </div>
 </div>
-{% elif user.user_type == "2" %}
+{% endif %}
+{% if user.user_type == "2" %}
 <div class="sidebar" id="sidebar">
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
@@ -97,6 +107,16 @@
                     </ul>
                 </li>
 
+                <li class="{% if request.path == '/upload_assignment' %}active{% elif request.path == '/view_submissions' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-tags"></i> <span>Assignment</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "upload_assignment" %}" class="{% if request.path == '/upload_assignment' %}active{% endif %}"><span class="fas fa-tasks"></span>Upload Assignment</a></li>
+                        <li><a href="{% url "view_upload_assignment" %}" class="{% if request.path == '/view_upload_assignment' %}active{% endif %}"><span class="fas fa-tasks"></span>View Uploaded Assignment</a></li>
+                        <li><a href="{% url "view_submissions" %}" class="{% if request.path == '/view_submissions' %}active{% endif %}"><span class="fas fa-chart-area"></span>View Submissions</a></li>
+                    </ul>
+                </li>
+
                 <li>
                     <a href="{% url "doLogout" %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
                 </li>
@@ -104,6 +124,36 @@
         </div>
     </div>
 </div>
-{% else %}
+{% endif %}
+{% if user.user_type == "3" %}
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-inner slimscroll">
+        <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+                <li class="menu-title">
+                    <span>Main Menu</span>
+                </li>
+                <li class="{% if request.path == '/trainee_home' %}active{% endif %}">
+                    <a href="{% url "trainee_home" %}" ><i class="fas fa-home"></i> <span>Dashboard</span></a>
+                </li>
 
+                <li class="{% if request.path == '/view_assignments' %}active{% endif %}">
+                    <a href="{% url "view_assignments" %}"><i class="fas fa-tags"></i> <span>Assignment</span></a>
+                </li>
+
+                <li class="{% if request.path == '/view_trainee_attendance' %}active{% endif %}">
+                    <a href="{% url "view_trainee_attendance" %}"><i class="fas fa-tasks"></i> <span>View Attendance Report</span></a>
+                </li>
+
+                <li class="{% if request.path == '/view_trainee_presentation' %}active{% endif %}">
+                    <a href="{% url "view_trainee_presentation" %}"><i class="fas fa-columns"></i> <span>View Presentation Report</span></a>
+                </li>
+
+                <li>
+                    <a href="{% url "doLogout" %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 {% endif %}

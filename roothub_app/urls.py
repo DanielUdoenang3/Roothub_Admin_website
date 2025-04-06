@@ -1,6 +1,5 @@
 from django.urls import path
-
-from roothub_app import TrainerView
+from roothub_app import TraineeView, TrainerView
 from . import views, AdminView
 
 
@@ -12,6 +11,7 @@ urlpatterns = [
     path('doLogout', views.doLogout, name="doLogout"),
     path('profile', views.profile_update, name="profile"),
     path('search', AdminView.search, name="search"),
+    path('search_for_trainers', TrainerView.search, name="search_for_trainers"),
 
 
     # Trainer
@@ -70,7 +70,30 @@ urlpatterns = [
     # View Presentation
     path('view_presentation', views.view_presentation, name="view_presentation"),
 
+    # Anouncement
+    path('send_announcement', AdminView.send_announcement, name="send_announcement"),
+    path('view_announcement', AdminView.view_announcement, name="view_announcement"),
+    path('delete_announcement/<announcement_title>', AdminView.delete_announcement, name="delete_announcement"),
+    path('edit_announcement/<announcement_title>', AdminView.edit_announcement, name="edit_announcement"),
+    path('get-unread-announcements/', views.get_unread_announcements, name="get_unread_announcements"),
+    path('mark-announcement-as-read/<int:announcement_id>/', views.mark_announcement_as_read, name="mark_announcement_as_read"),
 
     # Trainer Views
-    path("trainer_home", TrainerView.home, name="trainer_home")
+    path("trainer_home", TrainerView.home, name="trainer_home"),
+    path("upload_assignment", TrainerView.upload_assignment, name="upload_assignment"),
+    path("view_upload_assignment", TrainerView.view_uploaded_assignments, name="view_upload_assignment"),
+    path("view_submissions", TrainerView.view_submissions, name="view_submissions"),
+    path("delete_uploaded_assignment/<assignment_title>", TrainerView.delete_uploaded_assignment, name="delete_uploaded_assignment"),
+
+    
+    # Trainee Views
+    path("trainee_home", TraineeView.home, name="trainee_home"),
+    path("view_assignments", TraineeView.view_assignments, name="view_assignments"),
+    path('submit_assignment/<int:assignment_id>', TraineeView.submit_assignment, name='submit_assignment'),
+    path("view_trainee_attendance", TraineeView.view_trainee_attendance, name="view_trainee_attendance"),
+    path('get-trainee-attendance/', TraineeView.get_trainee_attendance, name='get_trainee_attendance'),
+    path("view_trainee_presentation", TraineeView.view_trainee_presentation, name="view_trainee_presentation"),
+    path('get-presentation-data-by-date/<str:date>/', TraineeView.get_presentation_data_by_date, name='get_presentation_data_by_date'),
+
 ]
+

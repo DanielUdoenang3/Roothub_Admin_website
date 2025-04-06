@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">View Announcement</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url "admin_home" %}">Dashbord</a></li>
+                <li class="breadcrumb-item active">Announcement</li> 
+            </ul>
+        </div>
+        <div class="col-auto text-right float-right ml-auto">
+            <a href="{% url 'send_announcement' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped">
+                    {% include "includes/messages.html" %}
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Assignment Title</th>
+                            <th>Message</th>
+                            <th>Uploaded Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for announcement in announcements %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><b>{{ announcement.title|capfirst }}</b></td>
+                            <td>{{ announcement.description|truncatechars:20 }}</td>
+                            <td>{{ announcement.created_at }}</td>
+                            <td>
+                                <a href="{% url "edit_announcement" announcement.title %}" class="btn btn-primary btn-sm edit-btn">
+                                   <i class="feather-edit-3"></i>
+                                </a>
+                                <a href="#" 
+                                   class="btn btn-danger btn-sm delete-btn"
+                                   data-title="{{ announcement.title }}" 
+                                   data-url="{% url 'delete_announcement' announcement.title %}">
+                                   <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No Announcement given yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get all delete buttons
+        const deleteButtons = document.querySelectorAll(".delete-btn");
+
+        // Add click event listener to each delete button
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                // Get assignment title and delete URL from the button's data attributes
+                const assignmentTitle = this.getAttribute("data-title");
+                const deleteUrl = this.getAttribute("data-url");
+
+                // Show SweetAlert2 confirmation dialog
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You won't be able to revert this!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirect to the delete URL
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+{% endif %}
+{% endblock %}

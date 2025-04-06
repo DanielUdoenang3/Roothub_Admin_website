@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block main_content %}
+{% if request.user.user_type == "2" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Upload Assignment</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Assignment</a></li> 
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-10">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class="row">
+                        <div class="col-12 col-md-8" style="margin-top:10px;">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" name="title" class="form-control" placeholder="Enter Title" required />
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label>Content/Description</label>
+                                <textarea name="description" placeholder="Enter Description" class="form-control" rows="4"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label>Upload File (Optional)</label>
+                                <input type="file" name="file" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group local-forms">
+                                <label>Assign to Course</label>
+                                <select name="course" class="form-control form-select" required>
+                                    <option value="" disabled selected required hidden>Select Course</option>
+                                    {% for course in trainer_courses %}
+                                        <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group local-forms">
+                                <label>Due Date</label>
+                                <input type="datetime-local" name="due_date" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="student-submit">
+                                <button type="submit" class="btn btn-primary">Upload Assignment</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "includes/messages.html" %}
+
+
+{% endif %}
+{% endblock %}

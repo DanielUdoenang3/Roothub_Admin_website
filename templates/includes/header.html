@@ -1,4 +1,5 @@
 {% load static %}
+
 <div class="header">
 
     <div class="header-left">
@@ -24,6 +25,14 @@
             <button class="btn" type="submit"><i class="fas fa-search"></i></button>
         </form>
     </div>
+    {% elif request.user.user_type == "2" %}
+    <div class="top-nav-search">
+        <form method="POST" action="{% url "search_for_trainers" %}">
+            {% csrf_token %}
+            <input type="text" value="{{ param }}" name="search" class="form-control" placeholder="Search here">
+            <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
     {% endif %}
     
     <a class="mobile_btn" id="mobile_btn">
@@ -38,6 +47,60 @@
             </a>
         </li>
 
+        <li class="nav-item noti-dropdown me-2">
+            <a href="javascript" class="nav-link header-nav-list" id="notification-icon">
+                <i class="fa fa-bell"><span id="notification-badge" class="badge bg-success" >0</span></i>
+                <!-- <span id="notification-badge" class="badge bg-danger">0</span> -->
+            </a>
+            <div class="dropdown-menu notifications" id="notification-dropdown" style="position: absolute; inset: 0px 40px auto auto; margin: 17px; transform: translate(0px, 42px); display: none; z-index: 9999; width: 300px; max-height: 400px; overflow-y: auto;">
+                <div class="topnav-dropdown-header">
+                    <span class="notification-title">Announcements</span>
+                </div>
+                <div class="noti-content">
+                    <ul class="notification-list">
+                        {% for announcement in announcements %}
+                        <a href="#">
+                            <li class="notification-message">
+                                {% comment %} <a href="#"> {% endcomment %}
+                                    <div class="media d-flex" style="margin-top:10px;margin-left:5px;">
+                                        <span class="avatar avatar-sm flex-shrink-0">
+                                            <img class="avatar-img rounded-circle" alt="User Image" src="{{ user.profile_pic.url }}">
+                                        </span>
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details">
+                                                <span class="noti-title"><strong>Title: </strong>{{ announcement.title|capfirst }}</span><br>
+                                                <span class="noti-title"><b>Message: </b>{{ announcement.description }}</span>
+                                            </p>
+                                            {% if announcement.file %}
+                                            <b class="noti-details">
+                                                <span class="noti-title">
+                                                    <a href="{{ announcement.file.url }}" target="_blank"><strong>View Attached File</strong></a>
+                                                </span>
+                                            </b>
+                                            {% endif %}
+                                            <p class="noti-time"><span class="notification-time">{{ announcement.created_at|date }}</span></p>
+                                        </div>
+                                    </div>
+                                {% comment %} </a> {% endcomment %}
+                            </li>
+                        </a> 
+                        {% empty %}
+                        <li class="notification-message">
+                            <div class="media d-flex">
+                                <div class="media-body flex-grow-1">
+                                    <p class="noti-title">No Announcements Yet</p>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="topnav-dropdown-footer">
+                    <a href="#">View all Announcements</a>
+                </div>
+            </div>
+        </li>
+        
         <li class="nav-item dropdown has-arrow new-user-menus">
             <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
                 <span class="user-img">
@@ -82,3 +145,267 @@
         </li>
     </ul>
 </div>
+{% block custom_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const notificationIcon = document.getElementById("notification-icon");
+        const notificationDropdown = document.getElementById("notification-dropdown");
+        const notificationBadge = document.getElementById("notification-badge");
+        const announcementList = document.getElementById("announcement-list");
+
+        notificationIcon.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            // Toggle the "show" class on the dropdown
+            if (notificationDropdown.classList.contains("show")) {
+                notificationDropdown.classList.remove("show");
+            } else {
+                notificationDropdown.classList.add("show");
+            }
+        });
+
+        // Fetch unread announcements
+        function fetchUnreadAnnouncements() {
+            fetch('/get-unread-announcements/')
+                .then(response => response.json())
+                .then(data => {
+                    const unreadCount = data.unread_count;
+                    const unreadAnnouncements = data.unread_announcements;
+    
+                    // Update the badge
+                    if (unreadCount > 0) {
+                        notificationBadge.style.display = "inline-block";
+                        notificationBadge.textContent = unreadCount;
+                    } else {
+                        notificationBadge.style.display = "none";
+                    }
+    
+                    // Update the dropdown list
+                    announcementList.innerHTML = "";
+                    unreadAnnouncements.forEach(announcement => {
+                        const listItem = document.createElement("li");
+                        listItem.className = "notification-message";
+                        listItem.innerHTML = `
+                            <a href="#" data-id="${announcement.id}" class="mark-as-read">
+                                <div class="media d-flex">
+                                    <div class="media-body flex-grow-1">
+                                        <p class="noti-details">
+                                            <strong>${announcement.title}</strong><br>
+                                            ${announcement.description}
+                                        </p>
+                                        <p class="noti-time">${new Date(announcement.created_at).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                        announcementList.appendChild(listItem);
+                    });
+    
+                    // Add click event to mark announcements as read
+                    document.querySelectorAll(".mark-as-read").forEach(item => {
+                        item.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            const announcementId = this.getAttribute("data-id");
+                            markAnnouncementAsRead(announcementId);
+                        });
+                    });
+                })
+                .catch(error => console.error("Error fetching unread announcements:", error));
+        }
+    
+        // Mark an announcement as read
+        function markAnnouncementAsRead(announcementId) {
+            fetch(`/mark-announcement-as-read/${announcementId}/`, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchUnreadAnnouncements(); // Refresh the unread announcements
+                    }
+                })
+                .catch(error => console.error("Error marking announcement as read:", error));
+        }
+    
+        // Toggle the dropdown
+        notificationIcon.addEventListener("click", function (event) {
+            event.preventDefault();
+            notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
+        });
+    
+        // Fetch unread announcements on page load
+        fetchUnreadAnnouncements();
+    
+        // Periodically check for new announcements
+        {% comment %} setInterval(fetchUnreadAnnouncements, 30000); {% endcomment %}
+
+        // Close the dropdown when clicking outside
+        document.addEventListener("click", function (event) {
+            if (!notificationIcon.contains(event.target) && !notificationDropdown.contains(event.target)) {
+                notificationDropdown.classList.remove("show");
+            }
+        });
+    });
+
+    // document.addEventListener("DOMContentLoaded", function () {
+    //     const notificationIcon = document.getElementById("notification-icon");
+    //     const notificationDropdown = document.getElementById("notification-dropdown");
+    //     const notificationBadge = document.getElementById("notification-badge");
+    //     const announcementList = document.getElementById("announcement-list");
+    
+    //     // Fetch unread announcements
+    //     function fetchUnreadAnnouncements() {
+    //         fetch('/get-unread-announcements/')
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 const unreadCount = data.unread_count;
+    //                 const unreadAnnouncements = data.unread_announcements;
+    
+    //                 // Update the badge
+    //                 if (unreadCount > 0) {
+    //                     notificationBadge.style.display = "inline-block";
+    //                     notificationBadge.textContent = unreadCount;
+    //                 } else {
+    //                     notificationBadge.style.display = "none";
+    //                 }
+    
+    //                 // Update the dropdown list
+    //                 announcementList.innerHTML = "";
+    //                 unreadAnnouncements.forEach(announcement => {
+    //                     const listItem = document.createElement("li");
+    //                     listItem.className = "notification-message";
+    //                     listItem.innerHTML = `
+    //                         <a href="#" data-id="${announcement.id}" class="mark-as-read">
+    //                             <div class="media d-flex">
+    //                                 <div class="media-body flex-grow-1">
+    //                                     <p class="noti-details">
+    //                                         <strong>${announcement.title}</strong><br>
+    //                                         ${announcement.description}
+    //                                     </p>
+    //                                     <p class="noti-time">${new Date(announcement.created_at).toLocaleString()}</p>
+    //                                 </div>
+    //                             </div>
+    //                         </a>
+    //                     `;
+    //                     announcementList.appendChild(listItem);
+    //                 });
+    
+    //                 // Add click event to mark announcements as read
+    //                 document.querySelectorAll(".mark-as-read").forEach(item => {
+    //                     item.addEventListener("click", function (event) {
+    //                         event.preventDefault();
+    //                         const announcementId = this.getAttribute("data-id");
+    //                         markAnnouncementAsRead(announcementId);
+    //                     });
+    //                 });
+    //             })
+    //             .catch(error => console.error("Error fetching unread announcements:", error));
+    //     }
+    
+    //     // Mark an announcement as read
+    //     function markAnnouncementAsRead(announcementId) {
+    //         fetch(`/mark-announcement-as-read/${announcementId}/`, { method: "POST" })
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 if (data.success) {
+    //                     fetchUnreadAnnouncements(); // Refresh the unread announcements
+    //                 }
+    //             })
+    //             .catch(error => console.error("Error marking announcement as read:", error));
+    //     }
+    
+    //     // Toggle the dropdown
+    //     notificationIcon.addEventListener("click", function (event) {
+    //         event.preventDefault();
+    //         notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
+    //     });
+    
+    //     // Fetch unread announcements on page load
+    //     fetchUnreadAnnouncements();
+    
+    //     // Periodically check for new announcements
+    //     setInterval(fetchUnreadAnnouncements, 30000);
+    // });
+
+</script>
+{% comment %} <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const notificationIcon = document.getElementById("notification-icon");
+        const notificationDropdown = document.getElementById("notification-dropdown");
+        const notificationBadge = document.getElementById("notification-badge");
+        const announcementList = document.getElementById("announcement-list");
+    
+        // Fetch unread announcements
+        function fetchUnreadAnnouncements() {
+            fetch('/get-unread-announcements/')
+                .then(response => response.json())
+                .then(data => {
+                    const unreadCount = data.unread_count;
+                    const unreadAnnouncements = data.unread_announcements;
+    
+                    // Update the badge
+                    if (unreadCount > 0) {
+                        notificationBadge.style.display = "inline-block";
+                        notificationBadge.textContent = unreadCount;
+                    } else {
+                        notificationBadge.style.display = "none";
+                    }
+    
+                    // Update the dropdown list
+                    announcementList.innerHTML = "";
+                    unreadAnnouncements.forEach(announcement => {
+                        const listItem = document.createElement("li");
+                        listItem.className = "notification-message";
+                        listItem.innerHTML = `
+                            <a href="#" data-id="${announcement.id}" class="mark-as-read">
+                                <div class="media d-flex">
+                                    <div class="media-body flex-grow-1">
+                                        <p class="noti-details">
+                                            <strong>${announcement.title}</strong><br>
+                                            ${announcement.description}
+                                        </p>
+                                        <p class="noti-time">${new Date(announcement.created_at).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                        announcementList.appendChild(listItem);
+                    });
+    
+                    // Add click event to mark announcements as read
+                    document.querySelectorAll(".mark-as-read").forEach(item => {
+                        item.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            const announcementId = this.getAttribute("data-id");
+                            markAnnouncementAsRead(announcementId);
+                        });
+                    });
+                })
+                .catch(error => console.error("Error fetching unread announcements:", error));
+        }
+    
+        // Mark an announcement as read
+        function markAnnouncementAsRead(announcementId) {
+            fetch(`/mark-announcement-as-read/${announcementId}/`, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchUnreadAnnouncements(); // Refresh the unread announcements
+                    }
+                })
+                .catch(error => console.error("Error marking announcement as read:", error));
+        }
+    
+        // Toggle the dropdown
+        notificationIcon.addEventListener("click", function (event) {
+            event.preventDefault();
+            notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
+        });
+    
+        // Fetch unread announcements on page load
+        fetchUnreadAnnouncements();
+    
+        // Periodically check for new announcements
+        setInterval(fetchUnreadAnnouncements, 30000);
+    });
+</script> {% endcomment %}
+{% endblock custom_js %}
+
