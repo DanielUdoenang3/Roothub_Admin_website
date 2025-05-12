@@ -20,43 +20,45 @@
     <div class="col-sm-12">
         <div class="card">
             <div class="card-body">
-                <table class="table table-striped">
-                    {% include "includes/messages.html" %}
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Assignment Title</th>
-                            <th>Message</th>
-                            <th>Uploaded Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for announcement in announcements %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td><b>{{ announcement.title|capfirst }}</b></td>
-                            <td>{{ announcement.description|truncatechars:20 }}</td>
-                            <td>{{ announcement.created_at }}</td>
-                            <td>
-                                <a href="{% url "edit_announcement" announcement.title %}" class="btn btn-primary btn-sm edit-btn">
-                                   <i class="feather-edit-3"></i>
-                                </a>
-                                <a href="#" 
-                                   class="btn btn-danger btn-sm delete-btn"
-                                   data-title="{{ announcement.title }}" 
-                                   data-url="{% url 'delete_announcement' announcement.title %}">
-                                   <i class="fas fa-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center">No Announcement given yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        {% include "includes/messages.html" %}
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Assignment Title</th>
+                                <th>Message</th>
+                                <th>Uploaded Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for announcement in announcements %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><b>{{ announcement.title|capfirst }}</b></td>
+                                <td>{{ announcement.description|truncatechars:20 }}</td>
+                                <td>{{ announcement.created_at }}</td>
+                                <td>
+                                    <a href="{% url "edit_announcement" announcement.title %}" class="btn btn-primary btn-sm edit-btn">
+                                    <i class="feather-edit-3"></i>
+                                    </a>
+                                    <a href="#" 
+                                    class="btn btn-danger btn-sm delete-btn"
+                                    data-title="{{ announcement.title }}" 
+                                    data-url="{% url 'delete_announcement' announcement.title %}">
+                                    <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No Announcement given yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

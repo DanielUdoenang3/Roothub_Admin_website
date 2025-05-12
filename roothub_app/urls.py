@@ -70,6 +70,12 @@ urlpatterns = [
     # View Presentation
     path('view_presentation', views.view_presentation, name="view_presentation"),
 
+    path('get-star_trainee-by-date/<str:date>/', views.star_trainee_view, name='star_trainees'),
+
+    path('trainee_details/<username>/', AdminView.trainee_details, name='trainee_details'),
+    path('trainer_details/<username>/', AdminView.trainer_details, name='trainer_details'),
+
+
     # Anouncement
     path('send_announcement', AdminView.send_announcement, name="send_announcement"),
     path('view_announcement', AdminView.view_announcement, name="view_announcement"),
@@ -83,6 +89,7 @@ urlpatterns = [
     path("upload_assignment", TrainerView.upload_assignment, name="upload_assignment"),
     path("view_upload_assignment", TrainerView.view_uploaded_assignments, name="view_upload_assignment"),
     path("view_submissions", TrainerView.view_submissions, name="view_submissions"),
+    path("edit_assignment/<id>", TrainerView.edit_assignment, name="edit_assignment"),
     path("delete_uploaded_assignment/<assignment_title>", TrainerView.delete_uploaded_assignment, name="delete_uploaded_assignment"),
 
     

@@ -3,10 +3,25 @@
 <div class="header">
 
     <div class="header-left">
-        <a href="index.html" class="logo">
+        <a href=
+        {% if user.user_type == "1" %}
+        "{% url "admin_home" %}"
+        {% elif user.user_type == "2" %}
+        "{% url "trainer_home" %}"
+        {% else %}
+        "{% url "trainee_home" %}"
+        {% endif %}
+         class="logo">
             <img src="{% static 'assets/img/download.png' %}" alt="Logo" style="object-fit: contain;">
         </a>
-        <a href="index.html" class="logo logo-small">
+        <a href={% if user.user_type == "1" %}
+        "{% url "admin_home" %}"
+        {% elif user.user_type == "2" %}
+        "{% url "trainer_home" %}"
+        {% else %}
+        "{% url "trainee_home" %}"
+        {% endif %}
+         class="logo logo-small">
             <img src="{% static 'assets/img/download.png' %}" alt="Logo" width="30" height="30">
         </a>
     </div>

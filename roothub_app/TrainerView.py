@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Assignment, AssignmentSubmission, Trainers, Courses, Trainee
+from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee
 from django.db.models import Q
 from django.contrib import messages
 
@@ -8,6 +8,7 @@ from django.contrib import messages
 def home(request):
     trainer = Trainers.objects.get(trainer_name=request.user)
     courses = Courses.objects.filter(trainer_id=trainer).all()
+    dates = Presentation.objects.values_list('date', flat=True).distinct()
     
     courses_with_trainees = []
     for course in courses:
@@ -20,6 +21,7 @@ def home(request):
     content = {
         'trainer': trainer,
         'courses_with_trainees': courses_with_trainees,
+        "dates":dates,
     }
     return render(request, "trainer_template/home.html", content)
 
@@ -108,7 +110,35 @@ def view_uploaded_assignments(request):
 
     except Trainers.DoesNotExist:
         messages.error(request, "You are not registered as a trainer.")
-        return redirect("trainer_home")  # Redirect to a suitable page#     return render(request, "trainer_template/view_pending_assignment.html")
+        return redirect("trainer_home")
+@login_required(login_url="/")
+def edit_assignment(request, id):
+    assignment = get_object_or_404(Assignment, id=id)
+    try:
+        if request.method == 'POST':
+            title = request.POST.get('title')
+            description = request.POST.get("description")
+            course_id = request.POST.get('course')
+            due_date = request.POST.get('due_date')
+            file = request.FILES.get('file')
+
+            course = get_object_or_404(Courses, id=course_id)
+
+            assignment.title = title
+            assignment.description = description
+            assignment.course = course
+            assignment.due_date = due_date
+            if file:
+                assignment.file = file
+            assignment.save()
+            messages.success(request, "Assignment Updated suucessfully")
+            return redirect("view_upload_assignment")
+    except Exception as e:
+        print(e)
+
+    trainer = Trainers.objects.get(trainer_name=request.user)
+    trainer_courses = Courses.objects.filter(trainer_id=trainer)
+    return render(request, "trainer_template/edit_assignment.html",{"assignment":assignment,'trainer_courses': trainer_courses})
 
 @login_required(login_url="/")
 def delete_uploaded_assignment(request, assignment_title):

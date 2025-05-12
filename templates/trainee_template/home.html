@@ -42,7 +42,12 @@
                     <div class="db-info">
                         <h6>Current Trainer</h6>
                         <p>
-                            <h3>{{ trainer }}</h3>
+                            <h3>{% if not trainer %}
+                                <h3 style="color: rgb(217, 11, 11);font-size: 17px;">There is no current Trainer<br> for the Course your offering</h3>
+                                {% else %}
+                                {{ trainer }}
+                                {% endif %}
+                                </h3>
                         </p>
                     </div>
                     <div class="db-icon">

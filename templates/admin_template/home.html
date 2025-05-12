@@ -83,7 +83,6 @@
 
     <div class="row">
         <div class="col-md-12 col-lg-6">
-
             <div class="card card-chart">
                 <div class="card-header">
                     <div class="row align-items-center">
@@ -94,8 +93,7 @@
                             <ul class="chart-list-out">
                                 <li><span class="circle-blue"></span>Trainer</li>
                                 <li><span class="circle-green"></span>Trainee</li>
-                                <li class="star-menus"><a href="javascript:;"><i
-                                            class="fas fa-ellipsis-v"></i></a></li>
+                                <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a></li>
                             </ul>
                         </div>
                     </div>
@@ -104,7 +102,6 @@
                     <div id="apexcharts-area"></div>
                 </div>
             </div>
-
         </div>
         <div class="col-md-12 col-lg-6">
 
@@ -137,55 +134,153 @@
 
             <div class="card flex-fill student-space comman-shadow">
                 <div class="card-header d-flex align-items-center">
-                    <h5 class="card-title">Star Trainees for the Presentation on {{ date }}</h5>
-                    <ul class="chart-list-out student-ellips">
-                        <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a>
-                        </li>
-                    </ul>
+                    <h5 class="card-title">Star Trainees for the Presentation</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table
-                            class="table star-student table-hover table-center table-borderless table-striped">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th class="text-center">Apperance</th>
-                                    <th class="text-center">Content</th>
-                                    <th class="text-center">Total</th>
-                                    <th class="text-center">Percentage</th>
-                                    <th class="text-center">Course</th>
-                                    <th class="text-end">View Presentation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="text-nowrap">
-                                        <div>PRE2209</div>
-                                    </td>
-                                    <td class="text-nowrap">
-                                        <a href="profile.html">
-                                            <img class="rounded-circle"
-                                                src="static/assets/img/profiles/avatar-02.jpg" width="25"
-                                                alt="Star Students">
-                                            John Smith
-                                        </a>
-                                    </td>
-                                    <td class="text-center">1185</td>
-                                    <td class="text-center">98%</td>
-                                    <td class="text-end">
-                                        <div>2019</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    {% comment %} <div class="form-group">
+                        <label for="date">Select Presentation Date:</label>
+                        <select name="date" id="date" onchange="this.form.submit()" class="form-control">
+                            <option value="">-- Select Date --</option>
+                            {% for d in available_dates %}
+                                <option value="{{ d|date:'Y-m-d' }}" {% if date == d|date:'Y-m-d' %}selected{% endif %}>
+                                    {{ d|date:"F j, Y" }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div> {% endcomment %}
+                    <div class="form-group">
+                        <div class="col-12 col-md-8">
+                            <label for="date">Select Presentation Date:</label>
+                            <select id="date-select" class="form-control form-select">
+                                <option value="" disabled selected>Select a date</option>
+                                {% for date in dates %}
+                                <option value="{{ date|date:'Y-m-d'  }}">{{ date|date:"F j, Y" }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="table-star">
+                        <p>Loading data...</p>
                     </div>
                 </div>
+                
+                
+                    {% comment %} <!-- <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table star-student table-hover table-center table-borderless table-striped">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th class="text-center">Appearance</th>
+                                        <th class="text-center">Content</th>
+                                        <th class="text-center">Total</th>
+                                        <th class="text-center">Percentage</th>
+                                        <th class="text-center">Course</th>
+                                        <th class="text-end">View Presentation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pres in presentations %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ pres.trainee.trainee_name.get_full_name }}</td>
+                                        <td class="text-center">{{ pres.score_appearance }}</td>
+                                        <td class="text-center">{{ pres.score_content }}</td>
+                                        <td class="text-center">{{ pres.score_appearance|add:pres.score_content }}</td>
+                                        <td class="text-center">{{ pres.percentage|floatformat:2 }}%</td>
+                                        <td class="text-center">{{ pres.trainee.course_id.course_name }}</td>
+                                        <td class="text-end"><a href="#">View</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% elif date %}
+                        <p>No presentations found for {{ date }}</p>
+                    {% endif %} --> {% endcomment %}
             </div>
 
         </div>
     </div>
 </div>
 {% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateSelect = document.getElementById('date-select');
+
+        dateSelect.addEventListener('change', function () {
+            const dateId = this.value;
+
+            if (dateId) {
+                fetch(`/get-star_trainee-by-date/${dateId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tableStar = document.getElementById('table-star');
+
+                        // Ensure the table-star element exists
+                        if (!tableStar) {
+                            console.error('Element with ID "table-star" not found.');
+                            return;
+                        }
+
+                        // Sort the presentations array by percentage in descending order
+                        data.presentations.sort((a, b) => b.percentage - a.percentage);
+
+                        // Build the table content dynamically
+                        let tableContent = `
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table star-student table-hover table-center table-borderless table-striped">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th class="text-center">Appearance</th>
+                                                <th class="text-center">Content</th>
+                                                <th class="text-center">Total</th>
+                                                <th class="text-center">Percentage</th>
+                                                <th class="text-center">Course</th>
+                                                <th class="text-end">View Presentation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+
+                        // Populate the table rows
+                        data.presentations.forEach((presentation, index) => {
+                            tableContent += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${presentation.trainee_name}</td>
+                                    <td class="text-center">${presentation.score_appearance}</td>
+                                    <td class="text-center">${presentation.score_content}</td>
+                                    <td class="text-center">${presentation.total_score}</td>
+                                    <td class="text-center">${presentation.percentage}%</td>
+                                    <td class="text-center">${presentation.course_name}</td>
+                                    <td class="text-end"><a href="#">View</a></td>
+                                </tr>
+                            `;
+                        });
+
+                        tableContent += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+
+                        // Update the table-star element with the new content
+                        tableStar.innerHTML = tableContent;
+                    })
+                    .catch(error => console.error('Error fetching presentations:', error));
+            }
+        });
+    });
+</script>
+{% endblock custom_js %}
 {% endif %}

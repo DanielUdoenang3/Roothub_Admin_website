@@ -22,7 +22,7 @@
                     {% include "includes/messages.html" %}
                     <div class="row">
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label for="course">Course</label>
                                 <select name="course" id="course" class="form-control form-select" required>
                                     <option value="" disabled selected>Select a course</option>
@@ -33,7 +33,7 @@
                             </div>
                         </div>
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label>Trainee</label>
                                 <select name="trainee" id="trainee-list" class="form-control form-select" required>
                                     <option value="" disabled selected>Select course to select trainee</option>
@@ -41,31 +41,31 @@
                             </div>
                         </div>
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label>Date</label>
                                 <input type="date" class="form-control" name="date" id="date" required>
                             </div>
                         </div>
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label>Title</label>
                                 <input type="text" class="form-control" name="title" placeholder="Enter Title of the Presentation" required>
                             </div>
                         </div>
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label>Trainee Appearance</label>
                                 <input type="number" class="form-control" name="score_appearance" placeholder="10.00" required>
                             </div>
                         </div>
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label>Trainee Content</label>
                                 <input type="number" class="form-control" name="score_content" placeholder="10.00" required>
                             </div>
                         </div>
                         <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
+                            <div class="form-group">
                                 <label>Comment</label>
                                 <input type="text" class="form-control" name="comment" placeholder="Enter Comment" required>
                             </div>
@@ -110,6 +110,34 @@
 
     document.getElementById("date").addEventListener("change", function () {
         document.getElementById("course").dispatchEvent(new Event("change"));
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll('input[type="number"]');
+    
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const placeholder = this.placeholder;
+                const value = this.value;
+                let max;
+    
+                // Determine the max value based on the placeholder
+                if (placeholder.toLowerCase() === 'exam') {
+                    max = 100;
+                } else {
+                    max = parseInt(placeholder, 10);
+                }
+    
+                // Add warning if the value exceeds the placeholder value
+                if (value > max) {
+                    this.style.border = '2px solid red';
+                    this.style.borderRadius = '4px';
+                } else {
+                    this.style.border = '';
+                    this.style.boxShadow = '';
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

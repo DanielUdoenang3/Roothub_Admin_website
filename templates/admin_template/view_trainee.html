@@ -31,6 +31,7 @@
                                 <th>Username</th>
                                 <th>Gender</th>
                                 <th>Phone Number</th>
+                                <th>Course</th>
                                 <th>Date Joined</th>
                                 <th>Last Login</th>
                                 <th class="text-end">Action</th>
@@ -42,13 +43,14 @@
                                 <td>
                                     <h2 class="table-avatar">
                                         <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{{ trainee.trainee_name.profile_pic.url }}" alt="User Image"></a>
-                                        <a href="#">{{ trainee.trainee_name.first_name|capfirst }} {{ trainee.trainee_name.middle_name|capfirst }} {{ trainee.trainee_name.last_name|capfirst }}</a>
+                                        <a href="{% url "trainee_details" trainee.trainee_name.username %}">{{ trainee.trainee_name.first_name|capfirst }} {{ trainee.trainee_name.middle_name|capfirst }} {{ trainee.trainee_name.last_name|capfirst }}</a>
                                     </h2>
                                 </td>
                                 <td>{{ trainee.trainee_name.email }}</td>
                                 <td>{{ trainee.trainee_name.username|capfirst }}</td>
                                 <td>{{ trainee.gender }}</td>
                                 <td>{{ trainee.phone }}</td>
+                                <td>{{ trainee.course_id.course_name }}</td>
                                 <td>{{ trainee.trainee_name.date_joined }}</td>
                                 <td>{{ trainee.trainee_name.last_login }}</td>
                                 <td class="text-end">

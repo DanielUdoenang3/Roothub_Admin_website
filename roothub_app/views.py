@@ -1,6 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render,redirect, get_object_or_404
 from roothub_app.EmailBackEnd import EmailBackEnd
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -61,6 +63,11 @@ def doLogout(request):
 
 @login_required(login_url="/")
 def profile_update(request):
+    user = request.user
+    # print(user)
+    if user == "Trainer":
+        trainer = Trainers.objects.get(trainer_name=user)
+        courses = Courses.objects.filter(trainer_id=trainer).all()
     # trainer = Trainers.objects.get(trainer_name=request.user)
     # courses = Courses.objects.filter(trainer_id=trainer).all()
     
@@ -240,43 +247,43 @@ def get_attendance_data(request, trainee_id):
 
 @login_required(login_url="/")
 def mark_presentation(request):
-    try:
-        courses = Courses.objects.all()
-        if request.method == "POST":
-            course_id = request.POST.get("course")
-            date = request.POST.get("date")
-            title = request.POST.get("title")
-            comment = request.POST.get("comment")
-            trainee_id = request.POST.get("trainee")
-            score_appearance = request.POST.get("score_appearance")
-            score_content = request.POST.get("score_content")
+    # try:
+    courses = Courses.objects.all()
+    if request.method == "POST":
+        course_id = request.POST.get("course")
+        date = request.POST.get("date")
+        title = request.POST.get("title")
+        comment = request.POST.get("comment")
+        trainee_id = request.POST.get("trainee")
+        score_appearance = request.POST.get("score_appearance")
+        score_content = request.POST.get("score_content")
 
-            if not course_id or not date or not trainee_id or not score_appearance or not score_content or not title or not comment:
-                messages.error(request, "All fields are required!")
-                return redirect("mark_presentation")
-            
-            try:
-                date = datetime.strptime(date, "%Y-%m-%d").date()
-            except ValueError:
-                messages.error(request, "Invalid date format!")
-                return redirect("mark_presentation")
-            
-            course = get_object_or_404(Courses, id=course_id)
-            trainee = get_object_or_404(Trainee, id=trainee_id)
-            presentation, created = Presentation.objects.create(
-                course=course, date=date, title=title, trainee=trainee, comment=comment,
-                score_appearance = score_appearance,score_content = score_content
-            )
-            Presentation_report.objects.update_or_create(
-                trainee_id = trainee,
-                presentation_id = presentation 
-            )
-            
-            messages.success(request, "Presentation marked successfully!")
-            return redirect("view_presentation")
-    except Exception as e:
-        print(e)
-        messages.error(request,"An error was encounted check the terminal")
+        if not course_id or not date or not trainee_id or not score_appearance or not score_content or not title or not comment:
+            messages.error(request, "All fields are required!")
+            return redirect("mark_presentation")
+        
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            messages.error(request, "Invalid date format!")
+            return redirect("mark_presentation")
+        
+        course = get_object_or_404(Courses, id=course_id)
+        trainee = get_object_or_404(Trainee, id=trainee_id)
+        presentation,created = Presentation.objects.update_or_create(
+            course=course, date=date, title=title, trainee=trainee, comment=comment,
+            score_appearance = score_appearance,score_content = score_content
+        )
+        presentation_report  = Presentation_report.objects.get_or_create(
+            trainee_id = trainee,
+            presentation_id = presentation 
+        )
+        presentation.save()
+        messages.success(request, "Presentation marked successfully!")
+        return redirect("view_presentation")
+    # except Exception as e:
+    #     print(e)
+    #     messages.error(request,"An error was encounted check the terminal")
     
     content = {
         "courses": courses
@@ -321,3 +328,48 @@ def get_presentations_by_date(request, trainee_id, date):
         for presentation in presentations
     ]
     return JsonResponse({"presentations": presentations_list})
+
+def star_trainee_view(request, date):
+    presentations = Presentation.objects.filter(date = date)
+    presentations_list = [
+        {
+            "course_name": presentation.course.course_name,
+            "trainee_name": f"{presentation.trainee.trainee_name.first_name} {presentation.trainee.trainee_name.last_name}",
+            "date": presentation.date,
+            "title": presentation.title,
+            "score_appearance": presentation.score_appearance,
+            "score_content": presentation.score_content,
+            "comment": presentation.comment,
+            "total_score": presentation.score_appearance + presentation.score_content,
+            "percentage": ((presentation.score_appearance + presentation.score_content) / 20) * 100
+        }
+        for presentation in presentations
+    ]
+    return JsonResponse({"presentations": presentations_list})
+
+# def get_monthly_data(request):
+#     # Group trainers by month
+#     trainer_data = Trainers.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
+
+#     # Group trainees by month
+#     trainee_data = Trainee.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
+
+#     # Format the data for ApexCharts
+#     months = []
+#     trainer_totals = []
+#     trainee_totals = []
+
+#     # Combine data for trainers and trainees
+#     for trainer in trainer_data:
+#         month = trainer['month'].strftime('%B %Y')  # Format month as "Month Year"
+#         months.append(month)
+#         trainer_totals.append(trainer['total'])
+
+#     for trainee in trainee_data:
+#         trainee_totals.append(trainee['total'])
+
+#     return JsonResponse({
+#         'months': months,
+#         'trainer_totals': trainer_totals,
+#         'trainee_totals': trainee_totals,
+#     })

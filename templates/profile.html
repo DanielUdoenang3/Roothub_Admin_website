@@ -65,14 +65,16 @@
    </div>
    </div>
    <div class="names-profiles">
-   <h4>{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}</h4>
-   <h5>{% if courses_with_trainees %}
+   <h4>{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}/{{user.username}}</h4>
+   <h5>
+      {% if courses_with_trainees %}
       {% for course in courses_with_trainees %}
       {{ course.course.course_name}}<br>
       {% endfor %}
       {% else %}
       <h5 style="color: rgb(217, 11, 11);font-size: 17px;">No Course has been <br> assigned to you to teach</h5>
-      {% endif %}</h5>
+      {% endif %}
+   </h5>
    </div>
    </div>
    </div>

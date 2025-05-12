@@ -4,8 +4,9 @@ from django.shortcuts import get_object_or_404, render,redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import *
-from .forms import SendAnnouncement
-from django.views.generic import CreateView
+# from django.db.models import F, FloatField, ExpressionWrapper
+# from .forms import SendAnnouncement
+# from django.views.generic import CreateView
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -16,11 +17,32 @@ def home(request):
     trainee = Trainee.objects.all().count()
     courses =Courses.objects.all().count()
 
+    dates = Presentation.objects.values_list('date', flat=True).distinct()
+
+    # selected_date = request.GET.get('date')
+    # presentations = []
+    # available_dates = Presentation.objects.dates('date', 'day')  # Distinct presentation dates
+
+    # if selected_date:
+    #     # Annotate and sort by calculated percentage
+    #     percentage_expr = ExpressionWrapper(
+    #         (F('score_appearance') + F('score_content')) * 5.0,
+    #         output_field=FloatField()
+    #     )
+
+    #     presentations = Presentation.objects.filter(date=selected_date).annotate(
+    #         percentage=percentage_expr
+    #     ).order_by('-percentage')
+
     content = {
 
         "trainers":trainer,
         "trainees":trainee,
         "courses":courses,
+        "dates":dates,
+        # 'presentations': presentations,
+        # 'date': selected_date,
+        # 'available_dates': available_dates,
     }
     return render(request, "admin_template/home.html",content)
 
@@ -40,7 +62,7 @@ def add_trainer_save(request):
             religion = request.POST.get("religion")
             experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-            username = request.POST.get("username").lower()
+            username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
             password = request.POST.get("password1")
             address = request.POST.get("address")
@@ -104,7 +126,7 @@ def add_trainer_save(request):
 @login_required(login_url="/")
 def view_trainer(request):
     trainers_list = Trainers.objects.all().order_by('id')
-    paginator = Paginator(trainers_list, 10)  # Show 10 trainers per page
+    paginator = Paginator(trainers_list, 10)
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -134,7 +156,7 @@ def add_trainee_save(request):
             phone  = request.POST.get("phone")
             religion = request.POST.get("religion")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-            username = request.POST.get("username").lower()
+            username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
             password = request.POST.get("password1")
             address = request.POST.get("address")
@@ -157,7 +179,7 @@ def add_trainee_save(request):
 
             elif 11>len(phone)>15:
                 messages.error(request,"Input an appropiate phone number")
-                return redirect("ädd_trainee")
+                return redirect("add_trainee")
             
             elif CustomUser.objects.filter(username__iexact=username).exists():
                 messages.error(request, "Username already exists!")
@@ -287,7 +309,7 @@ def add_course_save(request):
 @login_required(login_url="/")
 def view_course(request):
     courses_list = Courses.objects.annotate(num_trainees=Count('trainees')).order_by('id')
-    paginator = Paginator(courses_list, 10)  # Show 10 courses per page
+    paginator = Paginator(courses_list, 10)
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -362,8 +384,8 @@ def edit_trainer(request,trainer):
             phone  = request.POST.get("phone")
             religion = request.POST.get("religion")
             experience = request.POST.get("experience")
-            profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-            username = request.POST.get("username")
+            profile_pic = request.FILES.get('profile_pic')
+            username = request.POST.get("username").strip().lower()
             email = request.POST.get("email").lower().replace(' ', '')
             password = request.POST.get("password1")
             address = request.POST.get("address")
@@ -440,8 +462,8 @@ def edit_trainee(request, trainee):
             gender = request.POST.get("gender")
             phone = request.POST.get("phone")
             religion = request.POST.get("religion")
-            profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-            username = request.POST.get("username")
+            profile_pic = request.FILES.get('profile_pic')
+            username = request.POST.get("username").strip().lower()
             email = request.POST.get("email").lower().replace(' ', '')
             address = request.POST.get("address")
             city = request.POST.get("city")
@@ -509,7 +531,7 @@ def edit_course(request, course):
 
     if request.method == "POST":
         course_name = request.POST.get("course")
-        price = request.POST.get("price")
+        price = request.POST.get("price").strip()
 
         if not course_name:
             messages.error(request, "Course name cannot be empty.")
@@ -681,6 +703,55 @@ def delete_announcement(request, announcement_title):
         messages.error(request, f"An error occured {e}")
     return redirect("view_announcement")
 
+@login_required(login_url="/")
+def trainee_details(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    trainee = get_object_or_404(Trainee, trainee_name=user)
+
+    context={
+        'trainee':trainee,
+    }
+
+    return render(request, 'admin_template/view_trainee_details.html', context)
+
+def trainer_details(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    trainer = get_object_or_404(Trainers, trainer_name=user)
+    course = get_object_or_404(Courses, trainer_id=trainer)
+
+    context={
+        'trainer':trainer,
+        'course':course,
+    }
+
+    return render(request, 'admin_template/view_trainer_details.html', context)
+
+
+
+# def star_trainees_view(request):
+#     selected_date = request.GET.get('date')
+#     # presentations = []
+#     available_dates = Presentation.objects.dates('date', 'day')  # Distinct presentation dates
+
+#     if selected_date:
+#         # Annotate and sort by calculated percentage
+#         percentage_expr = ExpressionWrapper(
+#             (F('score_appearance') + F('score_content')) * 5.0,
+#             output_field=FloatField()
+#         )
+
+#         presentations = Presentation.objects.filter(date=selected_date).annotate(
+#             percentage=percentage_expr
+#         ).order_by('-percentage')
+
+#     return render(request, 'admin_template/home.html', {
+#         'presentations': presentations,
+#         'date': selected_date,
+#         'available_dates': available_dates,
+#     })
+
+
+# def star_trainee_presenter(request):
 
 # from django.urls import reverse_lazy
 

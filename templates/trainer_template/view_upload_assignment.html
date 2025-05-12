@@ -7,7 +7,7 @@
         <div class="col">
             <h3 class="page-title">View Uploaded Assignments</h3>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#">All Submissions</a></li> 
+                <li class="breadcrumb-item"><a href="#">Uploaded Assignments</a></li> 
             </ul>
         </div>
     </div>
@@ -15,41 +15,48 @@
 {% include "includes/messages.html" %}
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card card-table">
             <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Assignment Title</th>
-                            <th>Uploaded Date</th>
-                            <th>Course uploaded to</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for assignment in assignments %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td><b>{{ assignment.title|capfirst }}</b></td>
-                            <td>{{ assignment.created_at }}</td>
-                            <td>{{ assignment.course.course_name }}</td>
-                            <td>
-                                <a href="#" 
-                                   class="btn btn-danger btn-sm delete-btn" 
-                                   data-title="{{ assignment.title }}" 
-                                   data-url="{% url 'delete_uploaded_assignment' assignment.title %}">
-                                   <i class="fas fa-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center">No assignments uploaded yet.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Assignment Title</th>
+                                <th>Content/Decription</th>
+                                <th>Uploaded Date</th>
+                                <th>Course uploaded to</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><b>{{ assignment.title|capfirst }}</b></td>
+                                <td>{{ assignment.description }}</td>
+                                <td>{{ assignment.created_at }}</td>
+                                <td>{{ assignment.course.course_name }}</td>
+                                <td>
+                                    <a href="{% url "edit_assignment" assignment.id %}" class="btn btn-primary btn-sm edit-btn">
+                                        <i class="feather-edit-3"></i>
+                                    </a>
+                                    <a href="#" 
+                                    class="btn btn-danger btn-sm delete-btn" 
+                                    data-title="{{ assignment.title }}" 
+                                    data-url="{% url 'delete_uploaded_assignment' assignment.title %}">
+                                    <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No assignments uploaded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

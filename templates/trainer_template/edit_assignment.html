@@ -23,15 +23,22 @@
                         <div class="col-12 col-md-8" style="margin-top:10px;">
                             <div class="form-group">
                                 <label>Title</label>
-                                <input type="text" name="title" class="form-control" placeholder="Enter Title" required />
+                                <input type="text" name="title" class="form-control" value="{{ assignment.title }}" placeholder="Enter Title" required />
                             </div>
                         </div>
                         <div class="col-8">
                             <div class="form-group">
                                 <label>Content/Description</label>
-                                <textarea name="description" placeholder="Enter Description" class="form-control" rows="4"></textarea>
+                                <textarea name="description" placeholder="Enter Description" class="form-control" rows="4">{{ assignment.description }}</textarea>
                             </div>
                         </div>
+                        {% if assignment.file %}
+                        <div class="col-8">
+                            <div class="form-group">
+                                <p >Current File: <a href="{{ assignment.file.url }}" target="_blank">{{ assignment.file.name}}</a></p>
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="col-8">
                             <div class="form-group">
                                 <label>Upload File (Optional)</label>
@@ -44,7 +51,7 @@
                                 <select name="course" class="form-control form-select" required>
                                     <option value="" disabled selected required hidden>Select Course</option>
                                     {% for course in trainer_courses %}
-                                        <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                        <option value="{{ course.id }}"{% if assignment.course.id == course.id %}selected{% endif %}>{{ course.course_name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -52,7 +59,7 @@
                         <div class="col-8">
                             <div class="form-group local-forms">
                                 <label>Due Date</label>
-                                <input type="datetime-local" name="due_date" class="form-control" required />
+                                <input type="datetime-local" name="due_date" value="{{ assignment.due_date }}" class="form-control" required />
                             </div>
                         </div>
                         <div class="col-12">

@@ -42,7 +42,7 @@
                                 <td>
                                     <h2 class="table-avatar">
                                         <a class="avatar avatar-sm me-2"><img class="avatar-img rounded-circle" src="{{ trainer.trainer_name.profile_pic.url }}" alt="User Image"></a>
-                                        <a href="#">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</a>
+                                        <a href="{% url "trainer_details" trainer.trainer_name.username %}">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</a>
                                     </h2>
                                 </td>
                                 <td>{{ trainer.trainer_name.email }}</td>

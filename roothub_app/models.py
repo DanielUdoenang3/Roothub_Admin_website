@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
-from django.contrib.auth.models import User
+
 
 class CustomUser(AbstractUser):
     USER_CHOICE = (
@@ -115,9 +115,12 @@ class Presentation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    def percentage(self):
+        return ((self.score_appearance + self.score_content) / 20) * 100
+
 class Presentation_report(models.Model):
     id = models.AutoField(primary_key=True)
-    trainee_id = models.ForeignKey(Trainee, on_delete=models.DO_NOTHING)
+    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
     presentation_id = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -167,6 +170,7 @@ class NotificationTrainer(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
 class Assignment(models.Model):
+    id = models.AutoField(primary_key=True)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)
     trainer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -191,7 +195,7 @@ class AssignmentSubmission(models.Model):
         return self.submitted_at > self.assignment.due_date
 
     def __str__(self):
-        return f"{self.assignment.title} - {self.trainee.username}"
+        return f"{self.assignment.title} - {self.trainee.trainee_name.username}"
 
 class Announcement(models.Model):
     title = models.CharField(max_length=255)
@@ -229,7 +233,7 @@ class PaymentTransaction(models.Model):
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=50, choices=[('Success', 'Success'), ('Failed', 'Failed')])
+    status = models.CharField(max_length=50, choices=[('Success', 'Success'), ('Pending', 'Pending'), ('Failed', 'Failed')])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):

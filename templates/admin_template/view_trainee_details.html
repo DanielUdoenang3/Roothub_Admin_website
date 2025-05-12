@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% if request.trainee_name.trainee_name_type == "1" %}
+{% block main_content %}
+<div class="page-header">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-sub-header">
+                <h3 class="page-title">Trainee Details</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url "view_trainee" %}">Trainee</a></li>
+                    <li class="breadcrumb-item active">{{trainee.trainee_name.username|capfirst}}</li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% comment %} <div class="card">
+    <div class="card-body">
+    <div class="row">
+    <div class="col-md-12">
+    <div class="about-info">
+    {% include "includes/messages.html" %}
+    <h4>About {{trainee.trainee_name.first_name|capfirst}} {{trainee.trainee_name.middle_name|capfirst}} {{trainee.trainee_name.last_name|capfirst}}</h4> 
+    {% if trainee.trainee_name.is_active == False %}
+        <a href="{% url "activate_trainee_name" trainee.trainee_name %}" class="btn btn-sm bg-success">
+        Reactivate trainee_name
+        </a>
+    {% endif %}
+    <div class="media mt-3">
+    <img src="{{trainee.trainee_name.profile_pic.url}}" class="mr-3" alt="...">
+    <div class="media-body">
+    <ul>
+    <li>
+    <span class="title-span">Full Name : </span>
+    <span class="info-span">{{trainee.trainee_name.first_name|capfirst}} {{trainee.trainee_name.middle_name|capfirst}} {{trainee.trainee_name.last_name|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">Mobile : </span>
+    <span class="info-span">{{trainee.phone}}</span>
+    </li>
+    <li>
+    <span class="title-span">Email : </span>
+    <span class="info-span"><a href="mailto:{{trainee.trainee_name.email}}" class="__cf_email__" data-cfemail="{{trainee.trainee_name.email}}">{{trainee.trainee_name.email|capfirst}}</a></span>
+    </li>
+    <li>
+    <span class="title-span">Gender : </span>
+    <span class="info-span">{{trainee.gender|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">Religion : </span>
+    <span class="info-span">{{trainee.religion|capfirst}}</span>
+    </li>
+    <li>
+    <span class="title-span">Date Joined : </span>
+    <span class="info-span">{{trainee.created_at}}</span>
+    </li>
+    </ul>
+    </div>
+    </div>
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <h5>Present Address</h5>
+    <p>{{trainee.address}}</p>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <div class="skill-info">
+    <h4>Course</h4>
+    <p></p>
+    <label>{{ trainee.course_id.course_name }}</label><br>
+    
+    </div>
+    </div>
+    </div>
+    {% if trainee_name.trainee_name_type == 'HOD' %}
+    <div class="row mt-2">
+    <div class="col-md-12">
+    <div class="skill-info">
+    <h4>Settings</h4>
+    <form method="POST">
+    {% csrf_token %}
+    <div class="row mt-3">
+    <div class="col-12 col-sm-6">
+    <div class="form-group">
+    <label>Password</label>
+    <input type="password" name="password" class="form-control">
+    </div>
+    </div>
+    <div class="col-12 col-sm-6">
+    <div class="form-group">
+    <label>Retype Password</label>
+    <input type="password" name="password2" class="form-control">
+    </div>
+    </div>
+    <div class="col-12">
+    <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+    </div>
+    </form>
+</div>
+</div>
+</div>
+{% endif %}
+    </div>
+    </div>
+    </div>
+ {% endcomment %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="profile-header">
+            <div class="row align-items-center">
+                <div class="col-auto profile-image">
+                    <a href="#">
+                    <img class="rounded-circle" alt="User Image" src="{{trainee.trainee_name.profile_pic.url}}">
+                    </a>
+                </div>
+                <div class="col ms-md-n2 profile-user-info">
+                    <h4 class="user-name mb-0">{{ trainee.trainee_name.get_full_name }}</h4>
+                    <h6 class="text-muted">{{ trainee.course_id.course_name }}</h6>
+                    <div class="user-Location"><i class="fas fa-map-marker-alt"></i> {{ trainee.address }}</div>
+                    </div>
+                    <div class="col-auto profile-btn">
+                        <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-primary">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-menu">
+                <ul class="nav nav-tabs nav-tabs-solid">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#per_details_tab">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#password_tab">Password</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-content profile-tab-cont">
+    
+                <div class="tab-pane fade show active" id="per_details_tab">
+    
+                    <div class="row">
+                        <div class="col-lg-9">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex justify-content-between">
+                                    <span>Personal Details</span>
+                                    {% comment %} <a class="edit-link" data-bs-toggle="modal" href="{% url "edit_trainee" trainee.trainee_name.username %}"><i class="far fa-edit me-1"></i>Edit</a> {% endcomment %}
+                                    </h5>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name</p>
+                                        <p class="col-sm-9">{{ trainee.trainee_name.first_name }} {{ trainee.trainee_name.middle_name }} {{ trainee.trainee_name.last_name }}</p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Email ID</p>
+                                        <p class="col-sm-9"><a href="mailto:{{trainee.trainee_name.email}}" class="__cf_email__" data-cfemail="{{trainee.trainee_name.email}}">{{ trainee.trainee_name.email|capfirst }}</a></p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Mobile</p>
+                                        <p class="col-sm-9"><a href="tel:{{ trainee.phone }}">{{ trainee.phone }}</a></p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Religion</p>
+                                        <p class="col-sm-9">{{ trainee.religion }}</p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course Studing</p>
+                                        <p class="col-sm-9">{{ trainee.course_id.course_name }}</p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0">Address</p>
+                                        <p class="col-sm-9 mb-0">{{ trainee.address }},<br>
+                                        {{ trainee.city }},<br>
+                                        {{ trainee.state }},<br>
+                                        {{ trainee.country }}.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                        
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex justify-content-between">
+                                    <span>Account Status</span>
+                                    {% comment %} <a class="edit-link" href="#"><i class="far fa-edit me-1"></i> Edit</a> {% endcomment %}
+                                    </h5>
+                                    {% if trainee.trainee_name.is_active == True %}
+                                        <button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Active</button>
+                                    {% else %}
+                                    <button class="btn btn-danger" type="button"><i class="fas fa-times"></i>      Not Active</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+    
+                <div id="password_tab" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Change Password</h5>
+                                <div class="row">
+                                    <div class="col-md-10 col-lg-6">
+                                        <form>
+                                            <div class="form-group">
+                                                <label>Old Password</label>
+                                                <input type="password" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>New Password</label>
+                                                <input type="password" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Confirm Password</label>
+                                                <input type="password" class="form-control">
+                                            </div>
+                                            <button class="btn btn-primary" type="submit">Save Changes</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+            </div>
+        </div>
+    </div>    
+</div>
+{% endblock %}
+{% endif %}
