@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% if request.user.user_type == "3" %}
 {% block main_content %}
+{% if request.user.user_type == "3" %}
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -58,5 +58,5 @@
         </div>
     </div>
 </div>
-{% endblock main_content %}
 {% endif %}
+{% endblock main_content %}

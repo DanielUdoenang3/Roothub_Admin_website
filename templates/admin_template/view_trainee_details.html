@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% if request.trainee_name.trainee_name_type == "1" %}
 {% block main_content %}
+{% if request.user.user_type == "1" %}
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -238,5 +238,5 @@
         </div>
     </div>    
 </div>
-{% endblock %}
 {% endif %}
+{% endblock %}

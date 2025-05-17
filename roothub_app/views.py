@@ -19,6 +19,11 @@ EMAIL_HOST = settings.EMAIL_HOST
 EMAIL_PORT = settings.EMAIL_PORT
 
 schoolname=settings.SCHOOL_NAME
+SCHOOL_SLOGAN=settings.SCHOOL_SLOGAN
+SCHOOL_LOCATION=settings.SCHOOL_LOCATION
+SCHOOL_NUM=settings.SCHOOL_NUM
+SCHOOL_WEB=settings.SCHOOL_WEB
+ABOUT_SCHOOL=settings.ABOUT_SCHOOL
 
 def Announcement_View(request):
     announcements = Announcement.objects.all()
@@ -63,25 +68,59 @@ def doLogout(request):
 
 @login_required(login_url="/")
 def profile_update(request):
-    user = request.user
-    # print(user)
-    if user == "Trainer":
-        trainer = Trainers.objects.get(trainer_name=user)
-        courses = Courses.objects.filter(trainer_id=trainer).all()
-    # trainer = Trainers.objects.get(trainer_name=request.user)
-    # courses = Courses.objects.filter(trainer_id=trainer).all()
-    
-    # courses_with_trainees = []
-    # for course in courses:
-    #     courses_with_trainees.append({
-    #         'course': course,
-    #     })
+    trainee_content = None
+    trainer_content = None
 
-    # content = {
-    #     'trainer': trainer,
-    #     'courses_with_trainees': courses_with_trainees,
-    # }
-    return render(request, "profile.html")
+    total_trainer = Trainers.objects.all().count()
+    total_trainee = Trainee.objects.all().count()
+    total_courses =Courses.objects.all().count()
+
+    user = request.user.user_type
+
+    if user == "3":
+        trainee = get_object_or_404(Trainee, trainee_name=request.user)
+        course = get_object_or_404(Courses, trainees=trainee)
+        trainee_all = Trainee.objects.filter()
+        trainee_content = {
+            "total_course":total_courses,
+            "total_trainer":total_trainer,
+            "total_trainee":total_trainee,
+            "courses_for_trainer":course,
+            "user_all":trainee_all,
+        }
+        
+    elif user == "2":
+        trainer = Trainers.objects.get(trainer_name=request.user)
+        courses = Courses.objects.filter(trainer_id=trainer).all()
+        trainer_all =Trainers.objects.filter()
+        experience = trainer.experience
+
+        course = []
+        for coursess in courses:
+            course.append({
+                "coursess":coursess
+            })
+        # print(courses_for_trainer)
+        trainer_content = {
+            "courses_for_trainer":course,
+            "user_all":trainer_all,  
+            "experience":experience,
+        }
+
+    both = {
+        "trainer_content":trainer_content,
+        "trainee_content":trainee_content,
+        "total_course":total_courses,
+        "total_trainer":total_trainer,
+        "total_trainee":total_trainee,
+        "schoolname":schoolname,
+        "SCHOOL_SLOGAN":SCHOOL_SLOGAN,
+        "SCHOOL_LOCATION":SCHOOL_LOCATION,
+        "SCHOOL_NUM":SCHOOL_NUM,
+        "SCHOOL_WEB":SCHOOL_WEB,
+        "ABOUT_SCHOOL":ABOUT_SCHOOL
+    }
+    return render(request, "profile.html",both)
 @login_required(login_url="/")
 def get_unread_announcements(request):
     user = request.user
@@ -96,7 +135,7 @@ def mark_announcement_as_read(request, announcement_id):
     user = request.user
     try:
         announcement = Announcement.objects.get(id=announcement_id)
-        announcement.read_by.add(user)  # Mark as read
+        announcement.read_by.add(user)
         return JsonResponse({"success": True})
     except Announcement.DoesNotExist:
         return JsonResponse({"success": False, "error": "Announcement not found."}, status=404)
@@ -373,3 +412,10 @@ def star_trainee_view(request, date):
 #         'trainer_totals': trainer_totals,
 #         'trainee_totals': trainee_totals,
 #     })
+def view_annoucements(request):
+    announcement = Announcement.objects.filter()
+
+    content = {
+        "announcements":announcement
+    }
+    return render(request, "view_announcement.html", content)

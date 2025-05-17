@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% if request.user.user_type == "1" %}
 {% block main_content %}
+{% if request.user.user_type == "1" %}
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -206,6 +206,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock main_content %}
 
 {% block custom_js %}
@@ -283,4 +284,3 @@
     });
 </script>
 {% endblock custom_js %}
-{% endif %}

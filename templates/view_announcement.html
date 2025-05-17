@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+<div class="page-header">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-sub-header">
+                <h3 class="page-title">View Announcement</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="
+                            {% if user.user_type == "1" %}
+                            "{% url "admin_home" %}"
+                            {% elif user.user_type == "2" %}
+                            "{% url "trainer_home" %}"
+                            {% else %}
+                            "{% url "trainee_home" %}"
+                            {% endif %}">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Announcement</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "includes/messages.html" %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <ul class="timeline">
+                    {% for announcement in announcements %}
+                    <li>
+                        <div class="timeline-badge success">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4 class="timeline-title"><strong>{{ announcement.title }}</strong></h4>
+                            </div>
+                            <div class="timeline-body">
+                                <p>{{ announcement.description }}</p>
+                            </div>
+                            {% if announcement.file %}
+                            <div class="timeline-body">
+                                <p><a href="{{ announcement.file }}" target="_blank">View Attached File</a></p>
+                            </div>
+                            {% endif %}
+                            <hr style="margin: 15px 0;">
+                            <div class="text-muted text-center">
+                                <p>{{ announcement.created_at|date:'F j, Y' }}</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-badge warning">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4 class="timeline-title"><strong>{{ announcement.title }}</strong></h4>
+                            </div>
+                            <div class="timeline-body">
+                                <p>{{ announcement.description }}</p>
+                            </div>
+                            {% if announcement.file %}
+                            <div class="timeline-body">
+                                <p><a href="{{ announcement.file }}" target="_blank">View Attached File</a></p>
+                            </div>
+                            {% endif %}
+                            <hr style="margin: 15px 0;">
+                            <div class="text-muted text-center">
+                                <p>{{ announcement.created_at|date:'F j, Y' }}</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% comment %}  {% endcomment %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

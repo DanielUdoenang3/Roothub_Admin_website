@@ -1,5 +1,7 @@
 {% extends "base.html" %}
+
 {% block main_content %}
+{% if request.user.user_type == "3" %}
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
@@ -123,4 +125,5 @@
     });
 </script>
 {% endblock custom_js %}
+{% endif %}
 {% endblock %}

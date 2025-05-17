@@ -717,7 +717,8 @@ def trainee_details(request, username):
 def trainer_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainer = get_object_or_404(Trainers, trainer_name=user)
-    course = get_object_or_404(Courses, trainer_id=trainer)
+    # course = get_object_or_404(Courses, trainer_id=trainer)
+    course = Courses.objects.filter(trainer_id=trainer)
 
     context={
         'trainer':trainer,

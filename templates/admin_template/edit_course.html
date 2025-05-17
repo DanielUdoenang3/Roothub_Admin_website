@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block main_content %}
+{% if request.user.user_type == "1" %}
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
@@ -53,5 +54,5 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 {% endblock main_content %} 

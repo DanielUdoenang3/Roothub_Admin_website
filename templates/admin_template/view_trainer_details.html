@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% if request.user.user_type == "1" %}
 {% block main_content %}
+{% if request.user.user_type == "1" %}
+
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -79,7 +80,13 @@
                                     </div>
                                     <div class="row">
                                         <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course Teaching</p>
-                                        <p class="col-sm-9">{{ course.course_name }}</p>
+                                        <p class="col-sm-9">
+                                            {% if course %}
+                                            {% for coursess in course %}
+                                            {{ coursess.course_name }}<br>
+                                            {% endfor %}
+                                            {% endif %}
+                                        </p>
                                     </div>
                                     <div class="row">
                                         <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Experience</p>
@@ -147,5 +154,5 @@
         </div>
     </div>    
 </div>
-{% endblock %}
 {% endif %}
+{% endblock %}

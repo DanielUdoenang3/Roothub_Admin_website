@@ -79,6 +79,7 @@ urlpatterns = [
     # Anouncement
     path('send_announcement', AdminView.send_announcement, name="send_announcement"),
     path('view_announcement', AdminView.view_announcement, name="view_announcement"),
+    path('view_announcements', views.view_annoucements, name="view_announcements"),
     path('delete_announcement/<announcement_title>', AdminView.delete_announcement, name="delete_announcement"),
     path('edit_announcement/<announcement_title>', AdminView.edit_announcement, name="edit_announcement"),
     path('get-unread-announcements/', views.get_unread_announcements, name="get_unread_announcements"),

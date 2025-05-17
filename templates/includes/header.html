@@ -74,7 +74,7 @@
                 <div class="noti-content">
                     <ul class="notification-list">
                         {% for announcement in announcements %}
-                        <a href="#">
+                        <a href="{% url "view_announcements" %}">
                             <li class="notification-message">
                                 {% comment %} <a href="#"> {% endcomment %}
                                     <div class="media d-flex" style="margin-top:10px;margin-left:5px;">

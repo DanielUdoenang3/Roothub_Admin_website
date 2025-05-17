@@ -8,15 +8,19 @@ from django.http import HttpResponseBadRequest, JsonResponse
 
 @login_required(login_url="/")
 def home(request):
-    trainee = get_object_or_404(Trainee, trainee_name=request.user)
-    course = get_object_or_404(Courses, trainees=trainee)
-    trainer = Trainers.objects.filter(course_id=course)
-    if not trainer:
-        messages.error(request,"There's no current trainer")
-    context = {
-        "course":course,
-        "trainer":trainer,
-    }
+    try:
+        context=None
+        trainee = get_object_or_404(Trainee, trainee_name=request.user)
+        course = get_object_or_404(Courses, trainees=trainee)
+        trainer = get_object_or_404(Trainers, course_id=course)
+        if not trainer:
+            messages.error(request,"There's no current trainer")
+        context = {
+            "course":course,
+            "trainer":trainer,
+        }
+    except Exception:
+        messages.error(request, "You cannot not access a Trainee Url")
     return render(request, "trainee_template/home.html", context)
 @login_required(login_url="/")
 def view_assignments(request):
