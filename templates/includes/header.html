@@ -1,5 +1,27 @@
 {% load static %}
 
+<head>
+    <style>
+        /* Notification badge on top of bell icon */
+        .fa-bell {
+            position: relative;
+        }
+        #notification-badge {
+            position: absolute;
+            top: 3px;
+            right: -30px;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 50%;
+            min-width: 18px;
+            min-height: 18px;
+            display: inline-block;
+            text-align: center;
+            z-index: 10;
+        }
+    </style>
+</head>
+
 <div class="header">
 
     <div class="header-left">
@@ -65,7 +87,6 @@
         <li class="nav-item noti-dropdown me-2">
             <a href="javascript" class="nav-link header-nav-list" id="notification-icon">
                 <i class="fa fa-bell"><span id="notification-badge" class="badge bg-success" >0</span></i>
-                <!-- <span id="notification-badge" class="badge bg-danger">0</span> -->
             </a>
             <div class="dropdown-menu notifications" id="notification-dropdown" style="position: absolute; inset: 0px 40px auto auto; margin: 17px; transform: translate(0px, 42px); display: none; z-index: 9999; width: 300px; max-height: 400px; overflow-y: auto;">
                 <div class="topnav-dropdown-header">
@@ -76,7 +97,6 @@
                         {% for announcement in announcements %}
                         <a href="{% url "view_announcements" %}">
                             <li class="notification-message">
-                                {% comment %} <a href="#"> {% endcomment %}
                                     <div class="media d-flex" style="margin-top:10px;margin-left:5px;">
                                         <span class="avatar avatar-sm flex-shrink-0">
                                             <img class="avatar-img rounded-circle" alt="User Image" src="{{ user.profile_pic.url }}">
@@ -96,7 +116,6 @@
                                             <p class="noti-time"><span class="notification-time">{{ announcement.created_at|date }}</span></p>
                                         </div>
                                     </div>
-                                {% comment %} </a> {% endcomment %}
                             </li>
                         </a> 
                         {% empty %}
@@ -111,7 +130,7 @@
                     </ul>
                 </div>
                 <div class="topnav-dropdown-footer">
-                    <a href="#">View all Announcements</a>
+                    <a href="{% url "view_announcements" %}">View all Announcements</a>
                 </div>
             </div>
         </li>
@@ -259,168 +278,5 @@
             }
         });
     });
-
-    // document.addEventListener("DOMContentLoaded", function () {
-    //     const notificationIcon = document.getElementById("notification-icon");
-    //     const notificationDropdown = document.getElementById("notification-dropdown");
-    //     const notificationBadge = document.getElementById("notification-badge");
-    //     const announcementList = document.getElementById("announcement-list");
-    
-    //     // Fetch unread announcements
-    //     function fetchUnreadAnnouncements() {
-    //         fetch('/get-unread-announcements/')
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 const unreadCount = data.unread_count;
-    //                 const unreadAnnouncements = data.unread_announcements;
-    
-    //                 // Update the badge
-    //                 if (unreadCount > 0) {
-    //                     notificationBadge.style.display = "inline-block";
-    //                     notificationBadge.textContent = unreadCount;
-    //                 } else {
-    //                     notificationBadge.style.display = "none";
-    //                 }
-    
-    //                 // Update the dropdown list
-    //                 announcementList.innerHTML = "";
-    //                 unreadAnnouncements.forEach(announcement => {
-    //                     const listItem = document.createElement("li");
-    //                     listItem.className = "notification-message";
-    //                     listItem.innerHTML = `
-    //                         <a href="#" data-id="${announcement.id}" class="mark-as-read">
-    //                             <div class="media d-flex">
-    //                                 <div class="media-body flex-grow-1">
-    //                                     <p class="noti-details">
-    //                                         <strong>${announcement.title}</strong><br>
-    //                                         ${announcement.description}
-    //                                     </p>
-    //                                     <p class="noti-time">${new Date(announcement.created_at).toLocaleString()}</p>
-    //                                 </div>
-    //                             </div>
-    //                         </a>
-    //                     `;
-    //                     announcementList.appendChild(listItem);
-    //                 });
-    
-    //                 // Add click event to mark announcements as read
-    //                 document.querySelectorAll(".mark-as-read").forEach(item => {
-    //                     item.addEventListener("click", function (event) {
-    //                         event.preventDefault();
-    //                         const announcementId = this.getAttribute("data-id");
-    //                         markAnnouncementAsRead(announcementId);
-    //                     });
-    //                 });
-    //             })
-    //             .catch(error => console.error("Error fetching unread announcements:", error));
-    //     }
-    
-    //     // Mark an announcement as read
-    //     function markAnnouncementAsRead(announcementId) {
-    //         fetch(`/mark-announcement-as-read/${announcementId}/`, { method: "POST" })
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 if (data.success) {
-    //                     fetchUnreadAnnouncements(); // Refresh the unread announcements
-    //                 }
-    //             })
-    //             .catch(error => console.error("Error marking announcement as read:", error));
-    //     }
-    
-    //     // Toggle the dropdown
-    //     notificationIcon.addEventListener("click", function (event) {
-    //         event.preventDefault();
-    //         notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
-    //     });
-    
-    //     // Fetch unread announcements on page load
-    //     fetchUnreadAnnouncements();
-    
-    //     // Periodically check for new announcements
-    //     setInterval(fetchUnreadAnnouncements, 30000);
-    // });
-
 </script>
-{% comment %} <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const notificationIcon = document.getElementById("notification-icon");
-        const notificationDropdown = document.getElementById("notification-dropdown");
-        const notificationBadge = document.getElementById("notification-badge");
-        const announcementList = document.getElementById("announcement-list");
-    
-        // Fetch unread announcements
-        function fetchUnreadAnnouncements() {
-            fetch('/get-unread-announcements/')
-                .then(response => response.json())
-                .then(data => {
-                    const unreadCount = data.unread_count;
-                    const unreadAnnouncements = data.unread_announcements;
-    
-                    // Update the badge
-                    if (unreadCount > 0) {
-                        notificationBadge.style.display = "inline-block";
-                        notificationBadge.textContent = unreadCount;
-                    } else {
-                        notificationBadge.style.display = "none";
-                    }
-    
-                    // Update the dropdown list
-                    announcementList.innerHTML = "";
-                    unreadAnnouncements.forEach(announcement => {
-                        const listItem = document.createElement("li");
-                        listItem.className = "notification-message";
-                        listItem.innerHTML = `
-                            <a href="#" data-id="${announcement.id}" class="mark-as-read">
-                                <div class="media d-flex">
-                                    <div class="media-body flex-grow-1">
-                                        <p class="noti-details">
-                                            <strong>${announcement.title}</strong><br>
-                                            ${announcement.description}
-                                        </p>
-                                        <p class="noti-time">${new Date(announcement.created_at).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                        announcementList.appendChild(listItem);
-                    });
-    
-                    // Add click event to mark announcements as read
-                    document.querySelectorAll(".mark-as-read").forEach(item => {
-                        item.addEventListener("click", function (event) {
-                            event.preventDefault();
-                            const announcementId = this.getAttribute("data-id");
-                            markAnnouncementAsRead(announcementId);
-                        });
-                    });
-                })
-                .catch(error => console.error("Error fetching unread announcements:", error));
-        }
-    
-        // Mark an announcement as read
-        function markAnnouncementAsRead(announcementId) {
-            fetch(`/mark-announcement-as-read/${announcementId}/`, { method: "POST" })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        fetchUnreadAnnouncements(); // Refresh the unread announcements
-                    }
-                })
-                .catch(error => console.error("Error marking announcement as read:", error));
-        }
-    
-        // Toggle the dropdown
-        notificationIcon.addEventListener("click", function (event) {
-            event.preventDefault();
-            notificationDropdown.style.display = notificationDropdown.style.display === "none" ? "block" : "none";
-        });
-    
-        // Fetch unread announcements on page load
-        fetchUnreadAnnouncements();
-    
-        // Periodically check for new announcements
-        setInterval(fetchUnreadAnnouncements, 30000);
-    });
-</script> {% endcomment %}
-{% endblock custom_js %}
-
+{% endblock %}

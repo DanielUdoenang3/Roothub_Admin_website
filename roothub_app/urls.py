@@ -92,6 +92,7 @@ urlpatterns = [
     path("view_submissions", TrainerView.view_submissions, name="view_submissions"),
     path("edit_assignment/<id>", TrainerView.edit_assignment, name="edit_assignment"),
     path("delete_uploaded_assignment/<assignment_title>", TrainerView.delete_uploaded_assignment, name="delete_uploaded_assignment"),
+    path("fix_classes", TrainerView.fix_classes, name="fix_classes"),
 
     
     # Trainee Views

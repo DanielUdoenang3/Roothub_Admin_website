@@ -641,7 +641,7 @@ def delete_course(request, course):
         messages.success(request, f"The Course {course_name.capitalize()} was deleted sucessfully")
     except Exception as e:
         print(e)
-        messages.error(request, f"The Course {course_name.capitalize()} was deleted successfully")
+        messages.error(request, f"The Course {course_name.capitalize()} was deleted unsuccessfully")
     return redirect("view_course")
 
 @login_required(login_url="/")

@@ -87,7 +87,7 @@ class Trainee(models.Model):
         ]
     )
     country = models.CharField(max_length=255)
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="trainees", blank=True, null=True)
+    course_id = models.ForeignKey(Courses, on_delete=models.SET_NULL, related_name="trainees", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
@@ -206,6 +206,18 @@ class Announcement(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.title} - {self.description}"
+
+class Fix_Class(models.Model):
+    title = models.CharField(max_length=225)
+    description = models.TextField()
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    trainer = models.ForeignKey(Trainers, on_delete=models.CASCADE)
+    class_date = models.DateField()
+    start_class = models.TimeField()
+    end_class = models.TimeField()
+
+    def __str__(self):
+        return f"{self.title} - {self.description} at {self.class_date} during {self.start_class} to {self.end_class}"
     
 class PaymentHistory(models.Model):
     id = models.AutoField(primary_key=True)

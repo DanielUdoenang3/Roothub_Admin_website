@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee
+from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee, Fix_Class
 from django.db.models import Q
 from django.contrib import messages
 
@@ -9,6 +9,8 @@ def home(request):
     trainer = Trainers.objects.get(trainer_name=request.user)
     courses = Courses.objects.filter(trainer_id=trainer).all()
     dates = Presentation.objects.values_list('date', flat=True).distinct()
+    trainer_courses = Courses.objects.filter(trainer_id=trainer)
+    fix_classes = Fix_Class.objects.all()
     
     courses_with_trainees = []
     for course in courses:
@@ -22,6 +24,8 @@ def home(request):
         'trainer': trainer,
         'courses_with_trainees': courses_with_trainees,
         "dates":dates,
+        "trainer_courses":trainer_courses,
+        "fix_classes":fix_classes
     }
     return render(request, "trainer_template/home.html", content)
 
@@ -32,7 +36,6 @@ def search(request):
         if request.method == "POST":
             search = request.POST.get("search")
             if search:
-        
                 trainee_search = Trainee.objects.filter(
                     Q(trainee_name__username__icontains=search)|
                     Q(trainee_name__first_name__icontains=search)|
@@ -158,3 +161,34 @@ def delete_uploaded_assignment(request, assignment_title):
 
     # Redirect to the page where the trainer can view uploaded assignments
     return redirect("view_upload_assignment")
+
+@login_required(login_url="/")
+def fix_classes(request):
+    if request.method == 'POST':
+        try:
+            title = request.POST.get("title")
+            description = request.POST.get("description")
+            course_id = request.POST.get("course")
+            class_date = request.POST.get("date_of_class")
+            start_class = request.POST.get("start_class")
+            end_class = request.POST.get("end_class")
+
+            course = get_object_or_404(Courses, id=course_id)
+            trainer = Trainers.objects.get(trainer_name=request.user)
+
+            fix_class = Fix_Class.objects.create(
+                title = title,
+                description = description,
+                course = course,
+                trainer = trainer,
+                class_date = class_date,
+                start_class = start_class,
+                end_class = end_class
+            )    
+            fix_class.save()
+            messages.success(request, "Class has been fixed Successfully")
+            return redirect("trainer_home")   
+        except Exception as e:
+            print(e)
+            messages.error(request, f"{e}")
+        return redirect("trainer_home")

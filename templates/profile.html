@@ -19,7 +19,7 @@
    </h3>
    <ul class="breadcrumb">
    <li class="breadcrumb-item">
-      <a href="students.html">
+      <a href="#">
       {% if request.user.user_type == "1" %}
       Admin 
       {% elif request.user.user_type == "2" %}
@@ -111,8 +111,11 @@
    </div>
    <div class="col-lg-4 col-md-4 d-flex align-items-center">
    <div class="follow-btn-group">
-   <button type="submit" class="btn btn-info follow-btns">Follow</button>
-   <button type="submit" class="btn btn-info message-btns">Message</button>
+   {% if request.user.user_type == "1" %}
+   <a href="#"><button type="submit" class="btn btn-info follow-btns">Update</button></a>
+   {% else %}
+   <a href="#" data-url="{% url 'profile' %}"><button type="button" class="btn btn-info follow-btns basic-alert">Update</button></a>
+   {% endif %}
    </div>
    </div>
    </div>
@@ -139,6 +142,16 @@
       {% else %}
       {{ user.username|capfirst }}
       {% endif %}
+   </div>
+   </div>
+   <div class="personal-activity">
+   <div class="personal-icons">
+   <i class="feather-user"></i>
+   </div>
+   <div class="views-personal">
+   <h4>Username</h4>
+   <h5>
+      {{ user.username|capfirst }}
    </div>
    </div>
    <div class="personal-activity">
@@ -295,4 +308,24 @@
    </div>
    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+   document.addEventListener("DOMContentLoaded", function(){
+      const basicAlert = document.querySelectorAll(".basic-alert");
+
+      basicAlert.forEach(function(button){
+         button.addEventListener("click", function(e){
+            e.preventDefault();
+            const url = this.getAttribute("data-url");
+            Swal.fire({
+               title: "Contact your Administrator if there's any issue in your Profile",
+               icon: 'info',
+               confirmButtonColor: '#3085d6',
+               confirmButtonText: 'Okay'
+            })
+         });
+      });
+   })
+</script>
 {% endblock main_content %}

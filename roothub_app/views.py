@@ -80,19 +80,17 @@ def profile_update(request):
     if user == "3":
         trainee = get_object_or_404(Trainee, trainee_name=request.user)
         course = get_object_or_404(Courses, trainees=trainee)
-        trainee_all = Trainee.objects.filter()
         trainee_content = {
             "total_course":total_courses,
             "total_trainer":total_trainer,
             "total_trainee":total_trainee,
             "courses_for_trainer":course,
-            "user_all":trainee_all,
+            "user_all":trainee,
         }
         
     elif user == "2":
         trainer = Trainers.objects.get(trainer_name=request.user)
         courses = Courses.objects.filter(trainer_id=trainer).all()
-        trainer_all =Trainers.objects.filter()
         experience = trainer.experience
 
         course = []
@@ -103,7 +101,7 @@ def profile_update(request):
         # print(courses_for_trainer)
         trainer_content = {
             "courses_for_trainer":course,
-            "user_all":trainer_all,  
+            "user_all":trainer,  
             "experience":experience,
         }
 

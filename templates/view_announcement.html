@@ -33,31 +33,9 @@
             <div class="card-body">
                 <ul class="timeline">
                     {% for announcement in announcements %}
-                    <li>
-                        <div class="timeline-badge success">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-                                <h4 class="timeline-title"><strong>{{ announcement.title }}</strong></h4>
-                            </div>
-                            <div class="timeline-body">
-                                <p>{{ announcement.description }}</p>
-                            </div>
-                            {% if announcement.file %}
-                            <div class="timeline-body">
-                                <p><a href="{{ announcement.file }}" target="_blank">View Attached File</a></p>
-                            </div>
-                            {% endif %}
-                            <hr style="margin: 15px 0;">
-                            <div class="text-muted text-center">
-                                <p>{{ announcement.created_at|date:'F j, Y' }}</p>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="timeline-inverted">
-                        <div class="timeline-badge warning">
-                            <i class="fas fa-users"></i>
+                    <li{% if forloop.counter0|divisibleby:2 %}{% else %} class="timeline-inverted"{% endif %}>
+                        <div class="timeline-badge {% if forloop.counter0|divisibleby:2 %}success{% else %}warning{% endif %}">
+                            <i class="fas {% if forloop.counter0|divisibleby:2 %}fa-user{% else %}fa-users{% endif %}"></i>
                         </div>
                         <div class="timeline-panel">
                             <div class="timeline-heading">

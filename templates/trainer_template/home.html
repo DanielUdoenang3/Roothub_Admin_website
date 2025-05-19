@@ -2,6 +2,74 @@
 {% load static %}
 {% block main_content %}
 {% if request.user.user_type == "2" %}
+<form action="{% url "fix_classes" %}" method="post">
+    {% csrf_token %}
+    <div id="con-close-modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+    <h4 class="modal-title">Fix Class</h4>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body p-4">
+    <div class="row">
+    <div class="col-md-12">
+    <div class="mb-3">
+    <label for="field-3" class="form-label">Title</label>
+    <input type="text" name="title" class="form-control" id="field-3" placeholder="Title" required>
+    </div>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-12">
+    <div class="mb-3">
+    <label for="field-3" class="form-label">Select Course</label>
+    <select name="course" id="course" class="form-control form-select">
+        <option value="" disabled selected required hidden>Select Course</option>
+        {% for course in trainer_courses %}
+            <option value="{{ course.id }}">{{ course.course_name }}</option>
+        {% endfor %}
+    </select>
+    </div>
+    </div>
+    </div>
+</form>
+<div class="row">
+<div class="col-md-4">
+<div class="mb-3">
+<label for="field-4" class="form-label">Date of Class</label>
+<input type="date" name="date_of_class" class="form-control" id="field-4" required>
+</div>
+</div>
+<div class="col-md-4">
+<div class="mb-3">
+<label for="field-5" class="form-label">Start Class</label>
+<input type="time" name="start_class" class="form-control" id="field-5" required>
+</div>
+</div>
+<div class="col-md-4">
+<div class="mb-3">
+<label for="field-6" class="form-label">End Class</label>
+<input type="time" name="end_class" class="form-control" id="field-6" required>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="">
+<label for="field-7" class="form-label">Description</label>
+<textarea name="description" class="form-control" id="field-7" placeholder="Write something about the class"></textarea>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
+<button type="submit" class="btn btn-info waves-effect waves-light">Submit</button>
+</div>
+</div>
+</div>
+</div>
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -91,8 +159,8 @@
     </div>
     <div class="col-6">
     <ul class="chart-list-out">
-    <li><span class="circle-blue"></span>Teacher</li>
-    <li><span class="circle-green"></span>Students</li>
+    <li><span class="circle-blue"></span>Trainer</li>
+    <li><span class="circle-green"></span>Trainee</li>
     <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a></li>
     </ul>
     </div>
@@ -104,122 +172,31 @@
     </div>
     </div>
     <div class="col-12 col-lg-12 col-xl-4 d-flex">
-    <div class="card flex-fill comman-shadow">
-    <div class="card-body">
-    <div id="calendar-doctor" class="calendar-container"></div>
-    <div class="calendar-info calendar-info1">
-    <div class="up-come-header">
-    <h2>Upcoming Events</h2>
-    
-    <span>
-        <a href="#" type="button" class="btn  waves-effect waves-light mt-1" data-bs-toggle="modal" data-bs-target="#con-close-modal">
-            <i class="feather-plus"></i>
-        </a>
-    </span>
-    <div id="con-close-modal" class="modal fade" tabindex="-1" aria-labelledby="myModalLabel" style="display: none;" role="dialog" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-        <h4 class="modal-title">Modal Content is Responsive</h4>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="card flex-fill comman-shadow">
+            <div class="card-body">
+                <div id="calendar-doctor" class="calendar-container"></div>
+                    <div class="calendar-info calendar-info1">
+                        <div class="up-come-header">
+                            <h2>Upcoming Events</h2>
+                            <span><a href="javascript:;" data-bs-toggle="modal" data-bs-target="#con-close-modal"><i class="feather-plus"></i></a></span>
+                        </div>
+                        {% for classes in fix_classes %}
+                        <div class="calendar-details">
+                            <p style="font-size: 18px;">{{ classes.class_date|date:'F j' }}</p>
+                            <div class="calendar-box normal-bg">
+                                <div class="calandar-event-name">
+                                    <h4>{{ classes.title }}</h4>
+                                    <h5>{{ classes.description|truncatechars:20 }}</h5>
+                                </div>
+                                <span>{{ classes.start_class|time:'h:i A' }} - {{ classes.end_class|time:'h:i A' }}</span>
+                            </div>
+                        </div>
+                        
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="modal-body p-4">
-        <div class="row">
-        <div class="col-md-6">
-        <div class="mb-3">
-        <label for="field-1" class="form-label">Name</label>
-        <input type="text" class="form-control" id="field-1" placeholder="John">
-        </div>
-        </div>
-        <div class="col-md-6">
-        <div class="mb-3">
-        <label for="field-2" class="form-label">Surname</label>
-        <input type="text" class="form-control" id="field-2" placeholder="Doe">
-        </div>
-        </div>
-        </div>
-        <div class="row">
-        <div class="col-md-12">
-        <div class="mb-3">
-        <label for="field-3" class="form-label">Address</label>
-        <input type="text" class="form-control" id="field-3" placeholder="Address">
-        </div>
-        </div>
-        </div>
-        <div class="row">
-        <div class="col-md-4">
-        <div class="mb-3">
-        <label for="field-4" class="form-label">City</label>
-        <input type="text" class="form-control" id="field-4" placeholder="Boston">
-        </div>
-        </div>
-        <div class="col-md-4">
-        <div class="mb-3">
-        <label for="field-5" class="form-label">Country</label>
-        <input type="text" class="form-control" id="field-5" placeholder="United States">
-        </div>
-        </div>
-        <div class="col-md-4">
-        <div class="mb-3">
-        <label for="field-6" class="form-label">Zip</label>
-        <input type="text" class="form-control" id="field-6" placeholder="123456">
-        </div>
-        </div>
-        </div>
-        <div class="row">
-        <div class="col-md-12">
-        <div class="">
-        <label for="field-7" class="form-label">Personal Info</label>
-        <textarea class="form-control" id="field-7" placeholder="Write something about yourself"></textarea>
-        </div>
-        </div>
-        </div>
-        </div>
-        <div class="modal-footer">
-        <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-info waves-effect waves-light">Save changes</button>
-        </div>
-        </div>
-        </div>
-    </div>
-    </div>
-    <div class="upcome-event-date">
-    <h3>10 Jan</h3>
-    <span><i class="fas fa-ellipsis-h"></i></span>
-    </div>
-    <div class="calendar-details">
-    <p>08:00 am</p>
-    <div class="calendar-box normal-bg">
-    <div class="calandar-event-name">
-    <h4>Botony</h4>
-    <h5>Lorem ipsum sit amet</h5>
-    </div>
-    <span>08:00 - 09:00 am</span>
-    </div>
-    </div>
-    <div class="calendar-details">
-    <p>09:00 am</p>
-    <div class="calendar-box normal-bg">
-    <div class="calandar-event-name">
-    <h4>Botony</h4>
-    <h5>Lorem ipsum sit amet</h5>
-    </div>
-    <span>09:00 - 10:00 am</span>
-    </div>
-    </div>
-    <div class="calendar-details">
-    <p>10:00 am</p>
-    <div class="calendar-box normal-bg">
-    <div class="calandar-event-name">
-    <h4>Botony</h4>
-    <h5>Lorem ipsum sit amet</h5>
-    </div>
-    <span>10:00 - 11:00 am</span>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
     </div>
 </div>
 <div class="row">
