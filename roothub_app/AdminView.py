@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render,redirect
 from django.contrib import messages
@@ -82,7 +81,7 @@ def add_trainer_save(request):
                 messages.error(request, "Password must be at least 8 characters long.")
                 return redirect("add_trainer")
 
-            elif 11>len(phone)>15:
+            elif 11>len(phone)>14:
                 messages.error(request,"Input an appropiate phone number")
                 return redirect("add_trainer")
             

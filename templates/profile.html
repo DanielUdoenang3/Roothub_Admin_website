@@ -167,7 +167,7 @@
       {{ course_num.coursess.course_name }}<br>
       {% endfor %}
       {% endif %}
-      {% else %}
+      {% elif request.user.user_type == "3" %}
       {{ trainee_content.courses_for_trainer }}
       {% endif %}
    </h5>
@@ -258,7 +258,7 @@
    <hr style="margin: 15px 0;">
    <center>
       <p><strong>Location:</strong> {{ SCHOOL_LOCATION }}</p>
-      <p><strong>Contact:</strong> <a href="tel:{{ SCHOOL_NUM }}">{{ SCHOOL_NUM }}</a></p>
+      <p><strong>Contact:</strong> <a href="tel:{{ SCHOOL_NUM1 }}">{{ SCHOOL_NUM1 }}</a> or <a href="tel:{{ SCHOOL_NUM2 }}">{{ SCHOOL_NUM2 }}</a></p>
       <p><strong>Slogan:</strong><em> {{ SCHOOL_SLOGAN }}</em></p>
       <p><strong>Website:</strong><a href="{{ SCHOOL_WEB }}" target="_blank"> {{ SCHOOL_WEB|capfirst}}</a></p>  
    </center>

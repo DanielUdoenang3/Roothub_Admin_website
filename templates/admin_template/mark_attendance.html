@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block main_content %}
-{% if request.user.user_type == "1" %}
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
@@ -115,5 +114,4 @@
     document.getElementById("course").addEventListener("change", fetchTrainees);
     document.getElementById("date").addEventListener("change", fetchTrainees);
 </script>
-{% endif %}
 {% endblock %}

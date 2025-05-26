@@ -21,7 +21,8 @@ EMAIL_PORT = settings.EMAIL_PORT
 schoolname=settings.SCHOOL_NAME
 SCHOOL_SLOGAN=settings.SCHOOL_SLOGAN
 SCHOOL_LOCATION=settings.SCHOOL_LOCATION
-SCHOOL_NUM=settings.SCHOOL_NUM
+SCHOOL_NUM1=settings.SCHOOL_NUM1
+SCHOOL_NUM2 = settings.SCHOOL_NUM2
 SCHOOL_WEB=settings.SCHOOL_WEB
 ABOUT_SCHOOL=settings.ABOUT_SCHOOL
 
@@ -114,7 +115,8 @@ def profile_update(request):
         "schoolname":schoolname,
         "SCHOOL_SLOGAN":SCHOOL_SLOGAN,
         "SCHOOL_LOCATION":SCHOOL_LOCATION,
-        "SCHOOL_NUM":SCHOOL_NUM,
+        "SCHOOL_NUM1":SCHOOL_NUM1,
+        "SCHOOL_NUM2":SCHOOL_NUM2,
         "SCHOOL_WEB":SCHOOL_WEB,
         "ABOUT_SCHOOL":ABOUT_SCHOOL
     }
