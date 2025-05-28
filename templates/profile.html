@@ -2,8 +2,121 @@
 {% load static %}
 
 {% block main_content %}
-
-
+{% include "includes/messages.html" %}
+{% if request.user.user_type == "1" %}
+<form action="{% url "profile_update" user.username %}" method="post">
+   {% csrf_token %}
+   <div id="con-close-modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+      <div class="modal-dialog">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h4 class="modal-title">Update Profile</h4>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+               <center>
+                  <div class="row">
+                     <div class="col-lg-4 col-md-4">
+                        <div class="profile-user-box">
+                           <div class="profile-user-img">
+                              <img src="{{ user.profile_pic.url }}" alt="Profile">
+                              <div class="form-group students-up-files profile-edit-icon mb-0">
+                                 <div class="uplod d-flex">
+                                    <label class="file-upload profile-upbtn mb-0">
+                                       <i class="feather-edit-3"></i><input name="profile_pic" type="file">
+                                    </label>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </center>
+               <div class="row">
+                  <div class="col-md-4">
+                     <div class="mb-3">
+                        <label for="field-1" class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" id="field-1" placeholder="John"  value="{{ user.first_name }}" required>
+                     </div>
+                  </div>
+                  <div class="col-md-4">
+                     <div class="mb-3">
+                        <label for="field-1" class="form-label">Middle Name</label>
+                        <input type="text" name="middle_name" class="form-control" id="field-1" placeholder="Max" value="{{ user.middle_name }}" required>
+                     </div>
+                  </div>
+                  <div class="col-md-4">
+                     <div class="mb-3">
+                        <label for="field-2" class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" id="field-2" placeholder="Doe" value="{{ user.last_name }}" required>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-md-12">
+                        <div class="mb-3">
+                           <label for="field-3" class="form-label">Address</label>
+                           <input type="text" required name="address" class="form-control" id="field-3" placeholder="Address" value="{{ admin_content.admin.address }}">
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-md-6">
+                        <div class="mb-3">
+                           <label for="field-4" class="form-label">Gender</label>
+                           <select name="gender" class="form-control form-select" required>
+                              <option value="" disabled selected required hidden>Select Gender</option>
+                              <option value="Male" {% if admin_content.admin.gender == 'Male' %}selected{% endif %}>Male</option>
+                              <option value="Female" {% if admin_content.admin.gender == 'Female' %}selected{% endif %}>Female</option>
+                           </select>
+                        </div>
+                     </div>
+                     <div class="col-md-6">
+                        <div class="mb-3">
+                           <label for="field-5" class="form-label">Phone Number</label>
+                           <input type="text" name="phone" class="form-control" id="field-5" placeholder="Phone" required value="{{ admin_content.admin.phone }}" required>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <label class="form-label" style="font-size: 20px;">Login Detalis</label>
+                     <div class="col-md-4">
+                        <div class="mb-3">
+                           <label for="field-6" class="form-label">Username</label>
+                           <input type="text" disabled name="email" class="form-control" id="field-7" value="{{ user.username|capfirst }}" placeholder="Email" required>
+                        </div>
+                     </div>
+                     <div class="col-md-4">
+                        <div class="mb-3">
+                           <label for="field-6" class="form-label">Email</label>
+                           <input type="text" name="email" class="form-control" id="field-7" value="{{ user.email }}" placeholder="Email" required>
+                        </div>
+                     </div>
+                     <div class="col-md-4">
+                        <div class="mb-3">
+                           <label for="field-7" class="form-label">Change Password</label>
+                           <input type="text" name="password" class="form-control pass-input" id="field-7" value="{{ user.password }}" placeholder="Password" required>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-md-12">
+                        <div class="">
+                           <label for="field-8" class="form-label">Personal Info</label>
+                           <textarea class="form-control" name="personal_info" id="field-8" placeholder="Write something about yourself">{{ admin_content.admin.personal_info }}</textarea>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-info waves-effect waves-light">Save changes</button>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</form>
+{% endif %}
 <div class="page-header">
    <div class="row">
    <div class="col-sm-12">
@@ -46,7 +159,7 @@
    <div class="row">
    <div class="col-md-12">
    <div class="about-info">
-   <h4>Profile <span><a href="javascript:;"><i class="feather-more-vertical"></i></a></span></h4>
+   <h4>Profile <span><a href="#"><i class="feather-more-vertical"></i></a></span></h4>
    </div>
    <div class="student-profile-head">
    <div class="profile-bg-img">
@@ -68,9 +181,9 @@
    <div class="names-profiles col-lg-7">
    <h4>
       {% if user.first_name %}
-      {{ user.first_name }} {{ user.last_name }}
+      {{ user.first_name|capfirst }} {{ user.last_name|capfirst }}
       {% else %}
-      {{user.username}}
+      {{user.username|capfirst}}
       {% endif %}
    </h4>
    <h5>
@@ -112,7 +225,7 @@
    <div class="col-lg-4 col-md-4 d-flex align-items-center">
    <div class="follow-btn-group">
    {% if request.user.user_type == "1" %}
-   <a href="#"><button type="submit" class="btn btn-info follow-btns">Update</button></a>
+   <button type="button" class="btn btn-info follow-btns waves-effect waves-light mt-1" data-bs-toggle="modal" data-bs-target="#con-close-modal">Update</button>
    {% else %}
    <a href="#" data-url="{% url 'profile' %}"><button type="button" class="btn btn-info follow-btns basic-alert">Update</button></a>
    {% endif %}
@@ -154,6 +267,7 @@
       {{ user.username|capfirst }}
    </div>
    </div>
+   {% if request.user.user_type == "2" %}
    <div class="personal-activity">
    <div class="personal-icons">
    <img src="static/assets/img/icons/buliding-icon.svg" alt="">
@@ -161,18 +275,30 @@
    <div class="views-personal">
    <h4>Course </h4>
    <h5>
-      {% if request.user.user_type == "2" %}
       {% if trainer_content.courses_for_trainer %}
       {% for course_num in trainer_content.courses_for_trainer %}
       {{ course_num.coursess.course_name }}<br>
       {% endfor %}
       {% endif %}
-      {% elif request.user.user_type == "3" %}
-      {{ trainee_content.courses_for_trainer }}
-      {% endif %}
    </h5>
    </div>
    </div>
+   {% endif %}
+
+   {% if request.user.user_type == "3" %}
+   <div class="personal-activity">
+   <div class="personal-icons">
+   <img src="static/assets/img/icons/buliding-icon.svg" alt="">
+   </div>
+   <div class="views-personal">
+   <h4>Course </h4>
+   <h5>
+      {{ trainee_content.courses_for_trainer }}
+   </h5>
+   </div>
+   </div>
+   {% endif %}
+
    <div class="personal-activity">
    <div class="personal-icons">
    <i class="feather-phone-call"></i>
@@ -181,8 +307,10 @@
    <h4>Mobile</h4>
    {% if request.user.user_type == "2" %}
    <h5>{{ trainer_content.user_all.phone }}</h5>
-   {% else %}
+   {% elif request.user.user_type == "3" %}
    <h5>{{ trainee_content.user_all.phone }}</h5>
+   {% else %}
+   <h5>{{ admin_content.admin.phone }}</h5>
    {% endif %}
    </div>
    </div>
@@ -203,8 +331,10 @@
    <h4>Gender</h4>
    {% if request.user.user_type == "2" %}
    <h5>{{ trainer_content.user_all.gender }}</h5>
-   {% else %}
+   {% elif request.user.user_type == "3" %}
    <h5>{{ trainee_content.user_all.gender }}</h5>
+   {% else %}
+   <h5>{{ admin_content.admin.gender }}</h5>
    {% endif %}
    </div>
    </div>
@@ -232,8 +362,10 @@
    <h4>Address</h4>
    {% if request.user.user_type == "2" %}
    <h5>{{ trainer_content.user_all.address }}</h5>
-   {% else %}
+   {% elif request.user.user_type == "3" %}
    <h5>{{ trainee_content.user_all.address }}</h5>
+   {% else %}
+   <h5>{{ admin_content.admin.address }}</h5>
    {% endif %}
    </div>
    </div>

@@ -99,7 +99,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="apexcharts-area"></div>
+                    <div id="apexcharts-area" style="height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -164,43 +164,6 @@
                         <p>Loading data...</p>
                     </div>
                 </div>
-                
-                
-                    {% comment %} <!-- <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table star-student table-hover table-center table-borderless table-striped">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th class="text-center">Appearance</th>
-                                        <th class="text-center">Content</th>
-                                        <th class="text-center">Total</th>
-                                        <th class="text-center">Percentage</th>
-                                        <th class="text-center">Course</th>
-                                        <th class="text-end">View Presentation</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for pres in presentations %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ pres.trainee.trainee_name.get_full_name }}</td>
-                                        <td class="text-center">{{ pres.score_appearance }}</td>
-                                        <td class="text-center">{{ pres.score_content }}</td>
-                                        <td class="text-center">{{ pres.score_appearance|add:pres.score_content }}</td>
-                                        <td class="text-center">{{ pres.percentage|floatformat:2 }}%</td>
-                                        <td class="text-center">{{ pres.trainee.course_id.course_name }}</td>
-                                        <td class="text-end"><a href="#">View</a></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    {% elif date %}
-                        <p>No presentations found for {{ date }}</p>
-                    {% endif %} --> {% endcomment %}
             </div>
 
         </div>
@@ -283,4 +246,35 @@
         });
     });
 </script>
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    fetch('/api/trainers-trainees-per-month/')
+    .then(response => response.json())
+    .then(chartData => {
+        console.log(chartData); // Should have months, trainers, trainees arrays
+
+        var options = {
+            chart: { type: 'area', height: 300 },
+            series: [
+                { name: 'Trainers', data: chartData.trainers },
+                { name: 'Trainees', data: chartData.trainees }
+            ],
+            xaxis: {
+                categories: chartData.months
+            },
+            stroke: { curve: 'smooth' },
+            colors: ['#007bff', '#28a745'],
+            legend: { position: 'top' }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#apexchart-area"), options);
+        chart.render();
+    })
+    .catch(error => {
+        console.error('Chart error:', error);
+    });
+
+});
+</script> {% endcomment %}
 {% endblock custom_js %}

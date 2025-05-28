@@ -21,6 +21,19 @@ class CustomUser(AbstractUser):
 class Admin(models.Model):
     id = models.AutoField(primary_key=True)
     admin_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
+    phone = models.CharField(
+        max_length=15,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',
+                message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+            )
+        ]
+    )
+    address = models.TextField(blank=True)
+    personal_info = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

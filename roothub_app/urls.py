@@ -9,11 +9,12 @@ urlpatterns = [
     path('',views.login_view, name="login_page"),
     path('doLogin', views.dologin, name="dologin"),
     path('doLogout', views.doLogout, name="doLogout"),
-    path('profile', views.profile_update, name="profile"),
+    path('profile', views.profile, name="profile"),
+    path('profile_update/<admin>', views.profile_update, name="profile_update"),
     path('search', AdminView.search, name="search"),
     path('search_for_trainers', TrainerView.search, name="search_for_trainers"),
-
-
+    path('api/trainers-trainees-per-month/', views.trainers_trainees_per_month, name='trainers_trainees_per_month'),
+    
     # Trainer
     path('add_trainer', AdminView.add_trainer, name="add_trainer"),
     path('add_trainer_save', AdminView.add_trainer_save, name="add_trainer_save"),

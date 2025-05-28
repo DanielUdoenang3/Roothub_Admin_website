@@ -434,7 +434,7 @@ def edit_trainer(request,trainer):
                 trainers.phone = phone
                 trainers.save()
 
-                messages.success(request, "Trainer Added Successfully")
+                messages.success(request, "Trainer Edited Successfully")
                 return redirect("edit_trainer",trainer)
 
         except Exception as excepts:
@@ -716,7 +716,6 @@ def trainee_details(request, username):
 def trainer_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainer = get_object_or_404(Trainers, trainer_name=user)
-    # course = get_object_or_404(Courses, trainer_id=trainer)
     course = Courses.objects.filter(trainer_id=trainer)
 
     context={
