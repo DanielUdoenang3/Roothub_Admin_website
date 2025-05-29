@@ -89,11 +89,9 @@ def dologin (request):
                         )
                         smtp.send_message(msg)
                         smtp.quit()
-                except:
-                    messages.error(request, f"Please check your internet connection!")
-                    return render(request, 'index.html', {
-                        "entered_data": request.POST
-                    })
+                except Exception as e:
+                    print(e)
+                    messages.error(request, f"Error {e}!")
                 login(request, user)
                 if user.user_type == "1":
                     messages.success(request, "Login Successful")
