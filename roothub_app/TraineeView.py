@@ -16,13 +16,16 @@ def home(request):
         fix_classes = Fix_Class.objects.all()
         if not trainer:
             messages.error(request,"There's no current trainer")
+        if not course:
+            pass
         context = {
             "course":course,
             "trainer":trainer,
             "fix_classes":fix_classes
         }
-    except Exception:
-        messages.error(request, "You cannot not access a Trainee Url")
+    except Exception as e:
+        print(e)
+        # messages.error(request, "You cannot not access a Trainee Url")
     return render(request, "trainee_template/home.html", context)
 @login_required(login_url="/")
 def view_assignments(request):

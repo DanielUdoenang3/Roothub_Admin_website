@@ -95,28 +95,28 @@ WSGI_APPLICATION = 'roothub_project.wsgi.application'
 
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': tmpPostgres.path.replace('/', ''),
-#         'USER': tmpPostgres.username,
-#         'PASSWORD': tmpPostgres.password,
-#         'HOST': tmpPostgres.hostname,
-#         'PORT': 5432,
-#     }
-# }
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'roothub_project',
-        'USER': 'postgres',
-        'PASSWORD': 'Daniel',
-        'HOST': 'localhost',
+        'NAME': tmpPostgres.path.replace('/', ''),
+        'USER': tmpPostgres.username,
+        'PASSWORD': tmpPostgres.password,
+        'HOST': tmpPostgres.hostname,
         'PORT': 5432,
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'roothub_project',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Daniel',
+#         'HOST': 'localhost',
+#         'PORT': 5432,
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

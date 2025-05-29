@@ -14,6 +14,7 @@ urlpatterns = [
     path('search', AdminView.search, name="search"),
     path('search_for_trainers', TrainerView.search, name="search_for_trainers"),
     path('api/trainers-trainees-per-month/', views.trainers_trainees_per_month, name='trainers_trainees_per_month'),
+    path('api/male-female-number-of-trainees/', views.male_female_number_of_trainees, name='male_female_number_of_trainee'),
     
     # Trainer
     path('add_trainer', AdminView.add_trainer, name="add_trainer"),

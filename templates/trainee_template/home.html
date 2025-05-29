@@ -59,52 +59,88 @@
     </div>
 </div>
 <div class="row">
-<div class="col-12 col-lg-12 col-xl-8 d-flex">
-<div class="card flex-fill comman-shadow">
-<div class="card-header">
-<div class="row align-items-center">
-<div class="col-6">
-<h5 class="card-title">Learning Activity</h5>
-</div>
-<div class="col-6">
-<ul class="chart-list-out">
-<li><span class="circle-blue"></span>Trainer</li>
-<li><span class="circle-green"></span>Trainee</li>
-<li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a></li>
-</ul>
-</div>
-</div>
-</div>
- <div class="card-body">
-<div id="apexcharts-area"></div>
-</div>
-</div>
-</div>
-<div class="col-12 col-lg-12 col-xl-12 d-flex">
-    <div class="card flex-fill comman-shadow">
-        <div class="card-body">
-            <div id="calendar-doctor" class="calendar-container"></div>
-                <div class="calendar-info calendar-info1">
-                    <div class="up-come-header">
-                        <h2>Upcoming Classes</h2>
+    <div class="col-12 col-lg-12 col-xl-7 d-flex">
+        <div class="card flex-fill comman-shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <h5 class="card-title">Learning Activity</h5>
                     </div>
-                    {% for classes in fix_classes %}
-                    <div class="calendar-details">
-                        <p style="font-size: 20px;">{{ classes.class_date|date:'F j' }}</p>
-                        <div class="calendar-box normal-bg">
-                            <div class="calandar-event-name">
-                                <h4>{{ classes.title }}</h4>
-                                <h5>{{ classes.description|truncatechars:20 }}</h5>
-                            </div>
-                            <span>{{ classes.start_class|time:'h:i A' }} - {{ classes.end_class|time:'h:i A' }}</span>
+                    <div class="col-6">
+                        <ul class="chart-list-out">
+                            <li><span class="circle-blue"></span>Trainer</li>
+                            <li><span class="circle-green"></span>Trainee</li>
+                            <li class="star-menus"><a href="#"><i class="fas fa-ellipsis-v"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="apexchart-chart-graph"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-12 col-xl-5 d-flex">
+        <div class="card flex-fill comman-shadow">
+            <div class="card-body">
+                <div id="calendar-doctor" class="calendar-container"></div>
+                    <div class="calendar-info calendar-info1">
+                        <div class="up-come-header">
+                            <h2>Upcoming Classes</h2>
                         </div>
+                        {% for classes in fix_classes %}
+                        <div class="calendar-details">
+                            <p style="font-size: 20px;">{{ classes.class_date|date:'F j' }}</p>
+                            <div class="calendar-box normal-bg">
+                                <div class="calandar-event-name">
+                                    <h4>{{ classes.title }}</h4>
+                                    <h5>{{ classes.description|truncatechars:20 }}</h5>
+                                </div>
+                                <span>{{ classes.start_class|time:'h:i A' }} - {{ classes.end_class|time:'h:i A' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-</div>
 {% endif %}
 {% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    $(document).ready(function (){
+        fetch('/api/trainers-trainees-per-month/')
+        .then(response => response.json())
+        .then(chartData => {
+            var options = {
+                chart:{
+                    height:350,
+                    type:"area",
+                    toolbar:{show:false},
+                },
+                dataLabels:{enabled:false},
+                stroke:{curve:"smooth"},
+                series:[
+                {
+                    name:"Trainers",
+                    color:'#007bff',
+                    data:chartData.trainers
+                },
+                {
+                    name:"Trainees",
+                    color:'#28a745',
+                    data:chartData.trainees
+                }],
+                xaxis: {
+                    categories: chartData.months
+                }
+            };
+            var chart = new ApexCharts(document.querySelector("#apexchart-chart-graph"), options);
+            chart.render();
+        })
+    })
+</script>
+{% endblock custom_js %}

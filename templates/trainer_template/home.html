@@ -161,13 +161,13 @@
     <ul class="chart-list-out">
     <li><span class="circle-blue"></span>Trainer</li>
     <li><span class="circle-green"></span>Trainee</li>
-    <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a></li>
+    <li class="star-menus"><a href="#"><i class="fas fa-ellipsis-v"></i></a></li>
     </ul>
     </div>
     </div>
     </div>
     <div class="card-body">
-    <div id="school-area"></div>
+    <div id="school-area-graph"></div>
     </div>
     </div>
     </div>
@@ -230,7 +230,6 @@
 {% endblock main_content %}
 
 {% block custom_js %}
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const dateSelect = document.getElementById('date-select');
@@ -303,5 +302,38 @@
             }
         });
     });
+</script>
+<script>
+    $(document).ready(function (){
+        fetch('/api/trainers-trainees-per-month/')
+        .then(response => response.json())
+        .then(chartData => {
+            var options = {
+                chart:{
+                    height:350,
+                    type:"area",
+                    toolbar:{show:false},
+                },
+                dataLabels:{enabled:false},
+                stroke:{curve:"smooth"},
+                series:[
+                {
+                    name:"Trainers",
+                    color:'#007bff',
+                    data:chartData.trainers
+                },
+                {
+                    name:"Trainees",
+                    color:'#28a745',
+                    data:chartData.trainees
+                }],
+                xaxis: {
+                    categories: chartData.months
+                }
+            };
+            var chart = new ApexCharts(document.querySelector("#school-area-graph"), options);
+            chart.render();
+        })
+    })
 </script>
 {% endblock custom_js %}

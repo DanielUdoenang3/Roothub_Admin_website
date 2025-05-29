@@ -1,8 +1,8 @@
+from email.message import EmailMessage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render,redirect, get_object_or_404
 from roothub_app.EmailBackEnd import EmailBackEnd
 from django.db.models.functions import TruncMonth
-from collections import defaultdict
 from django.db.models import Count
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils.timezone import now
 from .models import *
+import smtplib
 from datetime import datetime, timedelta
 
 # Create your views here.
@@ -39,7 +40,7 @@ def dologin (request):
         return HttpResponse("""<h2>Method not allowed</h2>
                             <p>Try reloading the page</p>
                             <br>Why you are seeing this is because your submision is not POST</br> """)
-    else:
+    if request.method == "POST":
         emails = request.POST.get('email', '').lower()
         password = request.POST.get('password', '')
         if "@" in emails:
@@ -47,21 +48,90 @@ def dologin (request):
         else:
             user = authenticate(request, username=emails, password=password)
         if user!=None:
-            login(request, user)
-            if user.user_type == "1":
-                messages.success(request, "Login Successful")
-                return redirect("admin_home")
-            elif user.user_type == "2":
-                messages.success(request, "Login Successful")
-                return redirect("trainer_home")
+            if user.is_active == True:
+                # try:
+                #     smtp = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
+                #     smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+
+                #     msg = EmailMessage()
+                #     msg['Subject'] = "New Login Detected"
+                #     msg['From'] = EMAIL_HOST_USER
+                #     msg['To'] = user.email
+
+                #     if user.email:
+                #         msg.add_alternative(
+                #             f"""
+                #             <html>
+                #             <body>
+                #                 <p>Dear <strong>{user.first_name.capitalize()} {user.last_name.capitalize()}</strong>,</p>
+                #                 <p>
+                #                     We noticed a new login to your account on <strong>{schoolname}</strong> Admin Platform. If this was you, there's nothing to worry about.
+                #                     However, if you did not initiate this login, please contact our support team immediately.
+                #                 </p>
+                #                 <p>
+                #                     Stay secure, and thank you for being part of our community.
+                #                 </p>
+                #                 <p>
+                #                     For any assistance, feel free to reach out to us at:
+                #                 </p>
+                #                 <p>Email: <a href="mailto:{EMAIL_HOST}">{EMAIL_HOST}</a></p>
+                #                 <p>Phone: <a href="tel:{SCHOOL_NUM1}">{SCHOOL_NUM1}</a> or <a href="tel:{SCHOOL_NUM2}">{SCHOOL_NUM2}</a></p>
+                #                 <p>
+                #                     Or vist our website at:
+                #                 </p>
+                #                 <p>Website: <a href="{SCHOOL_WEB}">{str(SCHOOL_WEB).upper()}</a></p>
+                #                 <p style="margin-top: 20px;">Best regards,</p>
+                #                 <p><strong>{schoolname} Security Management</strong></p>
+                #             </body>
+                #             </html>
+                #             """,
+                #             subtype='html'
+                #         )
+                #         smtp.send_message(msg)
+                #         smtp.quit()
+                # except:
+                #     messages.error(request, f"Please check your internet connection!")
+                #     return render(request, 'index.html', {
+                #         "entered_data": request.POST
+                #     })
+                login(request, user)
+                if user.user_type == "1":
+                    messages.success(request, "Login Successful")
+                    return redirect("admin_home")
+                elif user.user_type == "2":
+                    messages.success(request, "Login Successful")
+                    return redirect("trainer_home")
+                elif user.user_type == "3":
+                    messages.success(request, "Login Successful")
+                    return redirect("trainee_home")
+                else:
+                    messages.error(request, "User type is not recognized.")
+                    return render(request, 'index.html', {
+                            "entered_data": request.POST
+                    })
             else:
-                messages.success(request, "Login Successful")
-                return redirect("trainee_home")
-        else:
-            messages.error(request, "Invalid Login Details")
-            return render(request, 'index.html', {
+                messages.error(request, "Account is not active!")
+                return render(request, 'index.html', {
                         "entered_data": request.POST
                     })
+        else:
+            if "@" in request.POST.get('email'):
+                messages.error(request, "Email and password are invalid!")
+                return render(request, 'index.html', {
+                        "entered_data": request.POST
+                    })
+                
+            else:
+                email=request.POST.get('email')
+                messages.error(request, "Username and password are invalid!")
+                return render(request, 'index.html', {
+                        "entered_data": request.POST
+                    })
+    else:    
+        context={
+            'email':email,
+        }
+        return render(request, 'index.html', context)
         
 def doLogout(request):
     logout(request)
@@ -142,59 +212,60 @@ def profile_update(request, admin):
         users = get_object_or_404(CustomUser, username=admin)
         admin = get_object_or_404(Admin, admin_name=users)
 
-        try:
-            first_name = request.POST.get("first_name")
-            middle_name = request.POST.get("middle_name")
-            last_name = request.POST.get("last_name")
-            address = request.POST.get("address")
-            gender = request.POST.get("gender")
-            phone = request.POST.get("phone")
-            username = request.POST.get("username")
-            email = request.POST.get("email")
-            profile_pic = request.FILES.get("profile_pic")
-            password = request.POST.get("password")
-            personal_info = request.POST.get("personal_info")
+        # try:
+        first_name = request.POST.get("first_name")
+        middle_name = request.POST.get("middle_name")
+        last_name = request.POST.get("last_name")
+        address = request.POST.get("address")
+        gender = request.POST.get("gender")
+        phone = request.POST.get("phone")
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        profile_pic = request.FILES.get("profile_pic")
+        password = request.POST.get("password")
+        personal_info = request.POST.get("personal_info")
 
-            if CustomUser.objects.filter(email__iexact=email).exclude(id=users.id).exists():
-                messages.error(request, "Email already exists!")
-                return redirect("profile")
-            
-            elif len(password) < 8:
-                messages.error(request, "Password must be at least 8 characters long.")
-                return redirect("profile")
-
-            elif 11>len(phone)>15:
-                messages.error(request,"Input an appropiate phone number")
-                return redirect("profile")
-            
-            elif CustomUser.objects.filter(username__iexact=username).exclude(id=users.id).exists():
-                messages.error(request, "Username already exists!")
-                return redirect("profile")
-            else:
-                users.first_name = first_name
-                users.middle_name = middle_name
-                users.last_name = last_name
-                users.email = email
-                # users.username = username
-                if password:
-                    users.set_password(password)
-                if profile_pic:
-                    users.profile_pic = profile_pic
-                users.save()
-
-                admin.gender = gender
-                admin.phone = phone
-                admin.address = address
-                admin.personal_info = personal_info
-                admin.save()
-
-                messages.success(request, "Your profile has been updated successfully")
-                return redirect("profile")
-
-        except Exception as e:
-            print(e)
-            messages.error(request, "An Unexcepted error occured")
+        if CustomUser.objects.filter(email__iexact=email).exclude(id=users.id).exists():
+            messages.error(request, "Email already exists!")
             return redirect("profile")
+        
+        if password:
+            len(password) < 8
+            messages.error(request, "Password must be at least 8 characters long.")
+            return redirect("profile")
+
+        elif 11>len(phone)>15:
+            messages.error(request,"Input an appropiate phone number")
+            return redirect("profile")
+        
+        elif CustomUser.objects.filter(username__iexact=username).exclude(id=users.id).exists():
+            messages.error(request, "Username already exists!")
+            return redirect("profile")
+        else:
+            users.first_name = first_name
+            users.middle_name = middle_name
+            users.last_name = last_name
+            users.email = email
+            # users.username = username
+            if password:
+                users.set_password(password)
+            if profile_pic:
+                users.profile_pic = profile_pic
+            users.save()
+
+            admin.gender = gender
+            admin.phone = phone
+            admin.address = address
+            admin.personal_info = personal_info
+            admin.save()
+
+            messages.success(request, "Your profile has been updated successfully")
+            return redirect("profile")
+
+        # except Exception as e:
+        #     print(e)
+        #     messages.error(request, "An Unexcepted error occured")
+        #     return redirect("profile")
 
 
 @login_required(login_url="/")
@@ -462,32 +533,6 @@ def star_trainee_view(request, date):
     ]
     return JsonResponse({"presentations": presentations_list})
 
-# def get_monthly_data(request):
-#     # Group trainers by month
-#     trainer_data = Trainers.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
-
-#     # Group trainees by month
-#     trainee_data = Trainee.objects.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
-
-#     # Format the data for ApexCharts
-#     months = []
-#     trainer_totals = []
-#     trainee_totals = []
-
-#     # Combine data for trainers and trainees
-#     for trainer in trainer_data:
-#         month = trainer['month'].strftime('%B %Y')  # Format month as "Month Year"
-#         months.append(month)
-#         trainer_totals.append(trainer['total'])
-
-#     for trainee in trainee_data:
-#         trainee_totals.append(trainee['total'])
-
-#     return JsonResponse({
-#         'months': months,
-#         'trainer_totals': trainer_totals,
-#         'trainee_totals': trainee_totals,
-#     })
 def view_annoucements(request):
     announcement = Announcement.objects.filter()
 
@@ -496,66 +541,56 @@ def view_annoucements(request):
     }
     return render(request, "view_announcement.html", content)
 
-# def trainers_trainees_per_month(request):
-#     # Get last 6 months
-#     months = []
-#     now = datetime.now()
-#     for i in range(5, -1, -1):
-#         month = (now.replace(day=1) - timedelta(days=30*i)).strftime('%b %Y')
-#         months.append(month)
-
-#     # Aggregate trainers
-#     trainers = (
-#         Trainers.objects.annotate(month=TruncMonth('updated_at'))
-#         .values('month')
-#         .annotate(count=Count('id'))
-#         .order_by('month')
-#     )
-#     # Aggregate trainees
-#     trainees = (
-#         Trainee.objects.annotate(month=TruncMonth('updated_at'))
-#         .values('month')
-#         .annotate(count=Count('id'))
-#         .order_by('month')
-#     )
-
-#     # Prepare data for chart
-#     month_labels = []
-#     trainer_counts = []
-#     trainee_counts = []
-#     for m in months:
-#         month_labels.append(m)
-#         # Find count for this month
-#         t_count = next((item['count'] for item in trainers if item['month'].strftime('%b %Y') == m), 0)
-#         tr_count = next((item['count'] for item in trainees if item['month'].strftime('%b %Y') == m), 0)
-#         trainer_counts.append(t_count)
-#         trainee_counts.append(tr_count)
-
-#     return JsonResponse({
-#         "months": month_labels,
-#         "trainers": trainer_counts,
-#         "trainees": trainee_counts,
-#     })
-
 def trainers_trainees_per_month(request):
-    # Sample structure: {"May 2025": {"trainers": 3, "trainees": 7}, ...}
-    stats = defaultdict(lambda: {"trainers": 0, "trainees": 0})
+    # Get last 6 months
+    months = []
+    now = datetime.now()
+    for i in range(5, -1, -1):
+        month = (now.replace(day=1) - timedelta(days=30*i)).strftime('%b %Y')
+        months.append(month)
 
-    for trainer in Trainers.objects.all():
-        month = trainer.created_at.strftime('%b %Y')
-        stats[month]["trainers"] += 1
+    # Aggregate trainers
+    trainers = (
+        Trainers.objects.annotate(month=TruncMonth('updated_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    # Aggregate trainees
+    trainees = (
+        Trainee.objects.annotate(month=TruncMonth('updated_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
 
-    for trainee in Trainee.objects.all():
-        month = trainee.created_at.strftime('%b %Y')
-        stats[month]["trainees"] += 1
+    # Prepare data for chart
+    month_labels = []
+    trainer_counts = []
+    trainee_counts = []
+    for m in months:
+        month_labels.append(m)
+        # Find count for this month
+        t_count = next((item['count'] for item in trainers if item['month'].strftime('%b %Y') == m), 0)
+        tr_count = next((item['count'] for item in trainees if item['month'].strftime('%b %Y') == m), 0)
+        trainer_counts.append(t_count)
+        trainee_counts.append(tr_count)
 
-    # Sort by month
-    months = sorted(stats.keys(), key=lambda m: datetime.strptime(m, "%b %Y"))
+    return JsonResponse({
+        "months": month_labels,
+        "trainers": trainer_counts,
+        "trainees": trainee_counts,
+    })
 
-    response = {
-        "months": months,
-        "trainers": [stats[m]["trainers"] for m in months],
-        "trainees": [stats[m]["trainees"] for m in months],
-    }
-
-    return JsonResponse(response)
+def male_female_number_of_trainees(request):
+    data = (
+        Trainee.objects.values('gender')
+        .annotate(count=Count('id'))
+    )
+    # Default to 0 if not found
+    male_count = next((item['count'] for item in data if item['gender'].lower() == 'male'), 0)
+    female_count = next((item['count'] for item in data if item['gender'].lower() == 'female'), 0)
+    return JsonResponse({
+        "labels": ["Male", "Female"],
+        "counts": [male_count, female_count]
+    })

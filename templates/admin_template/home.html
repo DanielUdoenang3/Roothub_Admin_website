@@ -99,7 +99,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="apexcharts-area" style="height: 300px;"></div>
+                    <div id="apexchart-area-graph" style="height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -122,7 +122,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="bar"></div>
+                    <div id="bar-chart"></div>
                 </div>
             </div>
 
@@ -246,35 +246,65 @@
         });
     });
 </script>
-{% comment %} <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    fetch('/api/trainers-trainees-per-month/')
-    .then(response => response.json())
-    .then(chartData => {
-        console.log(chartData); // Should have months, trainers, trainees arrays
+    $(document).ready(function (){
+        if($('#apexchart-area-graph').length>0){
+            fetch('/api/trainers-trainees-per-month/')
+            .then(response => response.json())
+            .then(chartData => {
+                var options = {
+                    chart:{
+                        height:350,
+                        type:"area",
+                        toolbar:{show:false},
+                    },
+                    dataLabels:{enabled:false},
+                    stroke:{curve:"smooth"},
+                    series:[
+                    {
+                        name:"Trainers",
+                        color:'#007bff',
+                        data:chartData.trainers
+                    },
+                    {
+                        name:"Trainees",
+                        color:'#28a745',
+                        data:chartData.trainees
+                    }],
+                    xaxis: {
+                        categories: chartData.months
+                    }
+                };
+                var chart = new ApexCharts(document.querySelector("#apexchart-area-graph"), options);
+                chart.render();
+            })
+        }})
 
-        var options = {
-            chart: { type: 'area', height: 300 },
-            series: [
-                { name: 'Trainers', data: chartData.trainers },
-                { name: 'Trainees', data: chartData.trainees }
-            ],
-            xaxis: {
-                categories: chartData.months
-            },
-            stroke: { curve: 'smooth' },
-            colors: ['#007bff', '#28a745'],
-            legend: { position: 'top' }
-        };
-
-        var chart = new ApexCharts(document.querySelector("#apexchart-area"), options);
-        chart.render();
-    })
-    .catch(error => {
-        console.error('Chart error:', error);
-    });
-
-});
-</script> {% endcomment %}
+         if($('#bar-chart').length>0){
+            fetch('/api/male-female-number-of-trainees/')
+            .then(response => response.json())
+            .then(barData => {
+                var options = {
+                    chart: {
+                        height: 350,
+                        type: 'bar',
+                        width: '100%',
+                        stacked: false,
+                        toolbar: { show: false },
+                    },
+                    series: [{
+                        name: 'Trainees',
+                        data: barData.counts
+                    }],
+                    xaxis: {
+                        categories: barData.labels
+                    },
+                    colors: ['#007bff', '#e83e8c'],
+                    dataLabels: { enabled: true }
+                };
+                var chart = new ApexCharts(document.querySelector("#bar-chart"), options);
+                chart.render();
+            })
+        }
+</script>
 {% endblock custom_js %}
