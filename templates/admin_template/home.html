@@ -83,27 +83,6 @@
 
     <div class="row">
         <div class="col-md-12 col-lg-6">
-            <div class="card card-chart">
-                <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col-6">
-                            <h5 class="card-title">Overview</h5>
-                        </div>
-                        <div class="col-6">
-                            <ul class="chart-list-out">
-                                <li><span class="circle-blue"></span>Trainer</li>
-                                <li><span class="circle-green"></span>Trainee</li>
-                                <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="apexchart-area-graph" style="height: 300px;"></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-12 col-lg-6">
 
             <div class="card card-chart">
                 <div class="card-header">
@@ -126,6 +105,54 @@
                 </div>
             </div>
 
+        </div>
+
+        <div class="col-md-12 col-lg-6">
+
+            <div class="card card-chart">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h5 class="card-title">Number of Trainers</h5>
+                        </div>
+                        <div class="col-6">
+                            <ul class="chart-list-out">
+                                <li><span class="circle-blue"></span>Female</li>
+                                <li><span class="circle-green"></span>Male</li>
+                                <li class="star-menus"><a href="javascript:;"><i
+                                            class="fas fa-ellipsis-v"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="bar-chart2"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-lg-12">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h5 class="card-title">Overview</h5>
+                        </div>
+                        <div class="col-6">
+                            <ul class="chart-list-out">
+                                <li><span class="circle-blue"></span>Trainer</li>
+                                <li><span class="circle-green"></span>Trainee</li>
+                                <li class="star-menus"><a href="javascript:;"><i class="fas fa-ellipsis-v"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="apexchart-area-graph" style="height: 300px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -280,7 +307,7 @@
             })
         }})
 
-         if($('#bar-chart').length>0){
+        if($('#bar-chart').length>0){
             fetch('/api/male-female-number-of-trainees/')
             .then(response => response.json())
             .then(barData => {
@@ -303,6 +330,33 @@
                     dataLabels: { enabled: true }
                 };
                 var chart = new ApexCharts(document.querySelector("#bar-chart"), options);
+                chart.render();
+            })
+        }
+
+        if($('#bar-chart2').length>0){
+            fetch('/api/male-female-number-of-trainers/')
+            .then(response => response.json())
+            .then(barData => {
+                var options = {
+                    chart: {
+                        height: 350,
+                        type: 'bar',
+                        width: '100%',
+                        stacked: false,
+                        toolbar: { show: false },
+                    },
+                    series: [{
+                        name: 'Trainers',
+                        data: barData.counts
+                    }],
+                    xaxis: {
+                        categories: barData.labels
+                    },
+                    colors: ['#007bff', '#e83e8c'],
+                    dataLabels: { enabled: true }
+                };
+                var chart = new ApexCharts(document.querySelector("#bar-chart2"), options);
                 chart.render();
             })
         }

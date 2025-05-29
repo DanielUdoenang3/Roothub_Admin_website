@@ -22,7 +22,7 @@
 <style>
     .loginbox {
     position: relative;
-    padding-top: 60px;
+    {% comment %} padding-top: 6px; {% endcomment %}
     }   
     .login-top {
     position: absolute;
@@ -32,7 +32,7 @@
     z-index: 10;
     width: 65px; 
     height: 65px;
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     }
@@ -41,6 +41,15 @@
         width: 65px;
         height: 65px;
         object-fit: contain;
+    }
+    @media (max-width: 991px) {
+    .login-top {
+        display: flex;
+    }
+    .loginbox {
+    position: relative;
+    padding-top: 60px;
+    } 
     }
 </style>
 <link rel="stylesheet" href="{% static 'assets/css/style.css'%}">

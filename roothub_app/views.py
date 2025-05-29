@@ -49,51 +49,51 @@ def dologin (request):
             user = authenticate(request, username=emails, password=password)
         if user!=None:
             if user.is_active == True:
-                # try:
-                #     smtp = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
-                #     smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                try:
+                    smtp = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
+                    smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
 
-                #     msg = EmailMessage()
-                #     msg['Subject'] = "New Login Detected"
-                #     msg['From'] = EMAIL_HOST_USER
-                #     msg['To'] = user.email
+                    msg = EmailMessage()
+                    msg['Subject'] = "New Login Detected"
+                    msg['From'] = EMAIL_HOST_USER
+                    msg['To'] = user.email
 
-                #     if user.email:
-                #         msg.add_alternative(
-                #             f"""
-                #             <html>
-                #             <body>
-                #                 <p>Dear <strong>{user.first_name.capitalize()} {user.last_name.capitalize()}</strong>,</p>
-                #                 <p>
-                #                     We noticed a new login to your account on <strong>{schoolname}</strong> Admin Platform. If this was you, there's nothing to worry about.
-                #                     However, if you did not initiate this login, please contact our support team immediately.
-                #                 </p>
-                #                 <p>
-                #                     Stay secure, and thank you for being part of our community.
-                #                 </p>
-                #                 <p>
-                #                     For any assistance, feel free to reach out to us at:
-                #                 </p>
-                #                 <p>Email: <a href="mailto:{EMAIL_HOST}">{EMAIL_HOST}</a></p>
-                #                 <p>Phone: <a href="tel:{SCHOOL_NUM1}">{SCHOOL_NUM1}</a> or <a href="tel:{SCHOOL_NUM2}">{SCHOOL_NUM2}</a></p>
-                #                 <p>
-                #                     Or vist our website at:
-                #                 </p>
-                #                 <p>Website: <a href="{SCHOOL_WEB}">{str(SCHOOL_WEB).upper()}</a></p>
-                #                 <p style="margin-top: 20px;">Best regards,</p>
-                #                 <p><strong>{schoolname} Security Management</strong></p>
-                #             </body>
-                #             </html>
-                #             """,
-                #             subtype='html'
-                #         )
-                #         smtp.send_message(msg)
-                #         smtp.quit()
-                # except:
-                #     messages.error(request, f"Please check your internet connection!")
-                #     return render(request, 'index.html', {
-                #         "entered_data": request.POST
-                #     })
+                    if user.email:
+                        msg.add_alternative(
+                            f"""
+                            <html>
+                            <body>
+                                <p>Dear <strong>{user.first_name.capitalize()} {user.last_name.capitalize()}</strong>,</p>
+                                <p>
+                                    We noticed a new login to your account on <strong>{schoolname}</strong> Admin Platform. If this was you, there's nothing to worry about.
+                                    However, if you did not initiate this login, please contact our support team immediately.
+                                </p>
+                                <p>
+                                    Stay secure, and thank you for being part of our community.
+                                </p>
+                                <p>
+                                    For any assistance, feel free to reach out to us at:
+                                </p>
+                                <p>Email: <a href="mailto:{EMAIL_HOST_USER}">{EMAIL_HOST_USER}</a></p>
+                                <p>Phone: <a href="tel:{SCHOOL_NUM1}">{SCHOOL_NUM1}</a> or <a href="tel:{SCHOOL_NUM2}">{SCHOOL_NUM2}</a></p>
+                                <p>
+                                    Or vist our website at:
+                                </p>
+                                <p>Website: <a href="{SCHOOL_WEB}">{str(SCHOOL_WEB).upper()}</a></p>
+                                <p style="margin-top: 20px;">Best regards,</p>
+                                <p><strong>{schoolname} Security Management</strong></p>
+                            </body>
+                            </html>
+                            """,
+                            subtype='html'
+                        )
+                        smtp.send_message(msg)
+                        smtp.quit()
+                except:
+                    messages.error(request, f"Please check your internet connection!")
+                    return render(request, 'index.html', {
+                        "entered_data": request.POST
+                    })
                 login(request, user)
                 if user.user_type == "1":
                     messages.success(request, "Login Successful")
@@ -585,6 +585,19 @@ def trainers_trainees_per_month(request):
 def male_female_number_of_trainees(request):
     data = (
         Trainee.objects.values('gender')
+        .annotate(count=Count('id'))
+    )
+    # Default to 0 if not found
+    male_count = next((item['count'] for item in data if item['gender'].lower() == 'male'), 0)
+    female_count = next((item['count'] for item in data if item['gender'].lower() == 'female'), 0)
+    return JsonResponse({
+        "labels": ["Male", "Female"],
+        "counts": [male_count, female_count]
+    })
+
+def male_female_number_of_trainers(request):
+    data = (
+        Trainers.objects.values('gender')
         .annotate(count=Count('id'))
     )
     # Default to 0 if not found

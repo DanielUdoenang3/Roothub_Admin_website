@@ -134,7 +134,7 @@ def add_trainer_save(request):
                                 <p><strong>Password:</strong> {str(password)}</p>
                                 <p>Access your dashboard at: <a href="{SCHOOL_WEB}" target="_blank">{str(SCHOOL_WEB).upper()}</a></p>
                                 <p style="margin-top: 20px;">Best regards,</p>
-                                <p><strong>{schoolname}</strong></p>
+                                <p><strong>{schoolname} Management</strong></p>
                             </body>
                             </html>
                             """,
@@ -143,7 +143,8 @@ def add_trainer_save(request):
                         smtp.send_message(msg)
                         smtp.quit()
                         email_sent = True
-                    except:
+                    except Exception as e:
+                        print(e)
                         messages.error(request, f"Please check your internet connection!")
                         return render(request, "admin_template/add_trainer.html")
                     

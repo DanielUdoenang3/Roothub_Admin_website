@@ -198,29 +198,26 @@
             </div>
         </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-xl-12 d-flex">
+    <div class="col-12 col-lg-12 col-xl-12 d-flex">
         <div class="card flex-fill student-space comman-shadow">
-                <div class="card-header d-flex align-items-center">
-                    <h5 class="card-title">Star Trainees for the Presentation</h5>
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title">Star Trainees for the Presentation</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="col-12 col-md-8">
+                        <label for="date">Select Presentation Date:</label>
+                        <select id="date-select" class="form-control form-select">
+                            <option value="" disabled selected>Select a date</option>
+                            {% for date in dates %}
+                            <option value="{{ date|date:'Y-m-d'  }}">{{ date|date:"F j, Y" }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <div class="col-12 col-md-8">
-                            <label for="date">Select Presentation Date:</label>
-                            <select id="date-select" class="form-control form-select">
-                                <option value="" disabled selected>Select a date</option>
-                                {% for date in dates %}
-                                <option value="{{ date|date:'Y-m-d'  }}">{{ date|date:"F j, Y" }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
 
-                    <div id="table-star">
-                        <p>Loading data...</p>
-                    </div>
+                <div id="table-star">
+                    <p>Loading data...</p>
                 </div>
             </div>
         </div>

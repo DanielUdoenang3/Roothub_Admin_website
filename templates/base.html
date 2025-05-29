@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/plugins/datatables/datatables.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/loader.css' %}">
     <style>
         span{
             margin-right: 15px;
@@ -23,6 +24,13 @@
 </head>
 
 <body>
+
+    <div id="loader-wrapper">
+        <div id="loader">
+            <img src="{% static 'assets/img/download.png' %}" alt="Loading..." id="loader-logo" />
+            <div class="spinner"></div>
+        </div>
+    </div>
 
     <div class="main-wrapper">
 
@@ -42,7 +50,6 @@
             
         </div>
     </div>
-    {% comment %} <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script> {% endcomment %}
     <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'assets/js/feather.min.js' %}"></script>
@@ -51,6 +58,7 @@
     <script src="{% static 'assets/plugins/apexchart/apexcharts.min.js' %}"></script>
     <script src="{% static 'assets/plugins/apexchart/chart-data.js' %}"></script>
     <script src="{% static 'assets/js/script.js' %}"></script>
+    <script src="{% static 'assets/js/loader.js' %}"></script>
     {% block custom_js %}
     {% endblock custom_js %}
 </body>

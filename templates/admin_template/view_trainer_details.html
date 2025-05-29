@@ -60,7 +60,6 @@
                                 <div class="card-body">
                                     <h5 class="card-title d-flex justify-content-between">
                                     <span>Personal Details</span>
-                                    {% comment %} <a class="edit-link" data-bs-toggle="modal" href="{% url "edit_trainer" trainer.trainer_name.username %}"><i class="far fa-edit me-1"></i>Edit</a> {% endcomment %}
                                     </h5>
                                     <div class="row">
                                         <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name</p>
@@ -108,7 +107,6 @@
                                 <div class="card-body">
                                     <h5 class="card-title d-flex justify-content-between">
                                     <span>Account Status</span>
-                                    {% comment %} <a class="edit-link" href="#"><i class="far fa-edit me-1"></i> Edit</a> {% endcomment %}
                                     </h5>
                                     {% if trainer.trainer_name.is_active == True %}
                                         <button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Active</button>

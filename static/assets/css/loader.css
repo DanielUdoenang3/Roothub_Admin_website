@@ -1,0 +1,52 @@
+/* Loader Wrapper */
+#loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Loader Content */
+#loader {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+/* Logo */
+#loader-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+/* Spinner Ring */
+.spinner {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    border: 8px solid transparent;
+    border-top: 8px solid #3c02f7; /* your primary color */
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+    z-index: 1;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
