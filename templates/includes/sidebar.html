@@ -1,5 +1,5 @@
 {% load static %}
-{% if user.user_type == "1" %}
+{% if request.user.user_type == "1" %}
 <div class="sidebar" id="sidebar">
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
@@ -77,7 +77,7 @@
     </div>
 </div>
 {% endif %}
-{% if user.user_type == "2" %}
+{% if request.user.user_type == "2" %}
 <div class="sidebar" id="sidebar">
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
@@ -125,7 +125,7 @@
     </div>
 </div>
 {% endif %}
-{% if user.user_type == "3" %}
+{% if request.user.user_type == "3" %}
 <div class="sidebar" id="sidebar">
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">

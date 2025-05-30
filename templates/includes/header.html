@@ -26,9 +26,9 @@
 
     <div class="header-left">
         <a href=
-        {% if user.user_type == "1" %}
+        {% if request.user.user_type == "1" %}
         "{% url "admin_home" %}"
-        {% elif user.user_type == "2" %}
+        {% elif request.user.user_type == "2" %}
         "{% url "trainer_home" %}"
         {% else %}
         "{% url "trainee_home" %}"
@@ -36,9 +36,9 @@
          class="logo">
             <img src="{% static 'assets/img/download.png' %}" alt="Logo" style="object-fit: contain;">
         </a>
-        <a href={% if user.user_type == "1" %}
+        <a href={% if request.user.user_type == "1" %}
         "{% url "admin_home" %}"
-        {% elif user.user_type == "2" %}
+        {% elif request.user.user_type == "2" %}
         "{% url "trainer_home" %}"
         {% else %}
         "{% url "trainee_home" %}"
@@ -138,14 +138,14 @@
         <li class="nav-item dropdown has-arrow new-user-menus">
             <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
                 <span class="user-img">
-                    <img class="rounded-circle" src="{{ user.profile_pic.url }}" width="31"
+                    <img class="rounded-circle" src="{{ request.user.profile_pic.url }}" width="31"
                         alt="User Image">
                     <div class="user-text">
-                        <h6>{{ user.username|capfirst }}</h6>
+                        <h6>{{ request.user.username|capfirst }}</h6>
                         <p class="text-muted mb-0">
-                            {% if user.user_type == "1" %}
+                            {% if request.user.user_type == "1" %}
                             Admin
-                            {% elif user.user_type == "2" %}
+                            {% elif request.user.user_type == "2" %}
                             Trainer
                             {% else %}
                             Trainee
@@ -163,9 +163,9 @@
                     <div class="user-text">
                         <h6>{{ user.username|capfirst }}</h6>
                         <p class="text-muted mb-0">
-                            {% if user.user_type == "1" %}
+                            {% if request.user.user_type == "1" %}
                             Admin
-                            {% elif user.user_type == "2" %}
+                            {% elif request.user.user_type == "2" %}
                             Trainer
                             {% else %}
                             Trainee
