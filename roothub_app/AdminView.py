@@ -132,7 +132,7 @@ def add_trainer_save(request):
                                 <p><strong>Username:</strong> {str(username).capitalize()}</p>
                                 <p><strong>Email:</strong> {str(email).capitalize()}</p>
                                 <p><strong>Password:</strong> {str(password)}</p>
-                                <p>Access your dashboard at: <a href="{SCHOOL_WEB}" target="_blank">{str(SCHOOL_WEB).upper()}</a></p>
+                                <p>Access your dashboard at: <a href="https://roothub-admin-website.onrender.com/" target="_blank">RootHub-Admin-Webiste</a></p>
                                 <p style="margin-top: 20px;">Best regards,</p>
                                 <p><strong>{schoolname} Management</strong></p>
                             </body>
@@ -345,7 +345,7 @@ def add_trainee_save(request):
                                 <p><strong>Username:</strong> {str(username).capitalize()}</p>
                                 <p><strong>Email:</strong> {str(email).capitalize()}</p>
                                 <p><strong>Password:</strong> {str(password)}</p>
-                                <p>Access your dashboard at: <a href="{SCHOOL_WEB}" target="_blank">{str(SCHOOL_WEB).upper()}</a></p>
+                                <p>Access your dashboard at: <a href="https://roothub-admin-website.onrender.com/" target="_blank">RootHub-Admin-Webiste</a></p>
                                 <p style="margin-top: 20px;">Best regards,</p>
                                 <p><strong>{schoolname}</strong></p>
                             </body>
