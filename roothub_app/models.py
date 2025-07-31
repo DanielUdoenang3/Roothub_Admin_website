@@ -19,7 +19,7 @@ class CustomUser(AbstractUser):
     middle_name = models.CharField(max_length=200, blank=True)
 
 class Admin(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     admin_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
     phone = models.CharField(
@@ -41,7 +41,7 @@ class Admin(models.Model):
         return self.admin_name.first_name
 
 class Trainers(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     trainer_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
     address = models.TextField()
@@ -70,7 +70,7 @@ class Trainers(models.Model):
         return f"{self.trainer_name.first_name} {self.trainer_name.last_name}"
 
 class Courses(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     course_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True, on_delete=models.CASCADE)
@@ -81,8 +81,23 @@ class Courses(models.Model):
     def __str__(self):
         return self.course_name
 
+class Level(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    level = models.CharField(max_length=255)
+    course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class CourseLevelTrainer(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    level_id = models.ForeignKey(Level, blank=True, null=True,on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
+    trainer_id = models.ForeignKey(Trainers, blank=True, null=True,on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 class Trainee(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     trainee_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
     address = models.TextField()
@@ -103,13 +118,12 @@ class Trainee(models.Model):
     course_id = models.ForeignKey(Courses, on_delete=models.SET_NULL, related_name="trainees", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    objects = models.Manager()
 
     def __str__(self):
         return f"Trainee {self.trainee_name.first_name} {self.trainee_name.last_name}'s details"
 
 class Attendance(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)
     trainees = models.ManyToManyField(Trainee, related_name="attendance_records")
     attendance_date = models.DateField(default=timezone.now)
@@ -117,7 +131,7 @@ class Attendance(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class Presentation(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     title = models.CharField(max_length=255)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="presentations")
     trainee = models.ForeignKey(Trainee, on_delete=models.CASCADE, related_name="presentations")
@@ -132,7 +146,7 @@ class Presentation(models.Model):
         return ((self.score_appearance + self.score_content) / 20) * 100
 
 class Presentation_report(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
     presentation_id = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -142,7 +156,7 @@ class Presentation_report(models.Model):
         return f"Presentation Report for {self.trainee_id} - {self.presentation_id.title}"
 
 class AttendanceReport(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     student_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
     attendance_id = models.ForeignKey(Attendance, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
@@ -153,7 +167,7 @@ class AttendanceReport(models.Model):
         return f"Attendance Report for {self.student_id} - Status: {'Present' if self.status else 'Absent'}"
 
 class FeedBackStudent(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     student_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
     feedback = models.TextField()
     feedback_reply = models.TextField()
@@ -161,7 +175,7 @@ class FeedBackStudent(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
 class FeedBackTrainer(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
     feedback = models.TextField()
     feedback_reply = models.TextField()
@@ -169,21 +183,21 @@ class FeedBackTrainer(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
 class NotificationStudent(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     student_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
 class NotificationTrainer(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
 class Assignment(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)
     trainer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -211,6 +225,7 @@ class AssignmentSubmission(models.Model):
         return f"{self.assignment.title} - {self.trainee.trainee_name.username}"
 
 class Announcement(models.Model):
+    id = models.AutoField(primary_key=True, unique=True) 
     title = models.CharField(max_length=255)
     description = models.TextField()
     file = models.FileField(upload_to='announcements', blank=True, null=True)
@@ -221,6 +236,7 @@ class Announcement(models.Model):
         return f"{self.title} - {self.description}"
 
 class Fix_Class(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
     title = models.CharField(max_length=225)
     description = models.TextField()
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)
@@ -233,7 +249,7 @@ class Fix_Class(models.Model):
         return f"{self.title} - {self.description} at {self.class_date} during {self.start_class} to {self.end_class}"
     
 class PaymentHistory(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -244,28 +260,34 @@ class PaymentHistory(models.Model):
         return f"Payment of {self.amount} for {self.course_id} by {self.trainee_id}"
     
 class PaymentMethod(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
     method_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.method_name
-    
+
 class PaymentTransaction(models.Model):
-    id = models.AutoField(primary_key=True)
+    Transaction_Status = (
+        ('Success', 'Success'),
+        ('Pending', 'Pending'),
+        ('Failed', 'Failed')
+    )
+
+    id = models.AutoField(primary_key=True, unique=True)
     payment_history = models.ForeignKey(PaymentHistory, on_delete=models.CASCADE)
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=50, choices=[('Success', 'Success'), ('Pending', 'Pending'), ('Failed', 'Failed')])
+    status = models.CharField(max_length=50, choices=Transaction_Status, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Transaction {self.transaction_id} - {self.status}"
     
 class Payment(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, unique=True)
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):

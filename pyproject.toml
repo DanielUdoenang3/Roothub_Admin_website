@@ -1,0 +1,15 @@
+[project]
+name = "roothub-admin-website-django"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2.4",
+    "gunicorn>=23.0.0",
+    "pillow>=11.3.0",
+    "psycopg2-binary>=2.9.10",
+    "python-decouple>=3.8",
+    "python-dotenv>=1.1.1",
+    "whitenoise>=6.9.0",
+]
