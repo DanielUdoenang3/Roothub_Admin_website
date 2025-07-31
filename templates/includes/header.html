@@ -19,6 +19,17 @@
             text-align: center;
             z-index: 10;
         }
+        @media (max-width: 600px) {
+            #notification-dropdown {
+                left: 0 !important;
+                right: 0 !important;
+                width: 95vw !important;
+                min-width: unset !important;
+                max-width: unset !important;
+                margin: 0 auto !important;
+                transform: translate(0, 42px) !important;
+            }
+        }
     </style>
 </head>
 
@@ -88,7 +99,7 @@
             <a href="javascript" class="nav-link header-nav-list" id="notification-icon">
                 <i class="fa fa-bell"><span id="notification-badge" class="badge bg-success" >0</span></i>
             </a>
-            <div class="dropdown-menu notifications" id="notification-dropdown" style="position: absolute; inset: 0px 40px auto auto; margin: 17px; transform: translate(0px, 42px); display: none; z-index: 9999; width: 300px; max-height: 400px; overflow-y: auto;">
+            <div class="dropdown-menu notifications" id="notification-dropdown" style="position: absolute; right: 0; left: auto; margin: 0; transform: translate(0px, 42px); display: none; z-index: 9999; width: 300px; max-height: 400px; overflow-y: auto;">
                 <div class="topnav-dropdown-header">
                     <span class="notification-title">Announcements</span>
                 </div>
