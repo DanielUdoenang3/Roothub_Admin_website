@@ -39,7 +39,7 @@
     width: 150px;
     height: 150px;
     border: 8px solid transparent;
-    border-top: 8px solid #ff0000; /* your primary color */
+    border-top: 8px solid #3c02f7; /* your primary color */
     border-radius: 50%;
     animation: spin 1.5s linear infinite;
     z-index: 1;

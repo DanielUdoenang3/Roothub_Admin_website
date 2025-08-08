@@ -1,6 +1,6 @@
 window.addEventListener("load", function () {
-    const loadingScreen = document.getElementById("loading-screen");
-    const mainContent = document.getElementById("main-content");
+    const loadingScreen = document.getElementById("loader-wrapper");
+    const mainContent = document.getElementById("main-wrapper");
 
     loadingScreen.style.opacity = 1;
     const fadeEffect = setInterval(() => {

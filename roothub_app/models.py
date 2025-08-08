@@ -73,9 +73,10 @@ class Courses(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     course_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    months = models.CharField(max_length=200)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
 
     def __str__(self):
@@ -86,7 +87,7 @@ class Level(models.Model):
     level = models.CharField(max_length=255)
     course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class CourseLevelTrainer(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -94,11 +95,27 @@ class CourseLevelTrainer(models.Model):
     course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class Trainee(models.Model):
+    TRAINEE_CATEGORIES = [
+        ('Regular', 'Regular Trainee'),
+        ('SIWES', 'SIWES Intern'),
+        ('Extern', 'Extern'),
+        ('Triptern', 'Triptern'),
+        ('Bootcamp', 'Bootcamp Kid'),
+    ]
+
+    PAYMENT_OPTION = [
+        ('Full Payment', 'Full Payment'),
+        ('70% upfront and 30% later', '70% upfront and 30% later'),
+        ('Monthly Payment', 'Monthly Payment'),
+    ]
+    
     id = models.AutoField(primary_key=True, unique=True)
     trainee_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    category = models.CharField(max_length=100, choices=TRAINEE_CATEGORIES)
+    payment_option = models.CharField(max_length=100, choices=PAYMENT_OPTION)
     gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
     address = models.TextField()
     city = models.CharField(max_length=255)
@@ -128,7 +145,7 @@ class Attendance(models.Model):
     trainees = models.ManyToManyField(Trainee, related_name="attendance_records")
     attendance_date = models.DateField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class Presentation(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -139,6 +156,7 @@ class Presentation(models.Model):
     comment = models.TextField()
     score_appearance = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     score_content = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    presentation_file = models.FileField(upload_to="presentation", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

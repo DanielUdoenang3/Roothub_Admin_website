@@ -1,149 +1,231 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block main_content %}
-{% if request.user.user_type == "1" %}
-<div class="page-header">
-    <div class="row align-items-center">
-        <div class="col">
-            <h3 class="page-title">Add Trainers</h3>
-            <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_trainer' %}">Trainers</a></li>
-                <li class="breadcrumb-item active">Add Trainer</li>
-            </ul>
+    {% if request.user.user_type == "1" %}
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Add Trainers</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'view_trainer' %}">Trainers</a>
+                        </li>
+                        <li class="breadcrumb-item active">Add Trainer</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-12">
-    <div class="card">
-    <div class="card-body">
-    <form method="POST" enctype="multipart/form-data" action="{% url "add_trainer_save" %}">
-    {% csrf_token %}
-    {% include "includes/messages.html" %}
-    <div class="row">
-    <div class="col-12">
-    <h5 class="form-title"><span>Basic Details</span></h5>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>First Name </label>
-    <input type="text" class="form-control" name="first_name" placeholder="Enter First Name" required>
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label> Middle Name</label>
-    <input type="text" class="form-control" name="middle_name" placeholder="Enter Middle Name">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-        <div class="form-group local-forms">
-        <label> Last Name</label>
-        <input type="text" class="form-control" name="last_name" placeholder="Enter Last Name" required>
+
+        <!-- Main Form Container -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data" action="{% url 'add_trainer_save' %}">
+                            {% csrf_token %}
+                            {% include "includes/messages.html" %}
+                            
+                            <div class="row">
+                                <!-- Basic Details Section -->
+                                <div class="col-12">
+                                    <h5 class="form-title">
+                                        <span>Basic Details</span>
+                                    </h5>
+                                </div>
+
+                                <!-- First Name -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>First Name</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="first_name" 
+                                               placeholder="Enter First Name" 
+                                               required>
+                                    </div>
+                                </div>
+
+                                <!-- Middle Name -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Middle Name</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="middle_name" 
+                                               placeholder="Enter Middle Name">
+                                    </div>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Last Name</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="last_name" 
+                                               placeholder="Enter Last Name" 
+                                               required>
+                                    </div>
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Gender</label>
+                                        <select class="form-control form-select" 
+                                                aria-hidden="true" 
+                                                name="gender">
+                                            <option disabled selected hidden required>Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Mobile</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="phone" 
+                                               placeholder="Enter Phone">
+                                    </div>
+                                </div>
+
+                                <!-- Experience -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Experience</label>
+                                        <input class="form-control" 
+                                               type="text" 
+                                               name="experience" 
+                                               placeholder="Enter Experience">
+                                    </div>
+                                </div>
+
+                                <!-- Profile Photo Upload -->
+                                <center>
+                                    <div class="col-12 col-sm-6">
+                                        <div class="form-group students-up-files">
+                                            <label>Upload Trainer Photo (150px X 150px)</label>
+                                            <div class="uplod">
+                                                <label class="file-upload image-upbtn mb-0">
+                                                    Choose File
+                                                    <input type="file" accept="image/*" name="profile_pic">
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </center>
+
+                                <!-- Username -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Username</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="username" 
+                                               placeholder="Enter Username" 
+                                               required>
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Email</label>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               name="email" 
+                                               placeholder="Enter Email" 
+                                               required>
+                                    </div>
+                                </div>
+
+                                <!-- Password -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Password</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="password1" 
+                                               placeholder="Enter Password" 
+                                               required>
+                                    </div>
+                                </div>
+
+                                <!-- Repeat Password -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Repeat Password</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="password2" 
+                                               placeholder="Repeat Password">
+                                    </div>
+                                </div>
+
+                                <!-- Address Section -->
+                                <div class="col-12">
+                                    <h5 class="form-title">
+                                        <span>Address</span>
+                                    </h5>
+                                </div>
+
+                                <!-- City -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>City</label>
+                                        <input type="text" class="form-control" name="city" placeholder="Enter City">
+                                    </div>
+                                </div>
+
+                                <!-- State -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>State</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="state" 
+                                               placeholder="Enter State">
+                                    </div>
+                                </div>
+
+                                <!-- Country -->
+                                <div class="col-12 col-sm-4">
+                                    <div class="form-group local-forms">
+                                        <label>Country</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="country" 
+                                               placeholder="Enter Country">
+                                    </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group local-forms">
+                                        <label>Address</label>
+                                        <textarea class="form-control" name="address" placeholder="Enter Full Address" rows="5" cols="5"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="col-12">
+                                    <div class="student-submit">
+                                        <button type="submit" class="btn btn-primary">
+                                            Add Trainer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Gender </label>
-    <select class="form-control form-select" aria-hidden="true" name="gender">
-        <option disabled selected hidden required>Select Gender</option>
-        <option value="Male" >Male</option>
-        <option value="Female" >Female</option>
-    </select>
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Mobile </label>
-    <input type="text" class="form-control" name="phone" placeholder="Enter Phone">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Religion </label>
-    <input class="form-control" name="religion" type="text" placeholder="Enter Religion">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-        <div class="form-group local-forms">
-        <label>Experience </label>
-        <input class="form-control" type="text" name="experience" placeholder="Enter Experience">
-        </div>
-    </div>
-    <div class="col-12 col-sm-6">
-        <div class="form-group students-up-files">
-        <label>Upload Trainer Photo (150px X 150px)</label>
-        <div class="uplod">
-        <label class="file-upload image-upbtn mb-0">
-        Choose File <input type="file" accept="image/*" name="profile_pic">
-        </label>
-        </div>
-        </div>
-    </div>
-    <div class="col-12">
-    <h5 class="form-title"><span>Login Details</span></h5>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Username </label>
-    <input type="text" class="form-control" name="username" placeholder="Enter Username" required>
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Email</label>
-    <input type="email" class="form-control" name="email" placeholder="Enter Email" required>
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Password </label>
-    <input type="text" class="form-control" name="password1" placeholder="Enter Password" required>
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Repeat Password </label>
-    <input type="text" class="form-control" name="password2" placeholder="Repeat Password">
-    </div>
-    </div>
-    <div class="col-12">
-    <h5 class="form-title"><span>Address</span></h5>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Address </label>
-    <input type="text" class="form-control" name="address" placeholder="Enter address">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>City </label>
-    <input type="text" class="form-control" name="city" placeholder="Enter City">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>State </label>
-    <input type="text" class="form-control" name="state" placeholder="Enter State">
-    </div>
-    </div>
-    <div class="col-12 col-sm-4">
-    <div class="form-group local-forms">
-    <label>Country </label>
-    <input type="text" class="form-control" name="country" placeholder="Enter Country">
-    </div>
-    </div>
-    <div class="col-12">
-    <div class="student-submit">
-    <button type="submit" class="btn btn-primary">Add Trainer</button>
-    </div>
-    </div>
-    </div>
-    </form>
-    </div>
-    </div>
-    </div>
-</div>
-{% endif %}
+    {% endif %}
 {% endblock main_content %}
