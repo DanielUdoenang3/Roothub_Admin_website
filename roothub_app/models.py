@@ -45,10 +45,9 @@ class Trainers(models.Model):
     trainer_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
     address = models.TextField()
-    religion = models.CharField(max_length=255)
-    city = models.CharField(max_length=255)
-    state = models.CharField(max_length=255)
-    experience = models.CharField(max_length=700)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
+    skill_expertise = models.TextField(max_length=700)
     phone = models.CharField(
         max_length=15,
         blank=True,
@@ -60,10 +59,12 @@ class Trainers(models.Model):
         ]
     )
     country = models.CharField(max_length=255)
+    birthday = models.DateField(max_length=255, blank=True, null=True)
+    competent_skills = models.TextField()
+    account_no = models.CharField(max_length=255, blank=True, null=True)
+    bank = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    course_id = models.ManyToManyField(
-        'Courses',
-        related_name='trainers')
+    course_id = models.ManyToManyField('Courses', related_name='trainers')
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -85,6 +86,7 @@ class Courses(models.Model):
 class Level(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     level = models.CharField(max_length=255)
+    descriptions = models.CharField(max_length=1000, blank=True, null=True)
     course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -117,10 +119,9 @@ class Trainee(models.Model):
     category = models.CharField(max_length=100, choices=TRAINEE_CATEGORIES)
     payment_option = models.CharField(max_length=100, choices=PAYMENT_OPTION)
     gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
-    address = models.TextField()
-    city = models.CharField(max_length=255)
-    state = models.CharField(max_length=255)
-    religion = models.CharField(max_length=255)
+    address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(
         max_length=15,
         blank=True,
@@ -131,7 +132,22 @@ class Trainee(models.Model):
             )
         ]
     )
-    country = models.CharField(max_length=255)
+    country = models.CharField(max_length=255, blank=True, null=True)
+    name_of_school = models.CharField(max_length=255, blank=True, null=True)
+    course_of_study = models.CharField(max_length=255, blank=True, null=True)
+    matric_number = models.CharField(max_length=255, blank=True, null=True)
+    duration_of_intership = models.CharField(max_length=255, blank=True, null=True)
+    amount_paid = models.CharField(max_length=255, blank=True, null=True)
+    date_of_payment = models.DateField(blank=True, null=True)
+    commencement_date = models.DateField(blank=True, null=True)
+
+    # Next of Kin(nok)
+    nok_first_name = models.CharField(max_length=255, blank=True, null=True)
+    nok_last_name = models.CharField(max_length=255, blank=True, null=True)
+    nok_email = models.CharField(max_length=255, blank=True, null=True)
+    nok_phone = models.CharField(max_length=255, blank=True, null=True)
+    nok_relationship = models.CharField(max_length=255, blank=True, null=True)
+
     course_id = models.ForeignKey(Courses, on_delete=models.SET_NULL, related_name="trainees", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -139,6 +155,12 @@ class Trainee(models.Model):
     def __str__(self):
         return f"Trainee {self.trainee_name.first_name} {self.trainee_name.last_name}'s details"
 
+class TrainerCourseAssignment(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
+    
 class Attendance(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)

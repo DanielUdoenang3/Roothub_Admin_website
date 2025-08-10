@@ -70,7 +70,7 @@
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>Trainee Category</label>
-                                    <select name="gender" class="form-control form-select" required>
+                                    <select name="category" class="form-control form-select" required>
                                         <option value="" disabled selected>Select Trainee Category</option>
                                         <option value="Regular">Regular Trainee</option>
                                         <option value="SIWES">SIWES Intern</option>
@@ -81,49 +81,6 @@
                                 </div>
                             </div>
 
-                            <!-- <div class="col-12 col-sm-10" id="select-siwes-intern">
-                                <div class="col-12 col-sm-4">
-                                    <div class="form-group local-forms">
-                                        <label>Name of School</label>
-                                        <input type="text" class="form-control" name="school" placeholder="Enter Name of School" required>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-4">
-                                    <div class="form-group local-forms">
-                                        <label>Course of Study</label>
-                                        <input type="text" class="form-control" name="school" placeholder="Enter Course of Study" required>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-4">
-                                    <div class="form-group local-forms">
-                                        <label>Matric Number</label>
-                                        <input type="text" class="form-control" name="school" placeholder="Enter Matric Number" required>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-4">
-                                    <div class="form-group local-forms">
-                                        <label>Duration of Intership</label>
-                                        <input type="text" class="form-control" name="school" placeholder="Enter Duration of Intership" required>
-                                    </div>
-                                </div>
-                            </div> -->
-                            
-                            <center>
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-group students-up-files">
-                                        <label>Upload Profile Photo (150px X 150px)</label>
-                                        <div class="uplod">
-                                            <label class="file-upload image-upbtn mb-0">
-                                                Choose File <input type="file" accept="image/*" name="profile_pic">
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </center>
-                            
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>Username</label>
@@ -144,13 +101,51 @@
                                     <input type="password" class="form-control" name="password1" placeholder="Enter Password" required>
                                 </div>
                             </div>
-                            
-                            <!-- <div class="col-12 col-sm-4">
-                                <div class="form-group local-forms">
-                                    <label>Confirm Password</label>
-                                    <input type="password" class="form-control" name="password2" placeholder="Confirm Password" required>
+
+                            <center>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group students-up-files">
+                                        <label>Upload Profile Photo (150px X 150px)</label>
+                                        <div class="uplod">
+                                            <label class="file-upload image-upbtn mb-0">
+                                                Choose File <input type="file" accept="image/*" name="profile_pic">
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div> -->
+                            </center>
+
+                            <div class="col-12" id="select-siwes-head" style="display:none;">
+                                <h5 class="form-title"><span>SIWES Details</span></h5>
+                            </div>
+
+                            <div class="col-12 col-sm-7" id="select-siwes-intern" style="display:none;">
+                                <div class="form-group local-forms">
+                                    <label>Name of School</label>
+                                    <input type="text" class="form-control" name="school_name" placeholder="Enter Name of School" required>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-5" id="select-siwes-intern2" style="display:none;">
+                                <div class="form-group local-forms">
+                                    <label>Course of Study</label>
+                                    <input type="text" class="form-control" name="course_of_study" placeholder="Enter Course of Study" required>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6" id="select-siwes-intern3" style="display:none;">
+                                <div class="form-group local-forms">
+                                    <label>Matric Number</label>
+                                    <input type="text" class="form-control" name="matric_number" placeholder="Enter Matric Number" required>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-5" id="select-siwes-intern4" style="display:none;">
+                                <div class="form-group local-forms">
+                                    <label>Duration of Internship</label>
+                                    <input type="text" class="form-control" name="internship_duration" placeholder="Enter Duration of Internship" required>
+                                </div>
+                            </div>
                             
                             <div class="col-12">
                                 <h5 class="form-title"><span>Address Information</span></h5>
@@ -241,14 +236,14 @@
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>First Name</label>
-                                    <input type="text" name="full_name" class="form-control" placeholder="Enter Full Name" required>
+                                    <input type="text" name="next_first_name" class="form-control" placeholder="Enter Full Name" required>
                                 </div>
                             </div>
 
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>Last Name</label>
-                                    <input type="text" name="full_name" class="form-control" placeholder="Enter Full Name" required>
+                                    <input type="text" name="next_last_name" class="form-control" placeholder="Enter Full Name" required>
                                 </div>
                             </div>
 
@@ -292,17 +287,23 @@
             // Get references to the select elements
             const courseSelect = document.querySelector('select[name="course"]');
             const paymentSelect = document.querySelector('select[name="payment"]');
-        
+            const traineeCategorySelect = document.querySelector('select[name="category"]');
+            const siwesSectionHead = document.getElementById('select-siwes-head');
+            const siwesSection = document.getElementById('select-siwes-intern');
+            const siwesSection2 = document.getElementById('select-siwes-intern2');
+            const siwesSection3 = document.getElementById('select-siwes-intern3');
+            const siwesSection4 = document.getElementById('select-siwes-intern4');
+
             // Create a display area for payment info, styled professionally
             let paymentInfo = document.createElement('div');
             paymentInfo.id = 'payment-info';
             paymentInfo.className = 'alert alert-info mt-3';
             paymentInfo.style.display = 'none';
-        
+
             // Insert paymentInfo directly below the Payment Option select field
             const paymentFormGroup = paymentSelect.closest('.form-group');
             paymentFormGroup.appendChild(paymentInfo);
-        
+
             // Store course data for quick lookup
             let courseData = {};
             {% for course in courses %}
@@ -311,31 +312,31 @@
                     months: {{ course.duration_months|default:1 }}
                 };
             {% endfor %}
-        
+
             function formatCurrency(amount) {
                 return '₦' + Number(amount).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             }
-        
+
             function updatePaymentInfo() {
                 const courseId = courseSelect.value;
                 const paymentOption = paymentSelect.value;
                 paymentInfo.innerHTML = '';
                 paymentInfo.style.display = 'none';
-        
+
                 if (!courseId || !paymentOption) {
                     return;
                 }
-        
+
                 const course = courseData[courseId];
                 if (!course) {
                     paymentInfo.innerHTML = '<span style="color: #e74c3c;">Invalid course selection.</span>';
                     paymentInfo.style.display = 'block';
                     return;
                 }
-        
+
                 const price = parseFloat(course.price);
                 const months = parseInt(course.months) || 1;
-        
+
                 if (paymentOption === 'Full Payment') {
                     paymentInfo.innerHTML = `
                         <i class="fas fa-money-bill-wave"></i>
@@ -365,9 +366,31 @@
                 }
                 paymentInfo.style.display = 'block';
             }
-        
+
             courseSelect.addEventListener('change', updatePaymentInfo);
             paymentSelect.addEventListener('change', updatePaymentInfo);
+
+            // SIWES Intern section show/hide logic
+            traineeCategorySelect.addEventListener('change', function() {
+                if (traineeCategorySelect.value === 'SIWES') {
+                    siwesSectionHead.style.display = 'block'
+                    siwesSection.style.display = 'block';
+                    siwesSection2.style.display = 'block';
+                    siwesSection3.style.display = 'block';
+                    siwesSection4.style.display = 'block';
+                } else {
+                    siwesSection.style.display = 'none';
+                    siwesSection2.style.display = 'none';
+                    siwesSection3.style.display = 'none';
+                    siwesSection4.style.display = 'none';
+                }
+            });
+            // On page load, check if SIWES is selected
+            if (traineeCategorySelect.value === 'SIWES') {
+                siwesSection.style.display = 'block';
+            } else {
+                siwesSection.style.display = 'none';
+            }
         });
     </script>
 {% endif %}

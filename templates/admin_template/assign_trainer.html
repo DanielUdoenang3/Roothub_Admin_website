@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load custom_filters %}
 
 {% block main_content %}
 {% if request.user.user_type == "1" %}
@@ -27,46 +28,45 @@
                 </div>
                 <div class="col-12 col-sm-8">
                   <div class="form-group local-forms">
-                    <label for="course">Course </span></label>
-                    <select name="course_id" id="course" class="form-control form-select" aria-hidden="true" required>
-                        <option value="" disabled selected>Select a course</option>
-                        {% for course in courses %}
-                        <option value="{{ course.id }}">{{ course.course_name }}</option>
-                        {% endfor %}
+                    <label for="trainer">Trainer</label>
+                    <select name="trainer_id" id="trainer" class="form-control form-select" required>
+                      <option value="" disabled selected>Select a trainer</option>
+                      {% for trainer in trainers %}
+                        <option value="{{ trainer.id }}">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                 </div>
-                
+
                 <div class="col-12 col-sm-8">
-                  <div class="form-group local-forms">
-                    <label for="trainer">Trainer</label>
-                      <select name="trainer_id" id="trainer" class="form-control form-select" required>
-                          <option value="" disabled selected>Select a trainer</option>
-                          {% for trainer in trainers %}
-                          <option value="{{ trainer.id }}">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</option>
-                          {% endfor %}
-                      </select>
+                  <div class="form-group">
+                    <label>Courses</label>
+                    <ul id="courses-list" class="list-group mb-2">
+                      {% for course in courses %}
+                        <li class="list-group-item d-flex align-items-center">
+                          <input class="form-check-input course-checkbox" style="margin-right: 1rem;" type="checkbox" name="course_ids" value="{{ course.id }}" id="course_{{ course.id }}">
+                          <label class="form-check-label w-100 local-forms" for="course_{{ course.id }}" style="margin-left: 1.5rem;">
+                            <div class="d-flex justify-content-between align-items-center local-forms">
+                              <span><strong>{{ course.course_name }}</strong></span>
+                              <span class="text-muted small">Price: ₦{{ course.price }} | Months: {{ course.months }}</span>
+                            </div>
+                          </label>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                    <small class="form-text text-muted">Tick the courses to assign. You can select multiple. <span class="text-success">Already assigned courses are shown above and cannot be reassigned.</span></small>
                   </div>
                 </div>
-                
-                <div class="col-12 col-sm-6">
-                  <div class="form-group local-form">
-                      <div id="current-trainer-info" class="form-group" style="display:none;">
-                          <label>Current Trainer Assigned:</label>
-                              <strong style="color: darkslateblue;">
-                                  <p id="current-trainer-name"></p>
-                              </strong>
-                          <label>Do you want to remove the current trainer and assign a new one?</label>
-                          <select name="confirmation" class="form-control form-select" id="confirmation">
-                              <option value="no">No</option>
-                              <option value="yes">Yes</option>
-                          </select>
-                      </div>
+
+                <div class="col-12">
+                  <div id="levels-section">
+                    <!-- Levels for selected courses will be shown here -->
                   </div>
-                </div> 
+                </div>
                 <div class="col-12">
                   <div class="student-submit">
-                  <button type="submit" class="btn btn-primary">Assign Trainer</button>
+                    <button type="submit" class="btn btn-primary">Assign Trainer</button>
+                  </div>
                 </div>
             </div>
           </form>
@@ -75,35 +75,96 @@
     </div>
 </div>
 <script>
-    const courseSelect = document.getElementById("course");
-    const trainerSelect = document.getElementById("trainer");
-    const currentTrainerInfo = document.getElementById("current-trainer-info");
-    const confirmationSelect = document.getElementById("confirmation");
-    const assignTrainerBtn = document.getElementById("assign-trainer-btn");
+    // Data for levels per course (to be provided by backend as JSON)
+    const levelsData = {
+      {% for course in courses %}
+        '{{ course.id }}': [
+          {% for level in course.level_set.all %}
+            { id: '{{ level.id }}', name: '{{ level.level }}', desc: '{{ level.descriptions|default:"" }}' },
+          {% endfor %}
+        ],
+      {% endfor %}
+    };
 
-    courseSelect.addEventListener("change", function() {
-      const courseId = courseSelect.value;
-      
-      // Make an AJAX request to get the current trainer assigned to this course
-      fetch(`/get_current_trainer/${courseId}`)
+    function getAssignedCourses() {
+      const trainerSelect = document.getElementById('trainer');
+      const trainerId = trainerSelect.value;
+      if (!trainerId) return {};
+      let assigned = {};
+      {% if assigned_levels %}
+        assigned = {{ assigned_levels|safe }};
+      {% endif %}
+      return assigned;
+    }
+
+    function updateLevelsDisplay(assignedLevels = {}) {
+      const courseCheckboxes = document.querySelectorAll('.course-checkbox');
+      const levelsSection = document.getElementById('levels-section');
+      levelsSection.innerHTML = '';
+      const selected = Array.from(courseCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+      selected.forEach(courseId => {
+        const levels = levelsData[courseId] || [];
+        const courseDiv = document.createElement('div');
+        courseDiv.className = 'mb-3 p-3 border rounded';
+        const courseLabel = document.querySelector(`label[for='course_${courseId}'] strong`);
+        const courseName = courseLabel ? courseLabel.textContent : '';
+        courseDiv.innerHTML = `<h6>Levels for <span style=\"color: #007bff;\">${courseName}</span></h6>`;
+        if (levels.length > 0) {
+          levels.forEach(level => {
+            const isAssigned = assignedLevels[courseId] && assignedLevels[courseId].includes(level.id);
+            const checked = isAssigned ? 'checked' : '';
+            const badge = isAssigned ? '<span class=\"badge bg-success ms-2\">Assigned</span>' : '';
+            const levelRow = document.createElement('div');
+            levelRow.className = 'form-check';
+            levelRow.innerHTML = `
+              <input class=\"form-check-input\" type=\"checkbox\" name=\"level_ids_${courseId}\" value=\"${level.id}\" id=\"level_${courseId}_${level.id}\" ${checked}>
+              <label class=\"form-check-label\" for=\"level_${courseId}_${level.id}\">\n                <strong>${level.name}</strong> <span class=\"text-muted\">${level.desc}</span> ${badge}
+              </label>
+            `;
+            courseDiv.appendChild(levelRow);
+          });
+        } else {
+          courseDiv.innerHTML += '<p class=\"text-muted\">No levels available for this course.</p>';
+        }
+        levelsSection.appendChild(courseDiv);
+      });
+    }
+
+    document.getElementById('trainer').addEventListener('change', function() {
+      const trainerId = this.value;
+      if (!trainerId) return;
+      fetch(`/get_trainer_assignments/${trainerId}`)
         .then(response => response.json())
         .then(data => {
-          if (data.trainer) {
-            currentTrainerInfo.style.display = "block";
-            document.getElementById("current-trainer-name").innerText = data.trainer;
-          } else {
-            currentTrainerInfo.style.display = "none";
-          }
+          // Convert keys to string for JS compatibility
+          Object.keys(data).forEach(key => {
+            data[key] = data[key].map(String);
+          });
+          // Uncheck all course checkboxes
+          document.querySelectorAll('.course-checkbox').forEach(cb => cb.checked = false);
+          // Uncheck all level checkboxes
+          document.querySelectorAll('[id^="level_"]').forEach(cb => cb.checked = false);
+          updateLevelsDisplay(data);
         });
     });
 
-    confirmationSelect.addEventListener("change", function() {
-      if (confirmationSelect.value === 'no') {
-        trainerSelect.disabled = false;
-      }
-      else {
-        trainerSelect.disabled = false;
-      }
+    document.querySelectorAll('.course-checkbox').forEach(cb => {
+      cb.addEventListener('change', function() {
+        // Fetch current trainer assignments for checked levels
+        const trainerId = document.getElementById('trainer').value;
+        if (!trainerId) {
+          updateLevelsDisplay({});
+          return;
+        }
+        fetch(`/get_trainer_assignments/${trainerId}`)
+          .then(response => response.json())
+          .then(data => {
+            Object.keys(data).forEach(key => {
+              data[key] = data[key].map(String);
+            });
+            updateLevelsDisplay(data);
+          });
+      });
     });
 </script>
 {% endif %}

@@ -191,7 +191,6 @@ def add_trainer_save(request):
             last_name = request.POST.get("last_name").capitalize()
             gender = request.POST.get("gender")
             phone  = request.POST.get("phone")
-            religion = request.POST.get("religion")
             experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
             username = request.POST.get("username").lower().strip()
@@ -201,6 +200,10 @@ def add_trainer_save(request):
             city = request.POST.get("city")
             state = request.POST.get("state")
             country = request.POST.get("country")
+            birthday = request.POST.get("birthday")
+            competent_skils = request.POST.get("competent_skils")
+            account_no = request.POST.get("account_no")
+            bank = request.POST.get("bank")
             
             if CustomUser.objects.filter(email__iexact=email).exists():
                 messages.error(request, "Email already exists!")
@@ -240,9 +243,13 @@ def add_trainer_save(request):
                 trainer.address = address
                 trainer.state = state
                 trainer.city = city
-                trainer.experience = experience
+                trainer.skill_expertise = experience
                 trainer.country = country
                 trainer.phone = phone
+                trainer.account_no = account_no
+                trainer.birthday = birthday
+                trainer.competent_skills = competent_skils
+                trainer.bank = bank
                 trainer.save()
                 user.save()
 
@@ -419,16 +426,28 @@ def add_trainee_save(request):
             category = request.POST.get("category")
             gender = request.POST.get("gender")
             phone  = request.POST.get("phone")
-            religion = request.POST.get("religion")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
             username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
+            school_name  = request.POST.get("school_name")
+            course_of_study  = request.POST.get("course_of_study")
+            matric_number  = request.POST.get("matric_number")
+            internship_duration  = request.POST.get("internship_duration")
             password = request.POST.get("password1")
             address = request.POST.get("address")
             city = request.POST.get("city")
             state = request.POST.get("state")
             country = request.POST.get("country")
+            payment  = request.POST.get("payment")
             course_choice = request.POST.get("course")
+            amount_paid = request.POST.get("amount_paid")
+            date_of_payment = request.POST.get("date_of_payment")
+            commencement_date = request.POST.get("commencement_date")
+            next_first_name = request.POST.get("next_first_name")
+            next_last_name = request.POST.get("next_last_name")
+            next_email = request.POST.get("next_email")
+            next_phone = request.POST.get("next_phone")
+            relation = request.POST.get("relation")
 
             if CustomUser.objects.filter(email__iexact=email).exists():
                 messages.error(request, "Email already exists!")
@@ -471,11 +490,23 @@ def add_trainee_save(request):
                     trainees.gender = gender
                     trainees.address = address
                     trainees.category = category
-                    trainees.religion = religion
+                    trainees.name_of_school = school_name
                     trainees.state = state
                     trainees.city = city
                     trainees.country = country
                     trainees.phone = phone
+                    trainees.course_of_study = course_of_study
+                    trainees.matric_number = matric_number
+                    trainees.duration_of_intership = internship_duration
+                    trainees.payment_option = payment
+                    trainees.amount_paid = amount_paid
+                    trainees.date_of_payment = date_of_payment
+                    trainees.commencement_date = commencement_date
+                    trainees.nok_first_name = next_last_name
+                    trainees.nok_last_name = next_first_name
+                    trainees.nok_email = next_email
+                    trainees.nok_phone = next_phone
+                    trainees.nok_relationship = relation
                 except Exception as ex:
                     print(ex)
                     messages.error(request, "An error saving the Trainee details occured")
@@ -525,7 +556,6 @@ def add_course_save(request):
             course_name = request.POST.get("course")
             price = request.POST.get("price","").strip()
             month = request.POST.get("month")
-            level = request.POST.get("level")
 
             if not course_name:
                 messages.error(request, "Course name cannot be empty.")
@@ -559,10 +589,23 @@ def add_course_save(request):
 
             else:
                 try:
-                    new_course = Courses.objects.create(course_name=course_name , price=price_value, month=month)
+                    new_course = Courses.objects.create(course_name=course_name , price=price_value, months=month)
                     new_course.save()
 
-                    level_test = Level.objects.create(level=level, course_id=new_course)
+                    i = 1
+                    while True:
+                        level_name = request.POST.get(f'level_name_{i}')
+                        level_desc = request.POST.get(f'level_desc_{i}')
+                        if not level_name:
+                            break
+                        Level.objects.create(
+                            level=level_name,
+                            course_id=new_course,
+                            descriptions=level_desc if level_desc else ""
+                            # You can add a description field to Level if needed
+                        )
+                        i += 1
+
                     messages.success(request, f"The Course: '{course_name}' has been added successfully with its corresponding price '{price}'!")
                     return redirect("add_course") 
             
@@ -595,50 +638,74 @@ def view_course(request):
 
 @login_required(login_url="/")
 def assign_trainer(request):
-    courses = Courses.objects.all()
+    courses = Courses.objects.prefetch_related('level_set').all()
     trainers = Trainers.objects.all()
 
-    if request.method == 'POST':
-        course_id = request.POST.get('course_id')
+    assigned_courses = []
+    assigned_levels = {}
+    selected_trainer = None
+
+    if request.method == "POST":
         trainer_id = request.POST.get('trainer_id')
-
-        course = get_object_or_404(Courses, id=course_id)
         trainer = get_object_or_404(Trainers, id=trainer_id)
+        selected_trainer = trainer
 
-        if course.trainer_id:
-            confirmation = request.POST.get('confirmation', 'no')
-            if confirmation == 'yes':
-                current_trainer = course.trainer_id
-                course.trainer_id = trainer
-                course.save()
-                trainer.course_id.add(course)
-                # current_trainer.course_id.remove(course)
+        # Get already assigned courses/levels for this trainer
+        assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
+        assigned_courses = assignments.values_list('course_id', flat=True).distinct()
+        assigned_levels = {}
+        for assignment in assignments:
+            assigned_levels.setdefault(assignment.course_id.id, []).append(assignment.level_id.id)
 
-                messages.success(request, f" The Trainer '{trainer.trainer_name.first_name} {trainer.trainer_name.last_name}' has been assigned to the course {course.course_name}.")
-            else:
-                messages.error(request, "Trainer assignment was cancelled.")
-        else:
-            course.trainer_id = trainer
-            course.save()
-            trainer.course_id.add(course)
-
-            messages.success(request, f" The Trainer '{trainer.trainer_name.first_name} {trainer.trainer_name.last_name}' has been assigned to the course {course.course_name}.")
-
+        # Get selected course IDs (from multi-select)
+        course_ids = request.POST.getlist('course_ids')
+        for course_id in course_ids:
+            course = get_object_or_404(Courses, id=course_id)
+            # Get selected levels for this course
+            level_ids = request.POST.getlist(f'level_ids_{course_id}')
+            for level_id in level_ids:
+                level = get_object_or_404(Level, id=level_id)
+                # Prevent duplicate assignment
+                if not TrainerCourseAssignment.objects.filter(trainer_id=trainer, course_id=course, level_id=level).exists():
+                    TrainerCourseAssignment.objects.create(
+                        trainer_id=trainer,
+                        course_id=course,
+                        level_id=level
+                    )
+        messages.success(request, "Trainer assignments saved successfully.")
         return redirect('assign_trainer')
-    
-    content = {
-                'courses': courses,
-               'trainers': trainers
-        }
 
-    return render(request, "admin_template/assign_trainer.html",content)
+    # If GET and trainer selected, show assigned courses/levels
+    elif request.method == "GET" and request.GET.get('trainer_id'):
+        trainer_id = request.GET.get('trainer_id')
+        trainer = get_object_or_404(Trainers, id=trainer_id)
+        selected_trainer = trainer
+        assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
+        assigned_courses = assignments.values_list('course_id', flat=True).distinct()
+        assigned_levels = {}
+        for assignment in assignments:
+            assigned_levels.setdefault(assignment.course_id.id, []).append(assignment.level_id.id)
 
-# @login_required(login_url="/")
-# def assign_trainer(request):
+    context = {
+        "courses": courses,
+        "trainers": trainers,
+        "assigned_courses": assigned_courses,
+        "assigned_levels": assigned_levels,
+        "selected_trainer": selected_trainer,
+    }
+    return render(request, "admin_template/assign_trainer.html", context)
 
-
-
-#     return render(request, "admin_template/assign_trainer.html")
+# AJAX endpoint to fetch assigned courses/levels for a trainer
+@login_required(login_url="/")
+def get_trainer_assignments(request, trainer_id):
+    trainer = get_object_or_404(Trainers, id=trainer_id)
+    assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
+    data = {}
+    for assignment in assignments:
+        course_id = assignment.course_id.id
+        level_id = assignment.level_id.id
+        data.setdefault(str(course_id), []).append(level_id)
+    return JsonResponse(data)
 
 @login_required(login_url="/")
 def get_current_trainer(request, course_id):
@@ -661,7 +728,6 @@ def edit_trainer(request,trainer):
             last_name = request.POST.get("last_name").capitalize()
             gender = request.POST.get("gender")
             phone  = request.POST.get("phone")
-            religion = request.POST.get("religion")
             experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic')
             username = request.POST.get("username").strip().lower()
@@ -712,10 +778,9 @@ def edit_trainer(request,trainer):
 
             trainers.gender = gender
             trainers.address = address
-            trainers.religion = religion
             trainers.state = state
             trainers.city = city
-            trainers.experience=experience
+            trainers.skill_expertise=experience
             trainers.country = country
             trainers.phone = phone
             trainers.save()
@@ -746,7 +811,6 @@ def edit_trainee(request, trainee):
             last_name = request.POST.get("last_name").capitalize()
             gender = request.POST.get("gender")
             phone = request.POST.get("phone")
-            religion = request.POST.get("religion")
             profile_pic = request.FILES.get('profile_pic')
             username = request.POST.get("username").strip().lower()
             email = request.POST.get("email").lower().replace(' ', '')
@@ -791,7 +855,6 @@ def edit_trainee(request, trainee):
 
             trainees.gender = gender
             trainees.address = address
-            trainees.religion = religion
             trainees.state = state
             trainees.city = city
             trainees.country = country

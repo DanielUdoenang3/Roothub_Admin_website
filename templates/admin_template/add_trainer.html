@@ -31,7 +31,7 @@
                                 <!-- Basic Details Section -->
                                 <div class="col-12">
                                     <h5 class="form-title">
-                                        <span>Basic Details</span>
+                                        <span>Personal Details</span>
                                     </h5>
                                 </div>
 
@@ -94,34 +94,15 @@
                                                placeholder="Enter Phone">
                                     </div>
                                 </div>
-
-                                <!-- Experience -->
+                                
                                 <div class="col-12 col-sm-4">
                                     <div class="form-group local-forms">
-                                        <label>Experience</label>
-                                        <input class="form-control" 
-                                               type="text" 
-                                               name="experience" 
-                                               placeholder="Enter Experience">
+                                        <label>Birthday</label>
+                                        <input type="date" name="birthday" class="form-control" required>
                                     </div>
                                 </div>
+                                <p>
 
-                                <!-- Profile Photo Upload -->
-                                <center>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="form-group students-up-files">
-                                            <label>Upload Trainer Photo (150px X 150px)</label>
-                                            <div class="uplod">
-                                                <label class="file-upload image-upbtn mb-0">
-                                                    Choose File
-                                                    <input type="file" accept="image/*" name="profile_pic">
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </center>
-
-                                <!-- Username -->
                                 <div class="col-12 col-sm-4">
                                     <div class="form-group local-forms">
                                         <label>Username</label>
@@ -157,16 +138,50 @@
                                     </div>
                                 </div>
 
-                                <!-- Repeat Password -->
-                                <div class="col-12 col-sm-4">
+                                <p>
+                                <!-- Experience -->
+                                <div class="col-12 col-sm-6">
                                     <div class="form-group local-forms">
-                                        <label>Repeat Password</label>
-                                        <input type="text" 
-                                               class="form-control" 
-                                               name="password2" 
-                                               placeholder="Repeat Password">
+                                        <label>Skill Expertise</label>
+                                        <textarea class="form-control" name="experience" placeholder="Enter Expertise" rows="5" cols="5"></textarea>
                                     </div>
                                 </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group local-forms">
+                                        <label>Competent Skills</label>
+                                        <textarea class="form-control" name="competent_skils" placeholder="Enter Competent Skills" rows="5" cols="5"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-5">
+                                    <div class="form-group local-forms">
+                                        <label>Account Number</label>
+                                        <input type="text" name="account_no" placeholder="Enter Account Number" class="form-control" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-5">
+                                    <div class="form-group local-forms">
+                                        <label>Bank</label>
+                                        <input type="text" name="bank" class="form-control" placeholder="Enter Bank Name" required>
+                                    </div>
+                                </div>
+
+                                <!-- Profile Photo Upload -->
+                                <center>
+                                    <div class="col-12 col-sm-6">
+                                        <div class="form-group students-up-files">
+                                            <label>Upload Trainer Photo (150px X 150px)</label>
+                                            <div class="uplod">
+                                                <label class="file-upload image-upbtn mb-0">
+                                                    Choose File
+                                                    <input type="file" accept="image/*" name="profile_pic">
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </center>
 
                                 <!-- Address Section -->
                                 <div class="col-12">

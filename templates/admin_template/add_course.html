@@ -32,23 +32,55 @@
                         <input type="text" class="form-control" name="course" placeholder="Enter Course" required>
                     </div>
                 </div>
-                <div class="col-12 col-sm-8">
+                <div class="col-12 col-sm-6">
                     <div class="form-group local-forms">
                         <label>Price</label>
                         <input type="text" class="form-control" name="price" placeholder="Enter Price" required>
                     </div>
                 </div>
-                <div class="col-12 col-sm-8">
+                <div class="col-12 col-sm-5">
                     <div class="form-group local-forms">
                         <label>Month</label>
                         <input type="number" class="form-control" name="month" placeholder="Enter Number Month" required>
                     </div>
                 </div>
-                <!-- Give me a nice javascript UI for me to be abale to add level
-                 In a way that If i add the first level i can click a plus button and another space for me to add another level will be there
-                 I can add as many level as I want
-                 
-                 Each level will have a nmae and a description, the description is optional-->
+                <div class="col-12 col-sm-10">
+                    <div class="form-group local-forms">
+                        <label>Levels</label>
+                        <div id="levels-container">
+                            <!-- Level fields will be added here -->
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm mt-2" onclick="addLevel()">+ Add Level</button>
+                    </div>
+                </div>
+                <script>
+                let levelCount = 0;
+                function addLevel() {
+                    levelCount++;
+                    const container = document.getElementById('levels-container');
+                    const levelDiv = document.createElement('div');
+                    levelDiv.className = 'level-entry mb-2 p-2 border rounded';
+                    levelDiv.innerHTML = `
+                        <div class="row align-items-end">
+                            <div class="col-4">
+                                <input type="text" class="form-control" name="level_name_${levelCount}" placeholder="Level Name" required>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" name="level_desc_${levelCount}" placeholder="Description (optional)">
+                            </div>
+                            <div class="col-2 text-end">
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" onclick="removeLevel(this)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(levelDiv);
+                }
+                function removeLevel(btn) {
+                    btn.closest('.level-entry').remove();
+                }
+                // Add one level by default
+                window.onload = function() { addLevel(); };
+                </script>
                 <div class="col-12">
                     <div class="student-submit">
                     <button type="submit" class="btn btn-primary">Add Course</button>
