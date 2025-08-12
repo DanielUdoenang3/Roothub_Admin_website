@@ -203,7 +203,7 @@
                                         <option value="" disabled selected>Select Payment Option</option>
                                         <option value="Full Payment">Full Payment</option>
                                         <option value="70% upfront and 30% later">70% upfront and 30% later</option>
-                                        <option value="monthly payment">Monthly Payment</option>
+                                        <option value="Monthly Payment">Monthly Payment</option>
                                     </select>
                                 </div>
                             </div>
@@ -309,7 +309,7 @@
             {% for course in courses %}
                 courseData["{{ course.id }}"] = {
                     price: {{ course.price|floatformat:2 }},
-                    months: {{ course.duration_months|default:1 }}
+                    months: {{ course.months|default:1 }}
                 };
             {% endfor %}
 
@@ -335,7 +335,9 @@
                 }
 
                 const price = parseFloat(course.price);
-                const months = parseInt(course.months) || 1;
+                // Always get months from the selected course
+                let months = parseInt(course.months);
+                if (isNaN(months) || months <= 0) months = 1;
 
                 if (paymentOption === 'Full Payment') {
                     paymentInfo.innerHTML = `
@@ -351,7 +353,7 @@
                         Pay <span style="color:#155724;">${formatCurrency(upfront)}</span> now (70%)<br>
                         and <span style="color:#856404;">${formatCurrency(later)}</span> later (30%).
                     `;
-                } else if (paymentOption === 'monthly payment') {
+                } else if (paymentOption === 'Monthly Payment') {
                     if (months <= 0) {
                         paymentInfo.innerHTML = '<span style="color: #e67e22;">Course duration not specified for monthly payment.</span>';
                     } else {
