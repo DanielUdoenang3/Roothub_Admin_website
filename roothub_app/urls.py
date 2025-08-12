@@ -35,6 +35,7 @@ urlpatterns = [
     path('assign_trainer', AdminView.assign_trainer, name="assign_trainer"),
     path('get_current_trainer/<int:course_id>', AdminView.get_current_trainer, name='get_current_trainer'),
     path('get_trainer_assignments/<int:trainer_id>', AdminView.get_trainer_assignments, name='get_trainer_assignments'),
+    path('remove_trainer_assignment/', AdminView.remove_trainer_assignment, name='remove_trainer_assignment'),
 
     # Edit Trainer
     path('edit_trainer/<trainer>', AdminView.edit_trainer, name="edit_trainer"),

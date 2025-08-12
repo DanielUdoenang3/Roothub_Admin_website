@@ -1,3 +1,4 @@
+from django.views.decorators.http import require_POST
 from email.message import EmailMessage
 import smtplib
 from django.http import HttpResponse, JsonResponse
@@ -59,6 +60,22 @@ def home(request):
         # 'available_dates': available_dates,
     }
     return render(request, "admin_template/home.html",content)
+
+@require_POST
+def remove_trainer_assignment(request):
+    trainer_id = request.POST.get('trainer_id')
+    course_id = request.POST.get('course_id')
+    level_id = request.POST.get('level_id')
+    try:
+        assignment = TrainerCourseAssignment.objects.get(
+            trainer_id_id=trainer_id,
+            course_id_id=course_id,
+            level_id_id=level_id
+        )
+        assignment.delete()
+        return JsonResponse({'success': True})
+    except TrainerCourseAssignment.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Assignment not found.'}, status=404)
 
 @login_required(login_url="/")
 def add_trainer(request):

@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     <!-- <link rel="stylesheet" href="{% static 'assets/css/professional.css' %}"> -->
     <link rel="stylesheet" href="{% static 'assets/css/loader.css' %}">
+    {% block extra_head %}
+    {% endblock extra_head %}
     <style>
         span{
             margin-right: 15px;
@@ -42,7 +44,6 @@
 
         <div class="page-wrapper">
             <div class="content container-fluid">
-
                 {% block main_content %}
                 {% endblock main_content %}
                 

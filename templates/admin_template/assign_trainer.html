@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block extra_head %}
+<!-- Bootstrap Icons CDN for professional icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
 {% load custom_filters %}
 
 {% block main_content %}
@@ -54,7 +58,14 @@
                         </li>
                       {% endfor %}
                     </ul>
-                    <small class="form-text text-muted">Tick the courses to assign. You can select multiple. <span class="text-success">Already assigned courses are shown above and cannot be reassigned.</span></small>
+                    <small class="form-text text-muted">Tick the courses to assign. You can select multiple.</small>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div id="assigned-section" class="mb-4">
+                    <h6 class="mb-2">Assigned Courses & Levels</h6>
+                    <div id="assigned-list"></div>
                   </div>
                 </div>
 
@@ -75,28 +86,95 @@
     </div>
 </div>
 <script>
-    // Data for levels per course (to be provided by backend as JSON)
-    const levelsData = {
-      {% for course in courses %}
-        '{{ course.id }}': [
-          {% for level in course.level_set.all %}
-            { id: '{{ level.id }}', name: '{{ level.level }}', desc: '{{ level.descriptions|default:"" }}' },
-          {% endfor %}
-        ],
-      {% endfor %}
-    };
+    // --- Professional JavaScript for Trainer Assignment UI ---
+    // Build levelsData and coursesData for lookup
+    const levelsData = {};
+    const coursesData = {};
+    {% for course in courses %}
+      levelsData['{{ course.id }}'] = [
+        {% for level in course.level_set.all %}
+          { id: '{{ level.id }}', name: '{{ level.level }}', desc: '{{ level.descriptions|default:"" }}' },
+        {% endfor %}
+      ];
+      coursesData['{{ course.id }}'] = {
+        id: '{{ course.id }}',
+        name: '{{ course.course_name }}',
+        price: '{{ course.price }}',
+        months: '{{ course.months }}'
+      };
+    {% endfor %}
 
-    function getAssignedCourses() {
-      const trainerSelect = document.getElementById('trainer');
-      const trainerId = trainerSelect.value;
+    // Utility: fetch assignments for a trainer
+    async function fetchAssignments(trainerId) {
       if (!trainerId) return {};
-      let assigned = {};
-      {% if assigned_levels %}
-        assigned = {{ assigned_levels|safe }};
-      {% endif %}
-      return assigned;
+      try {
+        const response = await fetch(`/get_trainer_assignments/${trainerId}`);
+        if (!response.ok) return {};
+        const data = await response.json();
+        // Convert all level IDs to strings for consistency
+        Object.keys(data).forEach(key => {
+          data[key] = data[key].map(String);
+        });
+        return data;
+      } catch (err) {
+        console.error('Error fetching assignments:', err);
+        return {};
+      }
     }
 
+    // --- Enhanced Assigned Section UI ---
+    async function updateAssignedSection(trainerId) {
+      const assignedList = document.getElementById('assigned-list');
+      assignedList.innerHTML = '';
+      if (!trainerId) return;
+      const data = await fetchAssignments(trainerId);
+      if (Object.keys(data).length === 0) {
+        assignedList.innerHTML = '<span class="text-muted">No assignments yet.</span>';
+        return;
+      }
+      Object.keys(data).forEach(courseId => {
+        const course = coursesData[courseId];
+        const courseName = course ? course.name : 'Unknown Course';
+        const levels = levelsData[courseId] || [];
+        const assignedLevels = data[courseId];
+        if (assignedLevels && assignedLevels.length > 0) {
+          // Card style for each course
+          const courseCard = document.createElement('div');
+          courseCard.className = 'card shadow-sm mb-3';
+          courseCard.style.borderLeft = '5px solid #007bff';
+          const cardBody = document.createElement('div');
+          cardBody.className = 'card-body';
+          cardBody.innerHTML = `<div class='d-flex justify-content-between align-items-center mb-2'>
+            <span class='fw-bold text-primary'><i class='bi bi-journal-bookmark-fill me-2'></i> ${courseName}</span>
+            <span class='text-muted small'>${course.price ? '₦'+course.price : ''} ${course.months ? '| '+course.months+' months' : ''}</span>
+          </div>`;
+          // Levels list
+          const levelsRow = document.createElement('div');
+          levelsRow.className = 'd-flex flex-wrap gap-2';
+          assignedLevels.forEach(levelId => {
+            const level = levels.find(l => l.id == levelId);
+            if (level) {
+              const levelBadge = document.createElement('span');
+              levelBadge.className = 'badge bg-gradient bg-success px-3 py-2 d-flex align-items-center';
+              levelBadge.style.fontSize = '1rem';
+              levelBadge.style.position = 'relative';
+              levelBadge.innerHTML = `
+                <i class='bi bi-layers me-1'></i> ${level.name}
+                <button type='button' class='btn btn-sm btn-light ms-2 remove-assignment' data-course='${courseId}' data-level='${level.id}' data-trainer='${trainerId}' title='Remove assignment' style='padding:0 0.4rem; border-radius:50%;'>
+                  <i class='bi bi-trash3-fill text-danger'></i>
+                </button>
+              `;
+              levelsRow.appendChild(levelBadge);
+            }
+          });
+          cardBody.appendChild(levelsRow);
+          courseCard.appendChild(cardBody);
+          assignedList.appendChild(courseCard);
+        }
+      });
+    }
+
+    // Update the levels display for selected courses
     function updateLevelsDisplay(assignedLevels = {}) {
       const courseCheckboxes = document.querySelectorAll('.course-checkbox');
       const levelsSection = document.getElementById('levels-section');
@@ -104,67 +182,124 @@
       const selected = Array.from(courseCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
       selected.forEach(courseId => {
         const levels = levelsData[courseId] || [];
+        const course = coursesData[courseId];
+        const courseName = course ? course.name : '';
         const courseDiv = document.createElement('div');
         courseDiv.className = 'mb-3 p-3 border rounded';
-        const courseLabel = document.querySelector(`label[for='course_${courseId}'] strong`);
-        const courseName = courseLabel ? courseLabel.textContent : '';
-        courseDiv.innerHTML = `<h6>Levels for <span style=\"color: #007bff;\">${courseName}</span></h6>`;
+        courseDiv.innerHTML = `<h6>Levels for <span style='color: #007bff;'>${courseName}</span></h6>`;
         if (levels.length > 0) {
           levels.forEach(level => {
             const isAssigned = assignedLevels[courseId] && assignedLevels[courseId].includes(level.id);
             const checked = isAssigned ? 'checked' : '';
-            const badge = isAssigned ? '<span class=\"badge bg-success ms-2\">Assigned</span>' : '';
+            const badge = isAssigned ? '<span class="badge bg-success ms-2">Assigned</span>' : '';
             const levelRow = document.createElement('div');
             levelRow.className = 'form-check';
             levelRow.innerHTML = `
-              <input class=\"form-check-input\" type=\"checkbox\" name=\"level_ids_${courseId}\" value=\"${level.id}\" id=\"level_${courseId}_${level.id}\" ${checked}>
-              <label class=\"form-check-label\" for=\"level_${courseId}_${level.id}\">\n                <strong>${level.name}</strong> <span class=\"text-muted\">${level.desc}</span> ${badge}
+              <input class='form-check-input' type='checkbox' name='level_ids_${courseId}' value='${level.id}' id='level_${courseId}_${level.id}' ${checked}>
+              <label class='form-check-label' for='level_${courseId}_${level.id}'>
+                <strong>${level.name}</strong> <span class='text-muted'>${level.desc}</span> ${badge}
               </label>
             `;
             courseDiv.appendChild(levelRow);
           });
         } else {
-          courseDiv.innerHTML += '<p class=\"text-muted\">No levels available for this course.</p>';
+          courseDiv.innerHTML += '<p class="text-muted">No levels available for this course.</p>';
         }
         levelsSection.appendChild(courseDiv);
       });
     }
 
-    document.getElementById('trainer').addEventListener('change', function() {
+    // On trainer change, update assignments and levels
+    document.getElementById('trainer').addEventListener('change', async function() {
       const trainerId = this.value;
       if (!trainerId) return;
-      fetch(`/get_trainer_assignments/${trainerId}`)
-        .then(response => response.json())
-        .then(data => {
-          // Convert keys to string for JS compatibility
-          Object.keys(data).forEach(key => {
-            data[key] = data[key].map(String);
-          });
-          // Uncheck all course checkboxes
-          document.querySelectorAll('.course-checkbox').forEach(cb => cb.checked = false);
-          // Uncheck all level checkboxes
-          document.querySelectorAll('[id^="level_"]').forEach(cb => cb.checked = false);
-          updateLevelsDisplay(data);
-        });
+      const data = await fetchAssignments(trainerId);
+      document.querySelectorAll('.course-checkbox').forEach(cb => cb.checked = false);
+      document.querySelectorAll('[id^="level_"]').forEach(cb => cb.checked = false);
+      updateLevelsDisplay(data);
+      updateAssignedSection(trainerId);
     });
 
+    // On course checkbox change, update levels and assignments
     document.querySelectorAll('.course-checkbox').forEach(cb => {
-      cb.addEventListener('change', function() {
-        // Fetch current trainer assignments for checked levels
+      cb.addEventListener('change', async function() {
         const trainerId = document.getElementById('trainer').value;
         if (!trainerId) {
           updateLevelsDisplay({});
           return;
         }
-        fetch(`/get_trainer_assignments/${trainerId}`)
-          .then(response => response.json())
-          .then(data => {
-            Object.keys(data).forEach(key => {
-              data[key] = data[key].map(String);
-            });
-            updateLevelsDisplay(data);
-          });
+        const data = await fetchAssignments(trainerId);
+        updateLevelsDisplay(data);
+        updateAssignedSection(trainerId);
       });
+    });
+
+    // Confirmation modal for removal
+    function showConfirmModal(onConfirm) {
+      let modal = document.getElementById('confirmModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'confirmModal';
+        modal.className = 'modal fade';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+          <div class='modal-dialog modal-dialog-centered'>
+            <div class='modal-content'>
+              <div class='modal-header'>
+                <h5 class='modal-title text-danger'><i class='bi bi-exclamation-triangle-fill me-2'></i>Confirm Removal</h5>
+                <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+              </div>
+              <div class='modal-body'>
+                <p>Are you sure you want to remove this assignment?</p>
+              </div>
+              <div class='modal-footer'>
+                <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                <button type='button' class='btn btn-danger' id='confirmRemoveBtn'>Remove</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      // Bootstrap modal
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+      // Confirm button
+      const confirmBtn = modal.querySelector('#confirmRemoveBtn');
+      confirmBtn.onclick = function() {
+        bsModal.hide();
+        onConfirm();
+      };
+    }
+
+    // Remove assignment via AJAX with confirmation
+    document.addEventListener('click', async function(e) {
+      if (e.target.classList.contains('remove-assignment') || (e.target.closest && e.target.closest('.remove-assignment'))) {
+        const btn = e.target.classList.contains('remove-assignment') ? e.target : e.target.closest('.remove-assignment');
+        const trainerId = btn.getAttribute('data-trainer');
+        const courseId = btn.getAttribute('data-course');
+        const levelId = btn.getAttribute('data-level');
+        showConfirmModal(async function() {
+          try {
+            const response = await fetch('/remove_trainer_assignment/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: `trainer_id=${trainerId}&course_id=${courseId}&level_id=${levelId}`
+            });
+            const result = await response.json();
+            if (result.success) {
+              await updateAssignedSection(trainerId);
+              const data = await fetchAssignments(trainerId);
+              updateLevelsDisplay(data);
+            }
+          } catch (err) {
+            console.error('Error removing assignment:', err);
+          }
+        });
+      }
     });
 </script>
 {% endif %}
