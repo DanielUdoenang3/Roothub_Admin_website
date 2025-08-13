@@ -19,7 +19,33 @@ from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+AUTH_USER_MODEL = config('AUTH_USER_MODEL') 
 
+MAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+SCHOOL_NAME = config('SCHOOL_NAME')
+SCHOOL_SLOGAN = config('SCHOOL_SLOGAN')
+SCHOOL_LOCATION = config('SCHOOL_LOCATION')
+SCHOOL_NUM1 = config('SCHOOL_NUM1')
+SCHOOL_NUM2 = config('SCHOOL_NUM2')
+SCHOOL_WEB = config('SCHOOL_WEB')
+ABOUT_SCHOOL = config('ABOUT_SCHOOL')
+
+RESEND_EMAIL = config('RESEND_EMAIL')
+RESEND_API_KEY = config('RESEND_API_KEY')
+
+FORGET_PASSWORD_LINK = config("FORGET_PASSWORD_LINK")
+ALOWED_HOST_INTERNAL1 = config("ALOWED_HOST_INTERNAL1")
+ALOWED_HOST_INTERNAL2 = config("ALOWED_HOST_INTERNAL2")
+ALOWED_HOST_ONLINE = config ("ALOWED_HOST_ONLINE")
+
+JWT_ALGORITHM = config("JWT_ALGORITHM")
+ACCESS_TOKEN_EXPIRES_IN = config("ACCESS_TOKEN_EXPIRES_IN")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -30,7 +56,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ['roothub-admin-website.onrender.com','localhost', '127.0.0.1']
+ALLOWED_HOSTS = [f'{ALOWED_HOST_ONLINE}',f'{ALOWED_HOST_INTERNAL1}', f'{ALOWED_HOST_INTERNAL2}']
 
 load_dotenv()
 
@@ -165,20 +191,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTHENTICATION_BACKEND=['roothub_app.EmailBackEnd.EmailBackEnd']
-
-AUTH_USER_MODEL = config('AUTH_USER_MODEL') 
-
-MAIL_BACKEND = config('EMAIL_BACKEND')
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_PORT = config('EMAIL_PORT')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS')
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-
-SCHOOL_NAME = config('SCHOOL_NAME')
-SCHOOL_SLOGAN = config('SCHOOL_SLOGAN')
-SCHOOL_LOCATION = config('SCHOOL_LOCATION')
-SCHOOL_NUM1 = config('SCHOOL_NUM1')
-SCHOOL_NUM2 = config('SCHOOL_NUM2')
-SCHOOL_WEB = config('SCHOOL_WEB')
-ABOUT_SCHOOL = config('ABOUT_SCHOOL')

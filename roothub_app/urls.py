@@ -1,4 +1,5 @@
 from django.urls import path
+from roothub_project import settings
 from roothub_app import TraineeView, TrainerView
 from . import views, AdminView
 
@@ -107,6 +108,11 @@ urlpatterns = [
     path('get-trainee-attendance/', TraineeView.get_trainee_attendance, name='get_trainee_attendance'),
     path("view_trainee_presentation", TraineeView.view_trainee_presentation, name="view_trainee_presentation"),
     path('get-presentation-data-by-date/<str:date>/', TraineeView.get_presentation_data_by_date, name='get_presentation_data_by_date'),
+
+    # Forgot Password
+    path("forgot-password", views.forgot_password, name="forgot_password"),
+    path(f"{settings.FORGET_PASSWORD_LINK}/?token=", views.forgot_password_link, name="forgot_password_link"),
+
 
 ]
 

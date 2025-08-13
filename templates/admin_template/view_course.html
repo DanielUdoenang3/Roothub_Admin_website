@@ -30,6 +30,8 @@
                             <tr role="row">
                                 <th>Course</th>
                                 <th>Price tag</th>
+                                <th>Months</th>
+                                <th>Level and Description</th>
                                 <th>Assigned Trainer</th>
                                 <th>No. of Trainee offering this Course</th>
                                 <th class="text-end">Action</th>
@@ -39,9 +41,11 @@
                             {% for course in courses %}
                             <tr role="row" class="{% cycle 'odd' 'even' %}">
                                 <td>{{ course.course_name }}</td>
-                                <td>NGN {{ course.price }}</td>
+                                <td>₦{{ course.price }}</td>
+                                <td>{{ course.months }}</td>
+                                <td>{{ course.course_name }}</td>
                                 {% if course.trainer_id %}
-                                <td>{{ course.trainer_id.trainer_name.first_name }} {{ course.trainer_id.trainer_name.last_name }}</td>
+                                <td>{{ course.trainer_id.trainer_name.first_name }} {{ course.trainer_id.trainer_name.last_name }}</td><br>
                                 {% else %}
                                 <td>No Assigned Trainer</td>
                                 {% endif %}

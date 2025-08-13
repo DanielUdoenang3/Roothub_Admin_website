@@ -8,10 +8,11 @@ from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.utils.timezone import now
+from roothub_app.utils.token import create_access_token, decode_access_token
 from .models import *
 import smtplib
 from datetime import datetime, timedelta
+from roothub_app.backend.email_backend import send_forgot_password_email
 
 # Create your views here.
 
@@ -105,7 +106,7 @@ def dologin (request):
                 else:
                     messages.error(request, "User type is not recognized.")
                     return render(request, 'index.html', {
-                            "entered_data": request.POST
+                        "entered_data": request.POST
                     })
             else:
                 messages.error(request, "Account is not active!")
@@ -228,9 +229,9 @@ def profile_update(request, admin):
             return redirect("profile")
         
         if password:
-            len(password) < 8
-            messages.error(request, "Password must be at least 8 characters long.")
-            return redirect("profile")
+            if len(password) < 8:
+                messages.error(request, "Password must be at least 8 characters long.")
+                return redirect("profile")
 
         elif 11>len(phone)>15:
             messages.error(request,"Input an appropiate phone number")
@@ -605,3 +606,16 @@ def male_female_number_of_trainers(request):
         "labels": ["Male", "Female"],
         "counts": [male_count, female_count]
     })
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        if email:
+            token = create_access_token(data={"email": email})
+            sent_email = send_forgot_password_email(token=token, email=email)
+
+    return render(request, "forgot-password.html")
+
+def forgot_password_link(request):
+    pass
