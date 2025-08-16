@@ -13,11 +13,8 @@ def send_email(to_email, subject, body):
     msg['To'] = Header(to_email, 'utf-8')
     msg.attach(MIMEText(body, 'html', 'utf-8'))
 
-    email = settings.EMAIL_PORT
-    email = 587
-
     try:
-        if email == 465:
+        if settings.EMAIL_PORT == 465:
             server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
             server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
             server.send_message(msg)
