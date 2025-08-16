@@ -61,22 +61,6 @@ def home(request):
     }
     return render(request, "admin_template/home.html",content)
 
-@require_POST
-def remove_trainer_assignment(request):
-    trainer_id = request.POST.get('trainer_id')
-    course_id = request.POST.get('course_id')
-    level_id = request.POST.get('level_id')
-    try:
-        assignment = TrainerCourseAssignment.objects.get(
-            trainer_id_id=trainer_id,
-            course_id_id=course_id,
-            level_id_id=level_id
-        )
-        assignment.delete()
-        return JsonResponse({'success': True})
-    except TrainerCourseAssignment.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Assignment not found.'}, status=404)
-
 @login_required(login_url="/")
 def add_trainer(request):
     return render(request, "admin_template/add_trainer.html")
@@ -724,6 +708,22 @@ def get_trainer_assignments(request, trainer_id):
         data.setdefault(str(course_id), []).append(level_id)
     return JsonResponse(data)
 
+@require_POST
+def remove_trainer_assignment(request):
+    trainer_id = request.POST.get('trainer_id')
+    course_id = request.POST.get('course_id')
+    level_id = request.POST.get('level_id')
+    try:
+        assignment = TrainerCourseAssignment.objects.get(
+            trainer_id_id=trainer_id,
+            course_id_id=course_id,
+            level_id_id=level_id
+        )
+        assignment.delete()
+        return JsonResponse({'success': True})
+    except TrainerCourseAssignment.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Assignment not found.'}, status=404)
+
 @login_required(login_url="/")
 def get_current_trainer(request, course_id):
     course = get_object_or_404(Courses, id=course_id)
@@ -1099,6 +1099,7 @@ def trainer_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainer = get_object_or_404(Trainers, trainer_name=user)
     course = Courses.objects.filter(trainer_id=trainer)
+    assignment = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
 
     password1 = request.POST.get("password1")
     password2 = request.POST.get("password2")
@@ -1115,6 +1116,7 @@ def trainer_details(request, username):
         'user':user,
         'trainer':trainer,
         'course':course,
+        'assignment':assignment,
     }
 
     return render(request, 'admin_template/view_trainer_details.html', context)

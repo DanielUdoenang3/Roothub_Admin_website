@@ -614,8 +614,31 @@ def forgot_password(request):
         if email:
             token = create_access_token(data={"email": email})
             sent_email = send_forgot_password_email(token=token, email=email)
+            if sent_email:
+                messages.success(request, f"An email has been sent successfully to {email}")
+            else:
+                messages.error(request, f"An error occurred when sending email")
 
     return render(request, "forgot-password.html")
 
-def forgot_password_link(request):
-    pass
+def forgot_password_link(request, token):
+    if token:
+        try:
+            payload = decode_access_token(token)
+            email = payload.get("email")
+            print(email)
+            if not email:
+                print("No email has been recieved")
+        except Exception as e:
+            messages.error(request, f"An error occured: {e}")
+
+    if request.method == "POST":
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+
+        if password1 == password2:
+            pass
+        else:
+            messages.error(request, "Password does not match")
+
+    return render(request, "reset_password.html")

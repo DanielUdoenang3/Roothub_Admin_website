@@ -1,6 +1,50 @@
-# import smtplib
-# from email.mime.multipart import MIMEMultipart
-# from email.mime.text import MIMEText
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.header import Header
+# from roothub_project import settings
+from django.conf import settings
+from django.template.loader import render_to_string
+
+def send_email(to_email, subject, body):
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = Header(subject, 'utf-8')
+    msg['From'] = Header(settings.EMAIL_HOST_USER, 'utf-8')
+    msg['To'] = Header(to_email, 'utf-8')
+    msg.attach(MIMEText(body, 'html', 'utf-8'))
+
+    email = settings.EMAIL_PORT
+    email = 587
+
+    try:
+        if email == 465:
+            server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            server.send_message(msg)
+        else:
+            server = smtplib.SMTP(settings.EMAIL_HOST, 587)
+            server.starttls()
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            server.send_message(msg)
+        print(f"Email sent to {to_email}")
+    except Exception as e:
+        print(f"Error sending email to {to_email}: {e}")
+        raise # Re-raise the exception for the caller to handle
+
+def generate_forgot_password_email(token: str, email: str):
+    """Generate forgot password email body using Django templates."""
+    link = f"{settings.FORGET_PASSWORD_LINK}?token={token}"
+    context = {
+        "email": email,
+        "link": link
+    }
+    return render_to_string("emails/forgot-password.html", context)
+
+def send_forgot_password_email(token: str, email: str):
+    """Sends a forgot password email."""
+    subject = "Password reset"
+    body = generate_forgot_password_email(token=token, email=email)
+    send_email(to_email=email, subject=subject, body=body)
 
 # class EmailBackend:
 #     def __init__(self, smtp_server, smtp_port, username, password):
@@ -8,6 +52,7 @@
 #         self.smtp_port = smtp_port
 #         self.username = username
 #         self.password = password
+
 
 #     def send_email(self, from_addr, to_addr, subject, body):
 #         # Create the email message
@@ -54,47 +99,74 @@
 #             ssl_context.verify_mode = ssl.CERT_NONE
 #             return ssl_context
 
-import resend
-from jinja2 import Environment, FileSystemLoader
-import os
-from roothub_project import settings
+# from django.template.loader import render_to_string
+# import resend
+# from roothub_project import settings
 
-base_dir = settings.BASE_DIR
-template_dir = os.path.join(base_dir, "templates", "emails")
-env = Environment(loader=FileSystemLoader(template_dir))
+# EMAIL_CRED = settings.RESEND_EMAIL
+# resend.api_key = "re_EBiZJgLh_JaEsrfcDpawxUpzAxvx2mLuE"
 
-EMAIL_CRED = settings.RESEND_EMAIL
-resend.api_key = settings.RESEND_API_KEY
+# import resend
 
-def render_email_template(template_name):
-    """Render an email template with context."""
-    template = env.get_template(template_name)
-    return template.render()
+# resend.api_key = "re_EBiZJgLh_JaEsrfcDpawxUpzAxvx2mLuE"
 
-def send_email(to_email: str, subject: str, body: str):
-    """Sends an email."""
-    try:
-        params : resend.Emails.SendParams = {
-            "from": EMAIL_CRED,
-            "to": [to_email],
-            "subject": subject,
-            "html": body
-        }
+# r = resend.Emails.send({
+#   "from": "onboarding@resend.dev",
+#   "to": "danieludoenangjnr33@gmail.com",
+#   "subject": "Hello World",
+#   "html": "<p>Congrats on sending your <strong>first email</strong>!</p>"
+# })
+
+# def send_forgot_password_email(email):
+
+#   """Sends an email."""
+#         # params = {
+#         #     "from": "Daniel <no-reply@yourdomain.com>",
+#         #     "to": email,
+#         #     "subject": "Test Email",
+#         #     "html": "<p>Hello from Resend!</p>"
+#         # }
         
-        email: resend.Email = resend.Emails.send(params)
-        return {
-            "status": "success",
-            "message": f"Email sent successfully to {email}.",
-        }
-    except Exception as e:
-        # return {
-        #     "status": "error",
-        #     "message": f"Failed to send email to {to_email}. Error: {str(e)}",
-        # }
-        print(e)
+#   email = resend.Emails.send(
+#     {
+#     "from": "Daniel <no-reply@yourdomain.com>",
+#     "to": email,
+#     "subject": "Test Email",
+#     "html": "<p>Hello from Resend!</p>"
+#     }
+#   )
+#   if email:
+#     print({
+#         "status": "success",
+#         "message": f"Email sent successfully to {email}.",
+#     })
+#   else:
+#     print("9Failed to send email.")
 
-def send_forgot_password_email(token, email):
-    subject = "Password Reset"
-    link = f"{settings.FORGET_PASSWORD_LINK}?token={token}"
-    html_body = render_email_template("forgot-password.html")
-    return send_email(to_email=email, subject=subject, body=html_body)
+# def generate_forgot_pwd_email(token: str, email: str):
+#     """Generate forgot password email body using Django templates."""
+#     link = f"{settings.FORGET_PASSWORD_LINK}?token={token}"
+#     context = {
+#         "email": email,
+#         "link": link
+#     }
+#     return render_to_string("emails/forgot-password.html", context)
+
+# def send_forgot_password_email(token: str, email: str):
+#     """Resets user's password."""
+#     subject = "Password reset"
+#     body = generate_forgot_pwd_email(token=token, email=email)
+#     send_email(to_email=email, subject=subject, body=body)
+
+# def send_forgot_password_email(email):
+#   """Sends an email."""
+#   try:
+#     email_response = resend.Emails.send({
+#         "from": "Roothub@resend.dev",
+#         "to": [email],
+#         "subject": "Test Email",
+#         "html": "<p>Hello from Resend!</p>"
+#     })
+#     print(email_response)
+#   except Exception as e:
+#     print("Resend error:", e)
