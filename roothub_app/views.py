@@ -586,17 +586,12 @@ def forgot_password_link(request, token):
         payload = decode_access_token(token)
         email = payload.get("email")
 
-        # checked_email = CustomUser.objects.filter(email=email)
-        try:
-            checked_email = get_object_or_404(CustomUser, email=email)
-        except CustomUser.DoesNotExist:
+        checked_email = CustomUser.objects.filter(email=email)
+        # checked_email = get_object_or_404(CustomUser, email=email)
+
+        if not checked_email:
             messages.error(request, "This email is not registered with us")
             return render(request, "forgot-password.html")
-        if request.method == "GET":
-            if checked_email:
-                print("Email has been recieved")
-            else:
-                print("No email has been recieved")
         
         if not email:
             print("No email has been recieved")
