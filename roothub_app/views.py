@@ -54,7 +54,7 @@ def dologin (request):
                 last_name = user.last_name.capitalize()
                 email = user.email
 
-                # send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email)
+                send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email)
 
                 login(request, user)
                 if user.user_type == "1":
@@ -576,9 +576,8 @@ def forgot_password(request):
 
         if email:
             token = create_access_token(data={"email": email})
-            sent_email = send_forgot_password_email(token=token, email=email)
-            if sent_email:
-                messages.success(request, f"An email has been sent successfully to {email}")
+            send_forgot_password_email(token=token, email=email)
+            messages.success(request, f"An email has been sent successfully to {email}")
 
     return render(request, "forgot-password.html")
 
@@ -588,11 +587,16 @@ def forgot_password_link(request, token):
         email = payload.get("email")
 
         # checked_email = CustomUser.objects.filter(email=email)
-        checked_email = get_object_or_404(CustomUser, email=email)
-
-        if not checked_email:
+        try:
+            checked_email = get_object_or_404(CustomUser, email=email)
+        except CustomUser.DoesNotExist:
             messages.error(request, "This email is not registered with us")
             return render(request, "forgot-password.html")
+        if request.method == "GET":
+            if checked_email:
+                print("Email has been recieved")
+            else:
+                print("No email has been recieved")
         
         if not email:
             print("No email has been recieved")

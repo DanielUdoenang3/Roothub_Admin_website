@@ -624,10 +624,13 @@ def add_course_save(request):
 
 @login_required(login_url="/")
 def view_course(request):
-    courses_list = Courses.objects.annotate(num_trainees=Count('trainees')).order_by('id')
-    paginator = Paginator(courses_list, 10)
+    courses_list = Courses.objects.prefetch_related(
+        'level_set',
+        'trainercourseassignment_set__trainer_id__trainer_name'
+    ).annotate(num_trainees=Count('trainees')).order_by('id')
 
     page_number = request.GET.get('page')
+    paginator = Paginator(courses_list, 10)
     page_obj = paginator.get_page(page_number)
 
     context = {
@@ -897,11 +900,14 @@ def edit_trainee(request, trainee):
 
 @login_required(login_url="/")
 def edit_course(request, course):
+
     courses = get_object_or_404(Courses, id=course)
+    levels = Level.objects.filter(course_id=courses)
 
     if request.method == "POST":
         course_name = request.POST.get("course")
         price = request.POST.get("price").strip()
+        month = request.POST.get("month")
 
         if not course_name:
             messages.error(request, "Course name cannot be empty.")
@@ -924,13 +930,31 @@ def edit_course(request, course):
 
         courses.course_name = course_name
         courses.price = price
+        courses.months = month
         courses.save()
+
+        # Update levels
+        # Remove all existing levels for this course
+        Level.objects.filter(course_id=courses).delete()
+        i = 1
+        while True:
+            level_name = request.POST.get(f'level_name_{i}')
+            level_desc = request.POST.get(f'level_desc_{i}')
+            if not level_name:
+                break
+            Level.objects.create(
+                level=level_name,
+                course_id=courses,
+                descriptions=level_desc if level_desc else ""
+            )
+            i += 1
 
         messages.success(request, f"The course '{courses.course_name}' has been successfully updated to '{course_name}' with the price NGN{price}'")
         return redirect("view_course")
 
     context = {
-        'courses': courses
+        'courses': courses,
+        'levels': levels,
     }
     return render(request, 'admin_template/edit_course.html', context)
 
