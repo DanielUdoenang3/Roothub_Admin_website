@@ -30,18 +30,39 @@ def send_email(to_email, subject, body):
 
 def generate_forgot_password_email(token: str, email: str):
     """Generate forgot password email body using Django templates."""
-    link = f"{settings.FORGET_PASSWORD_LINK}?token={token}"
+    link = f"{settings.FORGET_PASSWORD_LINK}/reset_password/{token}/"
     context = {
         "email": email,
         "link": link
     }
     return render_to_string("emails/forgot-password.html", context)
 
+def generate_login_email(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB):
+    """Generate Login email body"""
+    context = {
+        "first_name" : first_name,
+        "last_name":last_name,
+        "schoolname":schoolname,
+        "EMAIL_HOST_USER":EMAIL_HOST_USER,
+        "SCHOOL_NUM1":SCHOOL_NUM1,
+        "SCHOOL_NUM2":SCHOOL_NUM2,
+        "SCHOOL_WEB":SCHOOL_WEB,
+    }
+    return render_to_string("emails/login.html", context)
+
 def send_forgot_password_email(token: str, email: str):
     """Sends a forgot password email."""
     subject = "Password reset"
     body = generate_forgot_password_email(token=token, email=email)
     send_email(to_email=email, subject=subject, body=body)
+
+def send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email):
+    """Sends a login email"""
+    subject = "Login Detected"
+    body = generate_login_email(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB)
+    send_email(to_email=email, subject=subject, body=body)
+
+
 
 # class EmailBackend:
 #     def __init__(self, smtp_server, smtp_port, username, password):

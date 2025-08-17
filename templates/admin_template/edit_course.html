@@ -32,15 +32,21 @@
                                 <input type="text" class="form-control" name="course" placeholder="Enter Course" value="{{ courses.course_name }}">
                             </div>
                         </div>
-                        <div class="col-12 col-sm-8">
+                        <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
                                 <label>Price</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text">NGN</span>
+                                        <span class="input-group-text">₦</span>
                                     </div>
                                     <input type="text" class="form-control" name="price" placeholder="Enter Price" value="{{ courses.price }}">
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <div class="form-group local-forms">
+                                <label>Month</label>
+                                <input type="number" class="form-control" name="month" placeholder="Enter Number Month" value="{{ courses.months }}" required>
                             </div>
                         </div>
                         <div class="col-12">

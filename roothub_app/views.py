@@ -12,7 +12,7 @@ from roothub_app.utils.token import create_access_token, decode_access_token
 from .models import *
 import smtplib
 from datetime import datetime, timedelta
-from roothub_app.backend.email_backend import send_forgot_password_email
+from roothub_app.backend.email_backend import send_forgot_password_email, send_login_body
 
 # Create your views here.
 
@@ -50,49 +50,12 @@ def dologin (request):
             user = authenticate(request, username=emails, password=password)
         if user!=None:
             if user.is_active == True:
-                try:
-                    smtp = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
-                    smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                first_name = user.first_name.capitalize()
+                last_name = user.last_name.capitalize()
+                email = user.email
 
-                    msg = EmailMessage()
-                    msg['Subject'] = "New Login Detected"
-                    msg['From'] = EMAIL_HOST_USER
-                    msg['To'] = user.email
+                # send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email)
 
-                    if user.email:
-                        msg.add_alternative(
-                            f"""
-                            <html>
-                            <body>
-                                <p>Dear <strong>{user.first_name.capitalize()} {user.last_name.capitalize()}</strong>,</p>
-                                <p>
-                                    We noticed a new login to your account on <strong>{schoolname}</strong> Admin Platform. If this was you, there's nothing to worry about.
-                                    However, if you did not initiate this login, please contact our support team immediately.
-                                </p>
-                                <p>
-                                    Stay secure, and thank you for being part of our community.
-                                </p>
-                                <p>
-                                    For any assistance, feel free to reach out to us at:
-                                </p>
-                                <p>Email: <a href="mailto:{EMAIL_HOST_USER}">{EMAIL_HOST_USER}</a></p>
-                                <p>Phone: <a href="tel:{SCHOOL_NUM1}">{SCHOOL_NUM1}</a> or <a href="tel:{SCHOOL_NUM2}">{SCHOOL_NUM2}</a></p>
-                                <p>
-                                    Or vist our website at:
-                                </p>
-                                <p>Website: <a href="{SCHOOL_WEB}">{str(SCHOOL_WEB).upper()}</a></p>
-                                <p style="margin-top: 20px;">Best regards,</p>
-                                <p><strong>{schoolname} Security Management</strong></p>
-                            </body>
-                            </html>
-                            """,
-                            subtype='html'
-                        )
-                        smtp.send_message(msg)
-                        smtp.quit()
-                except Exception as e:
-                    print(e)
-                    messages.error(request, f"Error {e}!")
                 login(request, user)
                 if user.user_type == "1":
                     messages.success(request, "Login Successful")
@@ -616,29 +579,36 @@ def forgot_password(request):
             sent_email = send_forgot_password_email(token=token, email=email)
             if sent_email:
                 messages.success(request, f"An email has been sent successfully to {email}")
-            else:
-                messages.error(request, f"An error occurred when sending email")
 
     return render(request, "forgot-password.html")
 
 def forgot_password_link(request, token):
     if token:
-        try:
-            payload = decode_access_token(token)
-            email = payload.get("email")
-            print(email)
-            if not email:
-                print("No email has been recieved")
-        except Exception as e:
-            messages.error(request, f"An error occured: {e}")
+        payload = decode_access_token(token)
+        email = payload.get("email")
+
+        # checked_email = CustomUser.objects.filter(email=email)
+        checked_email = get_object_or_404(CustomUser, email=email)
+
+        if not checked_email:
+            messages.error(request, "This email is not registered with us")
+            return render(request, "forgot-password.html")
+        
+        if not email:
+            print("No email has been recieved")
 
     if request.method == "POST":
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
 
         if password1 == password2:
-            pass
+            checked_email.set_password(password2)
+            checked_email.save()
+            messages.success(request, "Password reseted successfully you can now login")
+            return render(request, "index.html")
         else:
             messages.error(request, "Password does not match")
 
-    return render(request, "reset_password.html")
+    context = {"request" : request.POST}
+
+    return render(request, "reset-password.html", context)

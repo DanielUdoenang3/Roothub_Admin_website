@@ -111,7 +111,7 @@ urlpatterns = [
 
     # Forgot Password
     path("forgot-password", views.forgot_password, name="forgot_password"),
-    path(f"{settings.FORGET_PASSWORD_LINK}/?token=<str:token>", views.forgot_password_link, name="forgot_password_link"),
+    path(f"reset_password/<str:token>/", views.forgot_password_link, name="forgot_password_link"),
 
 ]
 

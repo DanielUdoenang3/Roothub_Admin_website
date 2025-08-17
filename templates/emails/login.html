@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Detected</title>
+</head>
+<body>
+    <body>
+        <p>Dear <strong>{{first_name}} {{last_name}}</strong>,</p>
+        <p>
+            We noticed a new login to your account on <strong>{{schoolname}}</strong> Admin Platform. If this was you, there's nothing to worry about.
+            However, if you did not initiate this login, please contact our support team immediately.
+        </p>
+        <p>
+            Stay secure, and thank you for being part of our community.
+        </p>
+        <p>
+            For any assistance, feel free to reach out to us at:
+        </p>
+        <p>Email: <a href="mailto:{{EMAIL_HOST_USER}}">{{EMAIL_HOST_USER}}</a></p>
+        <p>Phone: <a href="tel:{{SCHOOL_NUM1}}">{{SCHOOL_NUM1}}</a> or <a href="tel:{{SCHOOL_NUM2}}">{{SCHOOL_NUM2}}</a></p>
+        <p>
+            Or vist our website at:
+        </p>
+        <p>Website: <a href="{{SCHOOL_WEB}}">{{SCHOOL_WEB}}</a></p>
+        <p style="margin-top: 20px;">Best regards,</p>
+        <p><strong>{{schoolname}} Security Management</strong></p>
+    </body>
+</body>
+</html>
