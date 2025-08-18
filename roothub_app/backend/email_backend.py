@@ -2,6 +2,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
+from email.utils import formataddr
 # from roothub_project import settings
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -9,7 +10,7 @@ from django.template.loader import render_to_string
 def send_email(to_email, subject, body):
     msg = MIMEMultipart('alternative')
     msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = Header(settings.EMAIL_HOST_USER, 'utf-8')
+    msg['From'] = formataddr(("Roothub", settings.EMAIL_HOST_USER))
     msg['To'] = Header(to_email, 'utf-8')
     msg.attach(MIMEText(body, 'html', 'utf-8'))
 

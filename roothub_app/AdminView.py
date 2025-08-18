@@ -202,7 +202,7 @@ def add_trainer_save(request):
             state = request.POST.get("state")
             country = request.POST.get("country")
             birthday = request.POST.get("birthday")
-            competent_skils = request.POST.get("competent_skils")
+            competent_skills = request.POST.get("competent_skills")
             account_no = request.POST.get("account_no")
             bank = request.POST.get("bank")
             
@@ -249,7 +249,7 @@ def add_trainer_save(request):
                 trainer.phone = phone
                 trainer.account_no = account_no
                 trainer.birthday = birthday
-                trainer.competent_skills = competent_skils
+                trainer.competent_skills = competent_skills
                 trainer.bank = bank
                 trainer.save()
                 user.save()
@@ -503,8 +503,8 @@ def add_trainee_save(request):
                     trainees.amount_paid = amount_paid
                     trainees.date_of_payment = date_of_payment
                     trainees.commencement_date = commencement_date
-                    trainees.nok_first_name = next_last_name
-                    trainees.nok_last_name = next_first_name
+                    trainees.nok_first_name = next_first_name
+                    trainees.nok_last_name = next_last_name
                     trainees.nok_email = next_email
                     trainees.nok_phone = next_phone
                     trainees.nok_relationship = relation
@@ -699,6 +699,12 @@ def assign_trainer(request):
     }
     return render(request, "admin_template/assign_trainer.html", context)
 
+@login_required(login_url="/")
+def assign_trainee(request):
+    if request.method == "POST":
+        pass
+    return render(request, "admin_template/assign_trainee.html")
+
 # AJAX endpoint to fetch assigned courses/levels for a trainer
 @login_required(login_url="/")
 def get_trainer_assignments(request, trainer_id):
@@ -750,13 +756,17 @@ def edit_trainer(request,trainer):
             phone  = request.POST.get("phone")
             experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic')
-            username = request.POST.get("username").strip().lower()
+            username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
-            password = request.POST.get("password1")
+            # password = request.POST.get("password1")
             address = request.POST.get("address")
             city = request.POST.get("city")
             state = request.POST.get("state")
             country = request.POST.get("country")
+            birthday = request.POST.get("birthday")
+            competent_skills = request.POST.get("competent_skills")
+            account_no = request.POST.get("account_no")
+            bank = request.POST.get("bank")
 
             if email != user.email:
                 if CustomUser.objects.filter(email__iexact=email).exists():
@@ -769,9 +779,6 @@ def edit_trainer(request,trainer):
                 messages.error(request, "Select Student Gender!")
                 return redirect("edit_trainer",trainer)
             
-            if len(password) < 8:
-                messages.error(request, "Password must be at least 8 characters long.")
-                return redirect("edit_trainer",trainer)
 
             elif 11>len(phone)>15:
                 messages.error(request,"Input an appropiate phone number")
@@ -803,6 +810,10 @@ def edit_trainer(request,trainer):
             trainers.skill_expertise=experience
             trainers.country = country
             trainers.phone = phone
+            trainers.account_no = account_no
+            trainers.birthday = birthday
+            trainers.competent_skills = competent_skills
+            trainers.bank = bank
             trainers.save()
 
             messages.success(request, "Trainer Edited Successfully")
@@ -829,16 +840,31 @@ def edit_trainee(request, trainee):
             first_name = request.POST.get("first_name").capitalize()
             middle_name = request.POST.get("middle_name").capitalize()
             last_name = request.POST.get("last_name").capitalize()
+            category = request.POST.get("category")
             gender = request.POST.get("gender")
-            phone = request.POST.get("phone")
+            phone  = request.POST.get("phone")
             profile_pic = request.FILES.get('profile_pic')
-            username = request.POST.get("username").strip().lower()
+            username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
+            school_name  = request.POST.get("school_name")
+            course_of_study  = request.POST.get("course_of_study")
+            matric_number  = request.POST.get("matric_number")
+            internship_duration  = request.POST.get("internship_duration")
+            # password = request.POST.get("password1")
             address = request.POST.get("address")
             city = request.POST.get("city")
             state = request.POST.get("state")
             country = request.POST.get("country")
+            payment  = request.POST.get("payment")
             course_choice = request.POST.get("course")
+            amount_paid = request.POST.get("amount_paid")
+            date_of_payment = request.POST.get("date_of_payment")
+            commencement_date = request.POST.get("commencement_date")
+            next_first_name = request.POST.get("next_first_name")
+            next_last_name = request.POST.get("next_last_name")
+            next_email = request.POST.get("next_email")
+            next_phone = request.POST.get("next_phone")
+            relation = request.POST.get("relation")
 
             if email != user.email:
                 if CustomUser.objects.filter(email__iexact=email).exists():
@@ -875,10 +901,24 @@ def edit_trainee(request, trainee):
 
             trainees.gender = gender
             trainees.address = address
+            trainees.category = category
+            trainees.name_of_school = school_name
             trainees.state = state
             trainees.city = city
             trainees.country = country
             trainees.phone = phone
+            trainees.course_of_study = course_of_study
+            trainees.matric_number = matric_number
+            trainees.duration_of_intership = internship_duration
+            trainees.payment_option = payment
+            trainees.amount_paid = amount_paid
+            trainees.date_of_payment = date_of_payment
+            trainees.commencement_date = commencement_date
+            trainees.nok_first_name = next_first_name
+            trainees.nok_last_name = next_last_name
+            trainees.nok_email = next_email
+            trainees.nok_phone = next_phone
+            trainees.nok_relationship = relation
 
             selected_course = Courses.objects.get(id=course_choice)
             trainees.course_id = selected_course

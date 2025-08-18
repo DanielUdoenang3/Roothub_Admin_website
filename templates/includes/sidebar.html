@@ -42,6 +42,10 @@
                     <a href="{% url "assign_trainer" %}" ><i class="fas fa-clipboard"></i> <span>Assign Trainer</span></a>
                 </li>
 
+                <li class="{% if request.path == '/assign_trainee' %}active{% endif %}">
+                    <a href="{% url "assign_trainee" %}" ><i class="fas fa-clipboard"></i> <span>Assign Trainee</span></a>
+                </li>
+
                 <li class="{% if request.path == '/mark_attendance' %}active{% elif request.path == '/view_attendance' %}active{% endif %}">
                     <a href="#"><i class="fas fa-tags"></i> <span>Attendance</span> <span
                             class="menu-arrow"></span></a>

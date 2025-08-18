@@ -7,9 +7,9 @@
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
-            <h3 class="page-title">Edit {{ trainer.trainer_name.username|capfirst }}'s details</h3>
+            <h3 class="page-title"><i class="fas fa-user-edit me-2 text-primary"></i>Edit {{ trainer.trainer_name.username|capfirst }}'s details</h3>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_trainer' %}">Trainers</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'view_trainer' %}"><i class="fas fa-users me-1"></i>Trainers</a></li>
                 <li class="breadcrumb-item active">Edit / {{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.last_name }}</li>
             </ul>
         </div>
@@ -17,14 +17,14 @@
 </div>
 <div class="row">
     <div class="col-sm-12">
-        <div class="card">
+        <div class="card shadow-lg border-0">
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {% include "includes/messages.html" %}
                     <div class="row">
                         <div class="col-12">
-                            <h5 class="form-title"><span>Basic Details</span></h5>
+                            <h5 class="form-title"><span>Personal Details</span></h5>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
@@ -62,16 +62,52 @@
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
-                                <label>Religion </label>
-                                <input class="form-control" name="religion" type="text" placeholder="Edit Religion" value="{{ trainer.religion }}">
+                                <label>Birthday</label>
+                                <input type="date" name="birthday" class="form-control" value="{{ trainer.birthday|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                        <p>
+                    
+                        <div class="col-12 col-sm-4">
+                            <div class="form-group local-forms">
+                                <label>Username </label>
+                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainer.trainer_name.username|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
-                                <label>Experience </label>
-                                <input class="form-control" type="text" name="experience" placeholder="Edit Experience" value="{{ trainer.experience }}">
+                                <label>Email</label>
+                                <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainer.trainer_name.email }}">
                             </div>
                         </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label>Skill Expertise</label>
+                                <textarea class="form-control" name="experience" placeholder="Enter Expertise" rows="5" cols="5">{{ trainer.skill_expertise }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label>Competent Skills</label>
+                                <textarea class="form-control" name="competent_skills" placeholder="Enter Competent Skills" rows="5" cols="5">{{ trainer.competent_skills }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-5">
+                            <div class="form-group local-forms">
+                                <label>Account Number</label>
+                                <input type="text" name="account_no" placeholder="Enter Account Number" class="form-control" value="{{ trainer.account_no}}" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-5">
+                            <div class="form-group local-forms">
+                                <label>Bank</label>
+                                <input type="text" name="bank" class="form-control" placeholder="Enter Bank Name" value="{{ trainer.bank}}" required>
+                            </div>
+                        </div>
+
                         <center>
                             <div class="col-12">
                                 <div class="form-group students-up-files">
@@ -86,36 +122,16 @@
                                     <label>Upload New Profile Picture (150px X 150px)</label>
                                     <div class="uplod">
                                         <label class="file-upload image-upbtn mb-0">
-                                            Choose File <input type="file" accept="image/*" name="profile_pic">
+                                            <i class="fas fa-upload me-2"></i>Choose File <input type="file" accept="image/*" name="profile_pic">
                                         </label>
                                     </div>
                                 </div>
                             </div>
                         </center>
                         <div class="col-12">
-                            <h5 class="form-title"><span>Login Details</span></h5>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="form-group local-forms">
-                                <label>Username </label>
-                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainer.trainer_name.username|capfirst }}">
-                            </div>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="form-group local-forms">
-                                <label>Email</label>
-                                <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainer.trainer_name.email }}">
-                            </div>
-                        </div>
-                        <div class="col-12">
                             <h5 class="form-title"><span>Address</span></h5>
                         </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="form-group local-forms">
-                                <label>Address </label>
-                                <input type="text" class="form-control" name="address" placeholder="Edit address" value="{{ trainer.address }}">
-                            </div>
-                        </div>
+
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>City </label>
@@ -132,6 +148,12 @@
                             <div class="form-group local-forms">
                                 <label>Country </label>
                                 <input type="text" class="form-control" name="country" placeholder="Edit Country" value="{{ trainer.country }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group local-forms">
+                                <label>Address</label>
+                                <textarea class="form-control" name="address" placeholder="Enter Full Address" rows="5" cols="5">{{ trainer.address }}</textarea>
                             </div>
                         </div>
                         <div class="col-12">

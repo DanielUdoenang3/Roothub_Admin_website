@@ -54,7 +54,7 @@ def dologin (request):
                 last_name = user.last_name.capitalize()
                 email = user.email
 
-                send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email)
+                # send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email)
 
                 login(request, user)
                 if user.user_type == "1":
@@ -586,7 +586,7 @@ def forgot_password_link(request, token):
         payload = decode_access_token(token)
         email = payload.get("email")
 
-        checked_email = CustomUser.objects.filter(email=email)
+        checked_email = CustomUser.objects.filter(email=email).first()
         # checked_email = get_object_or_404(CustomUser, email=email)
 
         if not checked_email:

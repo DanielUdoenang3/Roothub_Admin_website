@@ -7,10 +7,10 @@
         <div class="page-header">
             <div class="row align-items-center">
                 <div class="col">
-                    <h3 class="page-title">Add Trainers</h3>
+                    <h3 class="page-title"><i class="fas fa-user-plus me-2 text-primary"></i>Add Trainers</h3>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item">
-                            <a href="{% url 'view_trainer' %}">Trainers</a>
+                            <a href="{% url 'view_trainer' %}"><i class="fas fa-users me-1"></i>Trainers</a>
                         </li>
                         <li class="breadcrumb-item active">Add Trainer</li>
                     </ul>
@@ -21,7 +21,7 @@
         <!-- Main Form Container -->
         <div class="row">
             <div class="col-sm-12">
-                <div class="card">
+                <div class="card shadow-lg border-0">
                     <div class="card-body">
                         <form method="POST" enctype="multipart/form-data" action="{% url 'add_trainer_save' %}">
                             {% csrf_token %}
@@ -150,7 +150,7 @@
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group local-forms">
                                         <label>Competent Skills</label>
-                                        <textarea class="form-control" name="competent_skils" placeholder="Enter Competent Skills" rows="5" cols="5"></textarea>
+                                        <textarea class="form-control" name="competent_skills" placeholder="Enter Competent Skills" rows="5" cols="5"></textarea>
                                     </div>
                                 </div>
 
@@ -175,7 +175,7 @@
                                             <label>Upload Trainer Photo (150px X 150px)</label>
                                             <div class="uplod">
                                                 <label class="file-upload image-upbtn mb-0">
-                                                    Choose File
+                                                    <i class="fas fa-upload me-2"></i>Choose File
                                                     <input type="file" accept="image/*" name="profile_pic">
                                                 </label>
                                             </div>

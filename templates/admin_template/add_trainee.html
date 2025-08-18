@@ -5,9 +5,9 @@
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col">
-                <h3 class="page-title">Add Trainees</h3>
+                <h3 class="page-title"><i class="fas fa-user-plus me-2 text-primary"></i>Add Trainees</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}">Trainees</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}"><i class="fas fa-users me-1"></i>Trainees</a></li>
                     <li class="breadcrumb-item active">Add Trainee</li>
                 </ul>
             </div>
@@ -16,14 +16,13 @@
 
     <div class="row">
         <div class="col-sm-12">
-            <div class="card">
+            <div class="card shadow-lg border-0">
                 <div class="card-body">
                     <form method="POST" enctype="multipart/form-data" action="{% url 'add_trainee_save' %}">
                         {% csrf_token %}
                         {% include "includes/messages.html" %}
                         
                         <div class="row">
-                            <!-- Basic Details Section -->
                             <div class="col-12">
                                 <h5 class="form-title"><span>Personal Details</span></h5>
                             </div>
@@ -108,7 +107,7 @@
                                         <label>Upload Profile Photo (150px X 150px)</label>
                                         <div class="uplod">
                                             <label class="file-upload image-upbtn mb-0">
-                                                Choose File <input type="file" accept="image/*" name="profile_pic">
+                                                <i class="fas fa-upload me-2"></i>Choose File <input type="file" accept="image/*" name="profile_pic">
                                             </label>
                                         </div>
                                     </div>
