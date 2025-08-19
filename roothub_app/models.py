@@ -160,6 +160,13 @@ class TrainerCourseAssignment(models.Model):
     trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
+
+class TraineeCourseAssignment(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
+    trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
     
 class Attendance(models.Model):
     id = models.AutoField(primary_key=True, unique=True)

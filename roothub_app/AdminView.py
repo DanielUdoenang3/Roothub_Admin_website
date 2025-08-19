@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from email.message import EmailMessage
 import smtplib
@@ -701,9 +702,78 @@ def assign_trainer(request):
 
 @login_required(login_url="/")
 def assign_trainee(request):
+    trainees = Trainee.objects.all()
+    context = {
+        "trainees": trainees,
+    }
+
     if request.method == "POST":
-        pass
-    return render(request, "admin_template/assign_trainee.html")
+        trainee_id = request.POST.get('trainee')
+        trainer_id = request.POST.get('trainer')
+        course_id = request.POST.get('course')
+        level_ids = request.POST.getlist('levels')
+
+        if not trainee_id or not trainer_id or not course_id or not level_ids:
+            messages.error(request, "Please select a trainee, trainer, course, and at least one level.")
+            return redirect('assign_trainee')
+
+        try:
+            trainee = get_object_or_404(Trainee, id=trainee_id)
+            trainer = get_object_or_404(Trainers, id=trainer_id)
+            course = get_object_or_404(Courses, id=course_id)
+            assigned = 0
+            for level_id in level_ids:
+                level = get_object_or_404(Level, id=level_id)
+                if not TraineeCourseAssignment.objects.filter(trainee_id=trainee, trainer_id=trainer, course_id=course, level_id=level).exists():
+                    TraineeCourseAssignment.objects.create(
+                        trainee_id=trainee,
+                        trainer_id=trainer,
+                        course_id=course,
+                        level_id=level
+                    )
+                    assigned += 1
+            if assigned:
+                messages.success(request, f"Trainee assigned to trainer for {assigned} level(s) successfully.")
+            else:
+                messages.error(request, "This trainee is already assigned to this trainer, course, and selected level(s).")
+        except Exception as e:
+            print(e)
+            messages.error(request, "An error occurred while assigning the trainee.")
+        return redirect('assign_trainee')
+
+    return render(request, "admin_template/assign_trainee.html", context)
+
+# AJAX: Get course for a trainee
+@login_required(login_url="/")
+def get_trainee_course(request, trainee_id):
+    trainee = get_object_or_404(Trainee, id=trainee_id)
+    course = trainee.course_id
+    if course:
+        return JsonResponse({"id": course.id, "name": course.course_name})
+    return JsonResponse({}, status=404)
+
+# AJAX: Get trainers for a course
+@login_required(login_url="/")
+def get_course_trainers(request, course_id):
+    assignments = TrainerCourseAssignment.objects.filter(course_id__id=course_id)
+    data = [
+        {
+            "id": a.trainer_id.id,
+            "name": f"{a.trainer_id.trainer_name.first_name} {a.trainer_id.trainer_name.last_name}"
+        }
+        for a in assignments
+    ]
+    return JsonResponse({"trainers": data})
+
+# AJAX: Get levels for a course
+@login_required(login_url="/")
+def get_course_levels(request, course_id):
+    levels = Level.objects.filter(course_id__id=course_id)
+    data = [
+        {"id": l.id, "name": l.level}
+        for l in levels
+    ]
+    return JsonResponse({"levels": data})
 
 # AJAX endpoint to fetch assigned courses/levels for a trainer
 @login_required(login_url="/")

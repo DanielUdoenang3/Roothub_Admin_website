@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load static %}
+{% block main_content %}
+
+{% if request.user.user_type == "1" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title"><i class="fas fa-user-plus me-2 text-primary"></i>Assign Trainee</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}"><i class="fas fa-users me-1"></i>Trainees</a></li>
+                <li class="breadcrumb-item active">Assign Trainee</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include "includes/messages.html" %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="form-title"><span>Assign Trainee to a Course</span></h5>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label for="trainee-select">Select Trainee</label>
+                                <select class="form-control form-select" name="trainee" id="trainee-select" required>
+                                    <option disabled selected hidden>Select Trainee</option>
+                                    {% for trainee in trainees %}
+                                        <option value="{{ trainee.id }}">{{ trainee.trainee_name.first_name }} {{ trainee.trainee_name.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label for="course-select">Course Intended</label>
+                                <input type="text" class="form-control" id="course-name" name="course_name" readonly placeholder="Course will appear here">
+                                <input type="hidden" name="course" id="course-id">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label for="trainer-select">Select Trainer</label>
+                                <select class="form-control form-select" name="trainer" id="trainer-select" required>
+                                    <option disabled selected hidden>Select Trainer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label for="levels-select">Select Level(s)</label>
+                                <select class="form-control form-select" name="levels" id="levels-select" multiple required>
+                                    <!-- Levels will be loaded dynamically -->
+                                </select>
+                                <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple levels.</small>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg w-100"><i class="fas fa-plus me-2"></i>Assign Trainee</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const traineeSelect = document.getElementById('trainee-select');
+        const courseNameInput = document.getElementById('course-name');
+        const courseIdInput = document.getElementById('course-id');
+        const trainerSelect = document.getElementById('trainer-select');
+        const levelsSelect = document.getElementById('levels-select');
+        const form = document.querySelector('form');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        // Reset fields
+        function resetFields() {
+            courseNameInput.value = '';
+            courseIdInput.value = '';
+            trainerSelect.innerHTML = '<option disabled selected hidden>Select Trainer</option>';
+            levelsSelect.innerHTML = '';
+        }
+
+        // Fetch course for trainee
+        traineeSelect.addEventListener('change', function() {
+            resetFields();
+            const traineeId = this.value;
+            if (!traineeId) return;
+            courseNameInput.value = 'Loading...';
+            fetch(`/get_trainee_course/${traineeId}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.id && data.name) {
+                        courseNameInput.value = data.name;
+                        courseIdInput.value = data.id;
+                        loadTrainers(data.id);
+                        loadLevels(data.id);
+                    } else {
+                        courseNameInput.value = 'No course found';
+                    }
+                })
+                .catch(() => {
+                    courseNameInput.value = 'Error fetching course';
+                });
+        });
+
+        // Load trainers for course
+        function loadTrainers(courseId) {
+            trainerSelect.innerHTML = '<option disabled selected hidden>Loading trainers...</option>';
+            fetch(`/get_course_trainers/${courseId}/`)
+                .then(res => res.json())
+                .then(data => {
+                    trainerSelect.innerHTML = '<option disabled selected hidden>Select Trainer</option>';
+                    data.trainers.forEach(trainer => {
+                        const opt = document.createElement('option');
+                        opt.value = trainer.id;
+                        opt.textContent = trainer.name;
+                        trainerSelect.appendChild(opt);
+                    });
+                })
+                .catch(() => {
+                    trainerSelect.innerHTML = '<option disabled selected hidden>Error loading trainers</option>';
+                });
+        }
+
+        // Load levels for course
+        function loadLevels(courseId) {
+            levelsSelect.innerHTML = '';
+            fetch(`/get_course_levels/${courseId}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.levels.length === 0) {
+                        levelsSelect.innerHTML = '<option disabled>No levels found</option>';
+                    } else {
+                        data.levels.forEach(level => {
+                            const opt = document.createElement('option');
+                            opt.value = level.id;
+                            opt.textContent = level.name;
+                            levelsSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(() => {
+                    levelsSelect.innerHTML = '<option disabled>Error loading levels</option>';
+                });
+        }
+
+        // Professional UX: show loading spinner on submit
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Assigning...';
+        });
+    });
+</script>
+{% else %}
+    <div class="alert alert-danger text-center">
+        <h4 class="alert-heading">Access Denied!</h4>
+        <p>You do not have permission to access this page.</p>
+        <hr>
+        <p class="mb-0">Please contact the administrator if you believe this is an error.</p>
+    </div>
+{% endif %}
+{% endblock main_content %}
