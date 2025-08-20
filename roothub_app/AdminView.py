@@ -709,21 +709,26 @@ def assign_trainee(request):
 
     if request.method == "POST":
         trainee_id = request.POST.get('trainee')
-        trainer_id = request.POST.get('trainer')
         course_id = request.POST.get('course')
-        level_ids = request.POST.getlist('levels')
+        # Expecting: {level_id: trainer_id} mapping from frontend
+        assignments = {}
+        for key in request.POST:
+            if key.startswith('trainer_for_level_'):
+                level_id = key.replace('trainer_for_level_', '')
+                trainer_id = request.POST.get(key)
+                assignments[level_id] = trainer_id
 
-        if not trainee_id or not trainer_id or not course_id or not level_ids:
-            messages.error(request, "Please select a trainee, trainer, course, and at least one level.")
+        if not trainee_id or not course_id or not assignments:
+            messages.error(request, "Please select a trainee, course, and assign trainers for each selected level.")
             return redirect('assign_trainee')
 
         try:
             trainee = get_object_or_404(Trainee, id=trainee_id)
-            trainer = get_object_or_404(Trainers, id=trainer_id)
             course = get_object_or_404(Courses, id=course_id)
             assigned = 0
-            for level_id in level_ids:
+            for level_id, trainer_id in assignments.items():
                 level = get_object_or_404(Level, id=level_id)
+                trainer = get_object_or_404(Trainers, id=trainer_id)
                 if not TraineeCourseAssignment.objects.filter(trainee_id=trainee, trainer_id=trainer, course_id=course, level_id=level).exists():
                     TraineeCourseAssignment.objects.create(
                         trainee_id=trainee,
@@ -733,15 +738,31 @@ def assign_trainee(request):
                     )
                     assigned += 1
             if assigned:
-                messages.success(request, f"Trainee assigned to trainer for {assigned} level(s) successfully.")
+                messages.success(request, f"Trainee assigned to trainers for {assigned} level(s) successfully.")
             else:
-                messages.error(request, "This trainee is already assigned to this trainer, course, and selected level(s).")
+                messages.error(request, "This trainee is already assigned to these trainers, course, and selected level(s).")
         except Exception as e:
             print(e)
             messages.error(request, "An error occurred while assigning the trainee.")
         return redirect('assign_trainee')
 
     return render(request, "admin_template/assign_trainee.html", context)
+# AJAX: Get trainers for selected levels in a course
+@login_required(login_url="/")
+def get_trainers_for_levels(request, course_id):
+    level_ids = request.GET.getlist('level_ids[]')
+    result = {}
+    for level_id in level_ids:
+        assignments = TrainerCourseAssignment.objects.filter(course_id__id=course_id, level_id__id=level_id)
+        trainers = [
+            {
+                "id": a.trainer_id.id,
+                "name": f"{a.trainer_id.trainer_name.first_name} {a.trainer_id.trainer_name.last_name}"
+            }
+            for a in assignments
+        ]
+        result[level_id] = trainers
+    return JsonResponse({"trainers_by_level": result})
 
 # AJAX: Get course for a trainee
 @login_required(login_url="/")

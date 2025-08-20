@@ -34,31 +34,22 @@ urlpatterns = [
 
     # Asssign Trainer
     path('assign_trainer', AdminView.assign_trainer, name="assign_trainer"),
-    path('assign_trainee', AdminView.assign_trainee, name="assign_trainee"),
-    path('get_current_trainer/<int:course_id>', AdminView.get_current_trainer, name='get_current_trainer'),
-    path('get_trainer_assignments/<int:trainer_id>', AdminView.get_trainer_assignments, name='get_trainer_assignments'),
-    path('remove_trainer_assignment/', AdminView.remove_trainer_assignment, name='remove_trainer_assignment'),
 
+    path('assign_trainee', AdminView.assign_trainee, name="assign_trainee"),
     # AJAX endpoints for dynamic assignment
     path('get_trainee_course/<int:trainee_id>/', AdminView.get_trainee_course, name='get_trainee_course'),
     path('get_course_trainers/<int:course_id>/', AdminView.get_course_trainers, name='get_course_trainers'),
     path('get_course_levels/<int:course_id>/', AdminView.get_course_levels, name='get_course_levels'),
+    path('get_trainers_for_levels/<int:course_id>/', AdminView.get_trainers_for_levels, name='get_trainers_for_levels'),
 
     # Edit Trainer
     path('edit_trainer/<trainer>', AdminView.edit_trainer, name="edit_trainer"),
-
-    # Delete Trainer
     path('delete_trainer/<trainer>', AdminView.delete_trainer, name="delete_trainer"),
-
     # Edit Trainee
     path('edit_trainee/<trainee>', AdminView.edit_trainee, name="edit_trainee"),
-
-    # Delete Trainee
     path('delete_trainee/<trainee>', AdminView.delete_trainee, name="delete_trainee"),
-
-    # Edit Courses
+    # Edit/Delete Courses
     path('edit_course/<course>', AdminView.edit_course, name="edit_course"),
-    # Delete Course
     path('delete_course/<course>', AdminView.delete_course, name="delete_course"),
 
 
