@@ -51,19 +51,115 @@ def generate_login_email(first_name, last_name, schoolname, EMAIL_HOST_USER, SCH
     }
     return render_to_string("emails/login.html", context)
 
+def generate_add_trainee_email(first_name, middle_name, last_name, username, email, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE):
+    context = {
+        "first_name" : first_name,
+        "middle_name":middle_name,
+        "last_name":last_name,
+        "username":username,
+        "email":email,
+        "password":password,
+        "schoolname":schoolname,
+        "SCHOOL_NUM1":SCHOOL_NUM1,
+        "SCHOOL_NUM2":SCHOOL_NUM2,
+        "SCHOOL_WEB":SCHOOL_WEB,
+        "ALOWED_HOST_ONLINE":ALOWED_HOST_ONLINE,
+    }
+    return render_to_string("emails/add_trainee.html", context)
+
+def generate_add_trainer_email(first_name, middle_name, last_name, username, email, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE):
+    context = {
+        "first_name" : first_name,
+        "middle_name":middle_name,
+        "last_name":last_name,
+        "username":username,
+        "email":email,
+        "password":password,
+        "schoolname":schoolname,
+        "SCHOOL_NUM1":SCHOOL_NUM1,
+        "SCHOOL_NUM2":SCHOOL_NUM2,
+        "SCHOOL_WEB":SCHOOL_WEB,
+        "ALOWED_HOST_ONLINE":ALOWED_HOST_ONLINE,
+    }
+    return render_to_string("emails/add_trainer.html", context)
+
+
+def generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_HOST_ONLINE):
+    """
+    Generate assignment email for trainer.
+    assignments: list of dicts [{course_name: str, levels: [str]}]
+    """
+    context = {
+        "trainer_name": trainer_name,
+        "schoolname": schoolname,
+        "assignments": assignments,
+        "ALOWED_HOST_ONLINE": ALOWED_HOST_ONLINE,
+    }
+    return render_to_string("emails/assign_trainer.html", context)
+
 def send_forgot_password_email(token: str, email: str):
     """Sends a forgot password email."""
     subject = "Password reset"
     body = generate_forgot_password_email(token=token, email=email)
-    send_email(to_email=email, subject=subject, body=body)
+    return send_email(to_email=email, subject=subject, body=body)
 
 def send_login_body(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, email):
     """Sends a login email"""
     subject = "Login Detected"
     body = generate_login_email(first_name, last_name, schoolname, EMAIL_HOST_USER, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB)
-    send_email(to_email=email, subject=subject, body=body)
+    return send_email(to_email=email, subject=subject, body=body)
+
+def send_add_trainee(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email):
+    """
+    Sends a welcome email to a newly added trainee.
+    """
+    subject = f"Welcome to {schoolname}"
+    body = generate_add_trainee_email(
+        first_name=first_name,
+        middle_name=middle_name,
+        last_name=last_name,
+        username=username,
+        email=email,
+        password=password,
+        schoolname=schoolname,
+        SCHOOL_NUM1=SCHOOL_NUM1,
+        SCHOOL_NUM2=SCHOOL_NUM2,
+        SCHOOL_WEB=SCHOOL_WEB,
+        ALOWED_HOST_ONLINE=ALOWED_HOST_ONLINE
+    )
+    return send_email(to_email=email, subject=subject, body=body)
+
+def send_add_trainer(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email):
+    """
+    Sends a welcome email to a newly added trainer.
+    """
+    subject = f"Welcome to {schoolname}"
+    body = generate_add_trainer_email(
+        first_name=first_name,
+        middle_name=middle_name,
+        last_name=last_name,
+        username=username,
+        email=email,
+        password=password,
+        schoolname=schoolname,
+        SCHOOL_NUM1=SCHOOL_NUM1,
+        SCHOOL_NUM2=SCHOOL_NUM2,
+        SCHOOL_WEB=SCHOOL_WEB,
+        ALOWED_HOST_ONLINE=ALOWED_HOST_ONLINE
+    )
+    return send_email(to_email=email, subject=subject, body=body)
 
 
+def send_assign_trainer(trainer, schoolname, assignments, ALOWED_HOST_ONLINE, email):
+    """
+    Send assignment email to trainer.
+    trainer: Trainer object or name string
+    assignments: list of dicts [{course_name: str, levels: [str]}]
+    """
+    trainer_name = trainer.trainer_name.first_name + " " + trainer.trainer_name.last_name if hasattr(trainer, 'trainer_name') else str(trainer)
+    subject = f"New Course & Level Assignment at {schoolname}"
+    body = generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_HOST_ONLINE)
+    return send_email(to_email=email, subject=subject, body=body)
 
 # class EmailBackend:
 #     def __init__(self, smtp_server, smtp_port, username, password):

@@ -13,6 +13,7 @@ from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
+from roothub_app.backend.email_backend import send_add_trainee, send_add_trainer, send_assign_trainer
 
 EMAIL_HOST_USER = settings.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = settings.EMAIL_HOST_PASSWORD
@@ -26,6 +27,7 @@ SCHOOL_NUM1=settings.SCHOOL_NUM1
 SCHOOL_NUM2 = settings.SCHOOL_NUM2
 SCHOOL_WEB=settings.SCHOOL_WEB
 ABOUT_SCHOOL=settings.ABOUT_SCHOOL
+ALOWED_HOST_ONLINE = settings.ALOWED_HOST_ONLINE
 
 @login_required(login_url="/")
 def home(request):
@@ -65,124 +67,6 @@ def home(request):
 @login_required(login_url="/")
 def add_trainer(request):
     return render(request, "admin_template/add_trainer.html")
-
-# @login_required(login_url="/")
-# def add_trainer_save(request):
-#     if request.method == "POST":
-#         try:
-#             first_name = request.POST.get("first_name").capitalize()
-#             middle_name = request.POST.get("middle_name").capitalize()
-#             last_name = request.POST.get("last_name").capitalize()
-#             gender = request.POST.get("gender")
-#             phone  = request.POST.get("phone")
-#             religion = request.POST.get("religion")
-#             experience = request.POST.get("experience")
-#             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-#             username = request.POST.get("username").lower().strip()
-#             email = request.POST.get("email").lower().replace(' ', '')
-#             password = request.POST.get("password1")
-#             address = request.POST.get("address")
-#             city = request.POST.get("city")
-#             state = request.POST.get("state")
-#             country = request.POST.get("country")
-            
-#             if CustomUser.objects.filter(email__iexact=email).exists():
-#                 messages.error(request, "Email already exists!")
-#                 return redirect("add_trainer")
-            
-#             elif gender == "Select Gender":
-#                 messages.error(request, "Select Student Gender!")
-#                 return redirect('add_trainer')
-            
-#             elif len(password) < 8:
-#                 messages.error(request, "Password must be at least 8 characters long.")
-#                 return redirect("add_trainer")
-
-#             elif 11>len(phone)>14:
-#                 messages.error(request,"Input an appropiate phone number")
-#                 return redirect("add_trainer")
-            
-#             elif CustomUser.objects.filter(username__iexact=username).exists():
-#                 messages.error(request, "Username already exists!")
-#                 return redirect("add_trainer")
-            
-#             else:
-#                 email_sent = False
-#                 if email:
-#                     try:
-#                         smtp = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
-#                         smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-#                         msg = EmailMessage()
-#                         msg['Subject'] = f"Welcome to {schoolname}"
-#                         msg['From'] = EMAIL_HOST_USER
-#                         msg['To'] = email
-                        
-#                         msg.add_alternative(
-#                             f"""
-#                             <html>
-#                             <body>
-#                                 <h2 style="color: #2E86C1;">Welcome to {schoolname}!</h2>
-#                                 <p>Dear <strong>{str(first_name).capitalize()} {str(middle_name).capitalize()} {str(last_name).capitalize()}</strong>,</p>
-#                                 <p>
-#                                     We are delighted to welcome you to {schoolname}! As a valued member of our community, you play a crucial role in our mission to provide an exceptional learning environment.
-#                                 </p>
-#                                 <p>
-#                                     Here at the {schoolname}, we are committed to supporting you and ensuring your experience with us is both rewarding and fulfilling.
-#                                 </p>
-#                                 <h3 style="margin-top: 20px; text-align:center;">Your Log In Credentials</h3>
-#                                 <strong style="margin-top: 20px; color:red; text-align:center;">Please keep these credentials confidential!</strong>
-#                                 <p><strong>Username:</strong> {str(username).capitalize()}</p>
-#                                 <p><strong>Email:</strong> {str(email).capitalize()}</p>
-#                                 <p><strong>Password:</strong> {str(password)}</p>
-#                                 <p>Access your dashboard at: <a href="https://roothub-admin-website.onrender.com/" target="_blank">RootHub-Admin-Webiste</a></p>
-#                                 <p style="margin-top: 20px;">Best regards,</p>
-#                                 <p><strong>{schoolname} Management</strong></p>
-#                             </body>
-#                             </html>
-#                             """,
-#                             subtype='html'
-#                         )
-#                         smtp.send_message(msg)
-#                         smtp.quit()
-#                         email_sent = True
-#                     except Exception as e:
-#                         print(e)
-#                         messages.error(request, f"Please check your internet connection! {e}")
-#                         return render(request, "admin_template/add_trainer.html")
-                    
-#                     if email_sent or (not email):
-                
-#                         user = CustomUser.objects.create_user(
-#                             first_name=first_name,
-#                             middle_name=middle_name,
-#                             last_name=last_name,
-#                             email=email,
-#                             password=password,
-#                             username=username,
-#                             profile_pic=profile_pic,
-#                             user_type=2
-#                         )
-                        
-                        
-#                         trainer = user.trainers
-#                         trainer.gender = gender
-#                         trainer.address = address
-#                         trainer.religion = religion
-#                         trainer.state = state
-#                         trainer.city = city
-#                         trainer.experience = experience
-#                         trainer.country = country
-#                         trainer.phone = phone
-#                         trainer.save()
-#                         user.save()
-
-#                 messages.success(request, "Trainer Added Successfully")
-#                 return redirect("add_trainer")
-
-#         except Exception as excepts:
-#             print(excepts)
-#             messages.error(request, "An Unexcepted error occured")
-#             return redirect("add_trainer")
 
 @login_required(login_url="/")
 def add_trainer_save(request):
@@ -255,6 +139,7 @@ def add_trainer_save(request):
                 trainer.save()
                 user.save()
 
+                send_add_trainer(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email)
                 messages.success(request, "Trainer Added Successfully")
                 return redirect("add_trainer")
 
@@ -262,6 +147,7 @@ def add_trainer_save(request):
             print(excepts)
             messages.error(request, "An Unexcepted error occured")
             return redirect("add_trainer")
+
 
 @login_required(login_url="/")
 def view_trainer(request):
@@ -285,138 +171,6 @@ def add_trainee(request):
     }
     return render(request, "admin_template/add_trainee.html", context)
 
-# @login_required(login_url="/")
-# def add_trainee_save(request):
-#     if request.method == "POST":
-#         try:
-#             first_name = request.POST.get("first_name").capitalize()
-#             middle_name = request.POST.get("middle_name").capitalize()
-#             last_name = request.POST.get("last_name").capitalize()
-#             category = request.POST.get("category")
-#             gender = request.POST.get("gender")
-#             phone  = request.POST.get("phone")
-#             religion = request.POST.get("religion")
-#             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
-#             username = request.POST.get("username").lower().strip()
-#             email = request.POST.get("email").lower().replace(' ', '')
-#             password = request.POST.get("password1")
-#             address = request.POST.get("address")
-#             city = request.POST.get("city")
-#             state = request.POST.get("state")
-#             country = request.POST.get("country")
-#             course_choice = request.POST.get("course")
-
-#             if CustomUser.objects.filter(email__iexact=email).exists():
-#                 messages.error(request, "Email already exists!")
-#                 return redirect("add_trainee")
-            
-#             elif gender == "Select Gender":
-#                 messages.error(request, "Select Student Gender!")
-#                 return redirect('add_trainee')
-            
-#             elif len(password) < 8:
-#                 messages.error(request, "Password must be at least 8 characters long.")
-#                 return redirect("add_trainee")
-
-#             elif 11>len(phone)>15:
-#                 messages.error(request,"Input an appropiate phone number")
-#                 return redirect("add_trainee")
-            
-#             elif CustomUser.objects.filter(username__iexact=username).exists():
-#                 messages.error(request, "Username already exists!")
-#                 return redirect("add_trainee")
-            
-#             else:
-#                 email_sent = False
-#                 if email:
-#                     try:
-#                         smtp = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
-#                         smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-#                         msg = EmailMessage()
-#                         msg['Subject'] = f"Welcome to {schoolname}"
-#                         msg['From'] = EMAIL_HOST_USER
-#                         msg['To'] = email
-                        
-#                         msg.add_alternative(
-#                             f"""
-#                             <html>
-#                             <body>
-#                                 <h2 style="color: #2E86C1;">Welcome to {schoolname}!</h2>
-#                                 <p>Dear <strong>{str(first_name).capitalize()} {str(middle_name).capitalize()} {str(last_name).capitalize()}</strong>,</p>
-#                                 <p>
-#                                     We are delighted to welcome you to {schoolname}! As a valued member of our community, you play a crucial role in our mission to provide an exceptional learning environment.
-#                                 </p>
-#                                 <p>
-#                                     Here at the {schoolname}, we are committed to supporting you and ensuring your experience with us is both rewarding and fulfilling.
-#                                 </p>
-#                                 <h3 style="margin-top: 20px; text-align:center;">Your Log In Credentials</h3>
-#                                 <strong style="margin-top: 20px; color:red; text-align:center;">Please keep these credentials confidential!</strong>
-#                                 <p><strong>Username:</strong> {str(username).capitalize()}</p>
-#                                 <p><strong>Email:</strong> {str(email).capitalize()}</p>
-#                                 <p><strong>Password:</strong> {str(password)}</p>
-#                                 <p>Access your dashboard at: <a href="https://roothub-admin-website.onrender.com/" target="_blank">RootHub-Admin-Webiste</a></p>
-#                                 <p style="margin-top: 20px;">Best regards,</p>
-#                                 <p><strong>{schoolname}</strong></p>
-#                             </body>
-#                             </html>
-#                             """,
-#                             subtype='html'
-#                         )
-#                         smtp.send_message(msg)
-#                         smtp.quit()
-#                         email_sent = True
-#                     except:
-#                         messages.error(request, f"Please check your internet connection!")
-#                         return redirect("add_trainee")
-#                     if email_sent or (not email):
-#                         try:
-#                             user = CustomUser.objects.create_user(
-#                                 first_name=first_name,
-#                                 middle_name=middle_name,
-#                                 last_name=last_name,
-#                                 email=email,
-#                                 password=password,
-#                                 username=username,
-#                                 profile_pic=profile_pic,
-#                                 user_type=3
-#                             )
-#                         except Exception as e:
-#                             print(e)
-#                             messages.error(request, "An error saving the Custom User occured")
-#                             return redirect("add_trainee")
-#                         try:
-#                             trainees = user.trainee
-#                             trainees.gender = gender
-#                             trainees.address = address
-#                             trainees.religion = religion
-#                             trainees.category = category
-#                             trainees.state = state
-#                             trainees.city = city
-#                             trainees.country = country
-#                             trainees.phone = phone
-#                         except Exception as ex:
-#                             print(ex)
-#                             messages.error(request, "An error saving the Trainee details occured")
-#                             return redirect("add_trainee")
-#                         try:
-#                             selected_course = Courses.objects.get(id=course_choice)
-#                             trainees.course_id = selected_course 
-#                             trainees.save()
-#                             user.save()
-#                         except Exception as ex:
-#                             print(ex)
-#                             messages.error(request, "Select a course or you add Course")
-#                             return redirect("add_trainee")
-                    
-#                 messages.success(request, "Trainee Added Successfully")
-#                 return redirect("add_trainee")
-            
-#         except Exception as excepts:
-#             print(excepts)
-#             messages.error(request, "An Unexcepted error occured")
-#             return redirect("add_trainee")
-#     else:
-#         return HttpResponse("This is showing because this request is not on Post. Try going back or refresh this page")
 
 @login_required(login_url="/")
 def add_trainee_save(request):
@@ -518,6 +272,8 @@ def add_trainee_save(request):
                     trainees.course_id = selected_course 
                     trainees.save()
                     user.save()
+
+                    send_add_trainee(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email)
                 except Exception as ex:
                     print(ex)
                     messages.error(request, "Select a course or you add Course")
@@ -664,10 +420,11 @@ def assign_trainer(request):
 
         # Get selected course IDs (from multi-select)
         course_ids = request.POST.getlist('course_ids')
+        assignment_summary = []
         for course_id in course_ids:
             course = get_object_or_404(Courses, id=course_id)
-            # Get selected levels for this course
             level_ids = request.POST.getlist(f'level_ids_{course_id}')
+            level_names = []
             for level_id in level_ids:
                 level = get_object_or_404(Level, id=level_id)
                 # Prevent duplicate assignment
@@ -677,6 +434,25 @@ def assign_trainer(request):
                         course_id=course,
                         level_id=level
                     )
+                level_names.append(level.level)
+            if level_names:
+                assignment_summary.append({
+                    "course_name": course.course_name,
+                    "levels": level_names
+                })
+
+        # Send assignment notification email once, after all assignments
+        if assignment_summary:
+            try:
+                send_assign_trainer(
+                    trainer=trainer,
+                    schoolname=schoolname,
+                    assignments=assignment_summary,
+                    ALOWED_HOST_ONLINE=ALOWED_HOST_ONLINE,
+                    email=trainer.trainer_name.email
+                )
+            except Exception as email_ex:
+                print(f"Error sending assignment email: {email_ex}")
         messages.success(request, "Trainer assignments saved successfully.")
         return redirect('assign_trainer')
 

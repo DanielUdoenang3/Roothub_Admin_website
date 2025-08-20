@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Assignment Notification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+        }
+        .hero {
+            background: linear-gradient(90deg, #2E86C1 0%, #007bff 100%);
+            color: #fff;
+            padding: 2rem 0 1rem 0;
+            text-align: center;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.08);
+            max-width: 520px;
+            margin: 2rem auto;
+            padding: 2rem 2rem 1.5rem 2rem;
+        }
+        .card h3 {
+            color: #2E86C1;
+            margin-bottom: 1rem;
+        }
+        .assignment-list {
+            background: #f1f7ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .assignment-list ul {
+            padding-left: 1.2rem;
+        }
+        .assignment-list li {
+            margin-bottom: 0.5rem;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: #2E86C1;
+            color: #fff;
+            font-weight: 500;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+            transition: background 0.2s;
+        }
+        .cta-btn:hover {
+            background: #007bff;
+        }
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.95rem;
+            margin-top: 2rem;
+        }
+        .icon {
+            font-size: 2.5rem;
+            color: #2E86C1;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="icon">📚</div>
+        <h1>Trainer Assignment Notification</h1>
+        <p style="font-size:1.15rem;max-width:600px;margin:0 auto;">You have been assigned new courses and levels to handle at <strong>{{schoolname}}</strong>.</p>
+    </div>
+    <div class="card">
+        <h3>Hello, {{trainer_name}} 👋</h3>
+        <p>We are pleased to inform you that you have been assigned the following courses and levels:</p>
+        <div class="assignment-list">
+            <ul>
+            {% for course in assignments %}
+                <li>
+                    <strong>{{ course.course_name }}</strong><br>
+                    <span style="color:#007bff;">Levels:</span>
+                    {% for level in course.levels %}
+                        <span class="badge" style="background:#2E86C1;color:#fff;padding:0.3em 0.8em;border-radius:5px;margin-right:0.3em;">{{ level }}</span>
+                    {% endfor %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <a href="{{ALOWED_HOST_ONLINE}}" class="cta-btn" target="_blank">Go to Your Dashboard</a>
+        <p style="margin-top:1.5rem;font-size:1.05rem;">If you have any questions or need support, please contact management.</p>
+        <p style="margin-top:1.5rem;">Best regards,<br><strong>{{schoolname}} Management</strong></p>
+    </div>
+    <div class="footer">
+        &copy; {{schoolname}} {{ current_year }} &mdash; Thank you for your dedication.
+    </div>
+</body>
+</html>
