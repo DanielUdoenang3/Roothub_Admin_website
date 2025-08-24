@@ -16,7 +16,7 @@
 </div>
 <div class="row">
     <div class="col-sm-10">
-        <div class="card">
+        <div class="card shadow-lg border-0">
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -34,12 +34,29 @@
                                 <textarea name="description" placeholder="Enter Description" class="form-control" rows="4" required></textarea>
                             </div>
                         </div>
+
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Category</label>
+                                <select name="category" class="form-control form-select" required>
+                                    <option value="" disabled selected>Select Category</option>
+                                    <option value="General">General</option>
+                                    <option value="Trainers">Trainers</option>
+                                    <option value="Trainees">Trainees</option>
+                                    {% for course in courses %}
+                                        <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="col-8">
                             <div class="form-group">
                                 <label>Upload File (Optional)</label>
                                 <input type="file" name="file" class="form-control" />
                             </div>
                         </div>
+
                         <div class="col-12">
                             <div class="student-submit">
                                 <button type="submit" class="btn btn-primary">Send Announcement</button>

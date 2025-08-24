@@ -13,7 +13,7 @@ from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
-from roothub_app.backend.email_backend import send_add_trainee, send_add_trainer, send_assign_trainer
+from roothub_app.backend.email_backend import send_add_trainee, send_add_trainer, send_assign_trainer, send_invite_link
 
 EMAIL_HOST_USER = settings.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = settings.EMAIL_HOST_PASSWORD
@@ -314,6 +314,7 @@ def add_course_save(request):
             course_name = request.POST.get("course")
             price = request.POST.get("price","").strip()
             month = request.POST.get("month")
+            presentations = request.POST.get("presentations")
 
             if not course_name:
                 messages.error(request, "Course name cannot be empty.")
@@ -347,7 +348,7 @@ def add_course_save(request):
 
             else:
                 try:
-                    new_course = Courses.objects.create(course_name=course_name , price=price_value, months=month)
+                    new_course = Courses.objects.create(course_name=course_name , price=price_value, months=month, number_of_presentation=presentations)
                     new_course.save()
 
                     i = 1
@@ -379,23 +380,49 @@ def add_course_save(request):
             messages.error(request, f"An error occurred")
             return redirect("add_course")
 
+# @login_required(login_url="/")
+# def view_course(request):
+#     courses_list = Courses.objects.prefetch_related(
+#         'level_set',
+#         'trainercourseassignment_set__trainer_id__trainer_name'
+#     ).annotate(num_trainees=Count('trainees')).order_by('id')
+
+#     page_number = request.GET.get('page')
+#     paginator = Paginator(courses_list, 10)
+#     page_obj = paginator.get_page(page_number)
+
+#     context = {
+#         'total_course': paginator.count,
+#         'courses': page_obj,
+#         'page_obj': page_obj,
+#     }
+#     return render(request, 'admin_template/display_course.html', context)
+
 @login_required(login_url="/")
 def view_course(request):
-    courses_list = Courses.objects.prefetch_related(
+    courses = Courses.objects.prefetch_related(
         'level_set',
         'trainercourseassignment_set__trainer_id__trainer_name'
-    ).annotate(num_trainees=Count('trainees')).order_by('id')
-
-    page_number = request.GET.get('page')
-    paginator = Paginator(courses_list, 10)
-    page_obj = paginator.get_page(page_number)
+    )
 
     context = {
-        'total_course': paginator.count,
-        'courses': page_obj,
-        'page_obj': page_obj,
+        'total_course': courses,
+    }
+    return render(request, 'admin_template/display_course.html', context)
+
+@login_required(login_url="/")
+def course_details(request, course_id):
+    courses = Courses.objects.prefetch_related(
+        'level_set',
+        'trainercourseassignment_set__trainer_id__trainer_name'
+    ).filter(id=course_id).first()
+    print(courses)
+
+    context = {
+        'course_details': courses,
     }
     return render(request, 'admin_template/view_course.html', context)
+
 
 @login_required(login_url="/")
 def assign_trainer(request):
@@ -523,6 +550,7 @@ def assign_trainee(request):
         return redirect('assign_trainee')
 
     return render(request, "admin_template/assign_trainee.html", context)
+
 # AJAX: Get trainers for selected levels in a course
 @login_required(login_url="/")
 def get_trainers_for_levels(request, course_id):
@@ -947,23 +975,70 @@ def delete_course(request, course):
 
 @login_required(login_url="/")
 def send_announcement(request):
+    courses = Courses.objects.all()
     if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        category = request.POST.get("category")
+        file = request.FILES.get("file")
+        course_obj = None
+        if category not in ["General", "Trainers", "Trainees"]:
+            try:
+                course_obj = Courses.objects.get(id=category)
+                category_val = "Course"
+            except Courses.DoesNotExist:
+                course_obj = None
+                category_val = "General"
+        else:
+            category_val = category
         try:
-            title = request.POST.get("title")
-            description = request.POST.get("description")
-            file = request.FILES.get("file")
-
-            Announcement.objects.create(
-                title = title,
-                description = description,
-                file = file
+            announcement = Announcement.objects.create(
+                title=title,
+                description=description,
+                file=file,
+                category=category_val,
+                course=course_obj
             )
+            # Only mark as unread for intended recipients (do NOT add unintended users)
+            # Do NOT add users to read_by here; leave read_by empty so only intended users see it as unread
+            pass
+
             messages.success(request, "Announcement sent successfully")
-            
         except Exception as e:
             print(e)
-            messages.error(request,f"Announcement not sent due to {e}")
-    return render(request, "admin_template/send_announcement.html")
+            messages.error(request, f"Announcement not sent due to {e}")
+
+    context = {
+        "courses": courses,
+    }
+    return render(request, "admin_template/send_announcement.html", context)
+
+def get_user_announcements(user):
+    # user_type is stored as string of int, but model uses int for comparison
+    if str(user.user_type) == "1":  # Admin
+        return Announcement.objects.all()
+    elif str(user.user_type) == "2":  # Trainer
+        try:
+            trainer = Trainers.objects.get(trainer_name=user)
+            trainer_courses = trainer.course_id.all()
+            return Announcement.objects.filter(
+                Q(category="General") |
+                Q(category="Trainers") |
+                (Q(category="Course") & Q(course__in=trainer_courses))
+            )
+        except Trainers.DoesNotExist:
+            return Announcement.objects.none()
+    elif str(user.user_type) == "3":  # Trainee
+        try:
+            trainee = Trainee.objects.get(trainee_name=user)
+            return Announcement.objects.filter(
+                Q(category="General") |
+                Q(category="Trainees") |
+                (Q(category="Course") & Q(course=trainee.course_id))
+            )
+        except Trainee.DoesNotExist:
+            return Announcement.objects.none()
+    return Announcement.objects.none()
 
 @login_required(login_url="/")
 def view_announcement(request):
@@ -1051,6 +1126,16 @@ def trainer_details(request, username):
     }
 
     return render(request, 'admin_template/view_trainer_details.html', context)
+
+def invite_admin(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        if email:
+            send_invite_link(email, schoolname)
+            messages.success(request, "Admin Invitated Successfully")
+
+    return render(request, "admin_template/invite-admin.html")
 
 
 

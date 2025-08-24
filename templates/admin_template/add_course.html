@@ -17,7 +17,7 @@
 
 <div class="row">
     <div class="col-12">
-      <div class="card">
+      <div class="card shadow-lg border-0">
         <div class="card-body">
           <form method="POST" action="{% url "add_course_save" %}">
             {% csrf_token %}
@@ -42,6 +42,12 @@
                     <div class="form-group local-forms">
                         <label>Month</label>
                         <input type="number" class="form-control" name="month" placeholder="Enter Number Month" required>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-5">
+                    <div class="form-group local-forms">
+                        <label>Presentations</label>
+                        <input type="number" class="form-control" name="presentations" placeholder="Enter Number Presentations" required>
                     </div>
                 </div>
                 <div class="col-12 col-sm-10">

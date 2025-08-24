@@ -161,6 +161,12 @@ def send_assign_trainer(trainer, schoolname, assignments, ALOWED_HOST_ONLINE, em
     body = generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_HOST_ONLINE)
     return send_email(to_email=email, subject=subject, body=body)
 
+def send_invite_link(email, schoolname):
+    """
+    Send Invitation link to add Admins
+    """
+    subject = f"Invitation from {schoolname}"
+
 # class EmailBackend:
 #     def __init__(self, smtp_server, smtp_port, username, password):
 #         self.smtp_server = smtp_server

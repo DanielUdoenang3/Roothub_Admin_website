@@ -12,6 +12,7 @@ urlpatterns = [
     path('doLogout', views.doLogout, name="doLogout"),
     path('profile', views.profile, name="profile"),
     path('profile_update/<admin>', views.profile_update, name="profile_update"),
+    path('change_password', views.change_password, name="change_password"),
     path('search', AdminView.search, name="search"),
     path('search_for_trainers', TrainerView.search, name="search_for_trainers"),
     path('api/trainers-trainees-per-month/', views.trainers_trainees_per_month, name='trainers_trainees_per_month'),
@@ -31,6 +32,7 @@ urlpatterns = [
     path('add_course', AdminView.add_course, name="add_course"),
     path('add_course_save', AdminView.add_course_save, name="add_course_save"),
     path('view_course', AdminView.view_course, name="view_course"),
+    path('course_details/<int:course_id>', AdminView.course_details, name="course_details"),
 
     # Asssign Trainer
     path('assign_trainer', AdminView.assign_trainer, name="assign_trainer"),
@@ -109,6 +111,9 @@ urlpatterns = [
     # Forgot Password
     path("forgot-password", views.forgot_password, name="forgot_password"),
     path(f"reset_password/<str:token>/", views.forgot_password_link, name="forgot_password_link"),
+
+    # Invite Admin
+    path("invite_admin", AdminView.invite_admin, name="invite_admin"),
 
 ]
 

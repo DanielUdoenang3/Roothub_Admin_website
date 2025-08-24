@@ -75,6 +75,7 @@ class Courses(models.Model):
     course_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     months = models.CharField(max_length=200)
+    number_of_presentation = models.CharField(max_length=100, blank=True, null=True)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -272,10 +273,18 @@ class AssignmentSubmission(models.Model):
         return f"{self.assignment.title} - {self.trainee.trainee_name.username}"
 
 class Announcement(models.Model):
-    id = models.AutoField(primary_key=True, unique=True) 
+    CATEGORY_CHOICES = [
+        ('General', 'General'),
+        ('Trainers', 'Trainers'),
+        ('Trainees', 'Trainees'),
+        ('Course', 'Course'),
+    ]
+    id = models.AutoField(primary_key=True, unique=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     file = models.FileField(upload_to='announcements', blank=True, null=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='General')
+    course = models.ForeignKey('Courses', null=True, blank=True, on_delete=models.SET_NULL)
     read_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="read_announcements", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)

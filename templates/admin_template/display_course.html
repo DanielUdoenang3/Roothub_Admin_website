@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Available Courses</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">View Available Courses</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card shadow-lg border-0">
+            {% include "includes/messages.html" %}
+            {% for course in total_course %}
+                <a href="{% url "course_details" course.id %}">
+                    <div class="text-center align-middle">
+                        <div class="badge rounded-pill bg-primary fs-6 px-3 py-2">
+                          {{ course.course_name }}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock main_content %}

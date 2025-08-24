@@ -1,4 +1,3 @@
-from email.message import EmailMessage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render,redirect, get_object_or_404
 from roothub_app.EmailBackEnd import EmailBackEnd
@@ -13,6 +12,7 @@ from .models import *
 import smtplib
 from datetime import datetime, timedelta
 from roothub_app.backend.email_backend import send_forgot_password_email, send_login_body
+from .AdminView import get_user_announcements
 
 # Create your views here.
 
@@ -29,8 +29,9 @@ SCHOOL_NUM2 = settings.SCHOOL_NUM2
 SCHOOL_WEB=settings.SCHOOL_WEB
 ABOUT_SCHOOL=settings.ABOUT_SCHOOL
 
+
 def Announcement_View(request):
-    announcements = Announcement.objects.all()
+    announcements = get_user_announcements(request.user)
     return render(request, "base.html", {"announcements": announcements})
 
 def login_view(request):
@@ -229,15 +230,39 @@ def profile_update(request, admin):
         #     messages.error(request, "An Unexcepted error occured")
         #     return redirect("profile")
 
+def change_password(request):
+    if request.method == "POST":
+        user = request.user
+        users = get_object_or_404(CustomUser, username=user.username)
+        
+        current_password = request.POST.get("current_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        print(new_password, confirm_password, current_password)
+
+        if users.check_password(current_password):
+            if new_password == confirm_password:
+                users.set_password(new_password)
+                users.save()
+                messages.success(request, "Your password has been updated successfully")
+            else:
+                messages.error(request, "Your new password does not match")
+        else:
+            messages.error(request, "Your current password is incorrect")
+    return render(request, "change-password.html")
+
+
+
 
 @login_required(login_url="/")
 def get_unread_announcements(request):
     user = request.user
-    unread_announcements = Announcement.objects.exclude(read_by=user).values(
+    announcements = get_user_announcements(user)
+    unread_announcements = announcements.exclude(read_by=user).values(
         "id", "title", "description", "created_at"
     )
     unread_count = unread_announcements.count()
-
     return JsonResponse({"unread_count": unread_count, "unread_announcements": list(unread_announcements)})
 
 def mark_announcement_as_read(request, announcement_id):
@@ -496,10 +521,9 @@ def star_trainee_view(request, date):
     return JsonResponse({"presentations": presentations_list})
 
 def view_annoucements(request):
-    announcement = Announcement.objects.filter()
-
+    announcements = get_user_announcements(request.user)
     content = {
-        "announcements":announcement
+        "announcements": announcements
     }
     return render(request, "view_announcement.html", content)
 
