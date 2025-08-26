@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
 from roothub_app.backend.email_backend import send_add_trainee, send_add_trainer, send_assign_trainer, send_invite_link
+from roothub_app.utils.token import create_access_token, decode_access_token
 
 EMAIL_HOST_USER = settings.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = settings.EMAIL_HOST_PASSWORD
@@ -1132,7 +1133,8 @@ def invite_admin(request):
         email = request.POST.get("email")
 
         if email:
-            send_invite_link(email, schoolname)
+            token = create_access_token(data={"email": email})
+            send_invite_link(email, schoolname, token)
             messages.success(request, "Admin Invitated Successfully")
 
     return render(request, "admin_template/invite-admin.html")

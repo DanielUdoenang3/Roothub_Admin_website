@@ -4,6 +4,37 @@
 {% block main_content %}
 {% if request.user.user_type == "1" %}
 
+<style>
+    .course-ellipse {
+        width: 180px;
+        height: 80px;
+        background: linear-gradient(135deg, #007bff 60%, #6c757d 100%);
+        color: #fff;
+        border-radius: 50px / 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 auto 10px auto;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center; /* Ensure text is centered */
+        line-height: normal; /* Prevent vertical misalignment */
+        height: 80px; /* Explicit height for vertical centering */
+    }
+    .course-ellipse:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        text-decoration: none;
+    }
+    .course-grid .col {
+        margin-bottom: 30px;
+    }
+</style>
+
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
@@ -18,17 +49,19 @@
 
 <div class="row">
     <div class="col-sm-12">
-        <div class="card shadow-lg border-0">
-            {% include "includes/messages.html" %}
-            {% for course in total_course %}
-                <a href="{% url "course_details" course.id %}">
-                    <div class="text-center align-middle">
-                        <div class="badge rounded-pill bg-primary fs-6 px-3 py-2">
-                          {{ course.course_name }}
-                        </div>
+        {% include "includes/messages.html" %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row row-cols-1 row-cols-md-3 g-4 p-3 course-grid">
+                    {% for course in total_course %}
+                    <div class="col text-center">
+                        <a style="padding-top: 30px;" href="{% url 'course_details' course.id %}" class="course-ellipse mb-2 d-block">
+                            {{ course.course_name }}
+                        </a>
                     </div>
-                </a>
-            {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

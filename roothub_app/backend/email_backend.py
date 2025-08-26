@@ -97,6 +97,17 @@ def generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_
     }
     return render_to_string("emails/assign_trainer.html", context)
 
+def generate_invite_link(email, schoolname, ALLOWED_HOST_ONLINE):
+    """
+    Generate invitation email to add Admins
+    """
+    context = {
+        "email": email,
+        "schoolname": schoolname,
+        "ALLOWED_HOST_ONLINE": ALLOWED_HOST_ONLINE,
+    }
+    return render_to_string("emails/invite_admin.html", context)
+
 def send_forgot_password_email(token: str, email: str):
     """Sends a forgot password email."""
     subject = "Password reset"
@@ -161,11 +172,14 @@ def send_assign_trainer(trainer, schoolname, assignments, ALOWED_HOST_ONLINE, em
     body = generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_HOST_ONLINE)
     return send_email(to_email=email, subject=subject, body=body)
 
-def send_invite_link(email, schoolname):
+def send_invite_link(email, schoolname, token):
     """
     Send Invitation link to add Admins
     """
-    subject = f"Invitation from {schoolname}"
+    subject = f"Admin Invitation from {schoolname}"
+    link = f"{settings.INVITE_ADMIN_LINK}/set_password/{token}/"
+    body = generate_invite_link(email=email, schoolname=email, ALLOWED_HOST_ONLINE=token)
+    return send_email(to_email=email, subject=subject, body=body)
 
 # class EmailBackend:
 #     def __init__(self, smtp_server, smtp_port, username, password):
