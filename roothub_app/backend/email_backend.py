@@ -97,6 +97,12 @@ def generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_
     }
     return render_to_string("emails/assign_trainer.html", context)
 
+def generate_password_change():
+    """
+    Generate indication for a password change
+    """
+    return render_to_string("emails/password-change.html")
+
 def generate_invite_link(email, schoolname, ALLOWED_HOST_ONLINE):
     """
     Generate invitation email to add Admins
@@ -172,13 +178,21 @@ def send_assign_trainer(trainer, schoolname, assignments, ALOWED_HOST_ONLINE, em
     body = generate_assign_trainer_email(trainer_name, schoolname, assignments, ALOWED_HOST_ONLINE)
     return send_email(to_email=email, subject=subject, body=body)
 
+def send_password_change(email):
+    """"
+    To indicate the user that a password change has been initiated
+    """
+    subject = "Password Change"
+    body = generate_password_change()
+    return send_email(to_email=email, subject=subject, body=body)
+
 def send_invite_link(email, schoolname, token):
     """
     Send Invitation link to add Admins
     """
     subject = f"Admin Invitation from {schoolname}"
     link = f"{settings.INVITE_ADMIN_LINK}/set_password/{token}/"
-    body = generate_invite_link(email=email, schoolname=email, ALLOWED_HOST_ONLINE=token)
+    body = generate_invite_link(email=email, schoolname=email, ALLOWED_HOST_ONLINE=link)
     return send_email(to_email=email, subject=subject, body=body)
 
 # class EmailBackend:

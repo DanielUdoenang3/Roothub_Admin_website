@@ -10,6 +10,7 @@ from django.conf import settings
 class CustomUser(AbstractUser):
     USER_CHOICE = (
         (1, "Admin"),
+        (4, "Sub Admin"),
         (2, "Trainer"),
         (3, "Trainee"),
     )

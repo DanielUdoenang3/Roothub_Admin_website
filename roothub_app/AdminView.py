@@ -472,13 +472,15 @@ def assign_trainer(request):
         # Send assignment notification email once, after all assignments
         if assignment_summary:
             try:
-                send_assign_trainer(
+                sent = send_assign_trainer(
                     trainer=trainer,
                     schoolname=schoolname,
                     assignments=assignment_summary,
                     ALOWED_HOST_ONLINE=ALOWED_HOST_ONLINE,
                     email=trainer.trainer_name.email
                 )
+                if not sent:
+                    messages.error(request, "Email not sent check your internet connection")
             except Exception as email_ex:
                 print(f"Error sending assignment email: {email_ex}")
         messages.success(request, "Trainer assignments saved successfully.")
@@ -1050,6 +1052,7 @@ def view_announcement(request):
     })
 
 def edit_announcement(request, announcement_title):
+    courses = Courses.objects.all()
     announcement = get_object_or_404(Announcement, title=announcement_title)
     try:
         if request.method == "POST":
@@ -1067,7 +1070,7 @@ def edit_announcement(request, announcement_title):
     except Exception as e:
         print(e)
         messages.error(request, f"An error occured {e}")
-    return render(request, "admin_template/edit_announcement.html", {"announcement":announcement})
+    return render(request, "admin_template/edit_announcement.html", {"announcement":announcement, "course":courses})
 
 @login_required(login_url="/")
 def delete_announcement(request, announcement_title):
@@ -1085,16 +1088,6 @@ def trainee_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainee = get_object_or_404(Trainee, trainee_name=user)
 
-    password1 = request.POST.get("password1")
-    password2 = request.POST.get("password2")
-
-    if password1 and password2:
-        if password1 == password2:
-            user.set_password(password2)
-            user.save()
-            messages.success(request, "User Password Changed successfully")
-        else:
-            messages.error(request, "The Passwords you entered are not matching")
     context={
         'user':user,
         'trainee':trainee,
@@ -1108,17 +1101,6 @@ def trainer_details(request, username):
     course = Courses.objects.filter(trainer_id=trainer)
     assignment = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
 
-    password1 = request.POST.get("password1")
-    password2 = request.POST.get("password2")
-
-    if password1 and password2:
-        if password1 == password2:
-            user.set_password(password2)
-            user.save()
-            messages.success(request, "User Password Changed successfully")
-        else:
-            messages.error(request, "The Passwords you entered are not matching")
-
     context={
         'user':user,
         'trainer':trainer,
@@ -1130,15 +1112,60 @@ def trainer_details(request, username):
 
 def invite_admin(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        email_used = request.POST.get("email")
 
-        if email:
-            token = create_access_token(data={"email": email})
-            send_invite_link(email, schoolname, token)
+        if email_used:
+            token = create_access_token(data={"email": email_used})
+            sent = send_invite_link(email=email_used, schoolname=schoolname, token=token)
+            if not sent:
+                messages.error(request, "Email not sent check your internet connection")
             messages.success(request, "Admin Invitated Successfully")
+        else:
+            messages.error(request, "Insert an email before submiting")
 
     return render(request, "admin_template/invite-admin.html")
 
+def create_invited_admin(request, token):
+    payload = decode_access_token(token)
+    email = payload.get("email")
+
+    if email:
+        if request.method == "POST":
+            username = request.POST.get("username").lower().strip()
+            email = request.POST.get("email").lower().replace(' ', '')
+            password1 = request.POST.get("password1")
+            password2 = request.POST.get("password2")
+            profile_pic = request.FILES.get('profile_pic', 'blank.webp')
+
+            if CustomUser.objects.filter(email__iexact=email).exists():
+                messages.error(request, "Email already exists!")
+                return render(request, "create-admin.html", {"request" : request.POST})
+            
+            elif CustomUser.objects.filter(username__iexact=username).exists():
+                messages.error(request, "Username already exists!")
+                return render(request, "create-admin.html", {"request" : request.POST})
+
+            if password1 == password2:
+                admin = CustomUser.objects.create(
+                    username = username,
+                    email = email,
+                    password = password2,
+                    profile_pics = profile_pic,
+                    user_type = 4,
+                )
+                admin.save()
+                messages.success(request, "Admin created successfully")
+                return render(request, "index.html")
+            else:
+                messages.error(request, "Passwords does not match")
+                return render(request, "create-admin.html", {"request" : request.POST})
+    else:
+        raise
+
+    return render(request, "create-admin.html")
+
+def payment(request):
+    pass
 
 
 # def star_trainees_view(request):

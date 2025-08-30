@@ -114,6 +114,10 @@ urlpatterns = [
 
     # Invite Admin
     path("invite_admin", AdminView.invite_admin, name="invite_admin"),
+    path("set_password/<str:token>/", AdminView.create_invited_admin, name="invite_admin"),
+
+    # Payment
+    path("payment", AdminView.payment, name="payment"),
 
 ]
 

@@ -35,6 +35,20 @@
                                 <textarea name="description" placeholder="Enter Description" class="form-control" rows="4" required>{{ announcement.description }}</textarea>
                             </div>
                         </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
+                                <label>Category</label>
+                                <select name="category" class="form-control form-select" required>
+                                    <option value="" disabled selected>Select Category</option>
+                                    <option value="General" {% if announcement.category == 'General' %}selected{% endif %}>General</option>
+                                    <option value="Trainers" {% if announcement.category == 'Trainers' %}selected{% endif %}>Trainers</option>
+                                    <option value="Trainees" {% if announcement.category == 'Trainees' %}selected{% endif %}>Trainees</option>
+                                    {% for course in courses %}
+                                        <option value="{{ course.id }}" {% if announcement.course.id == course.id %}selected{% endif %}>{{ course.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
                         {% if announcement.file %}
                         <div class="col-8">
                             <div class="form-group">

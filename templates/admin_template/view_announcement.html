@@ -18,7 +18,7 @@
 </div>
 <div class="row">
     <div class="col-sm-12">
-        <div class="card">
+        <div class="card shadow-lg border-0">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped">
@@ -28,6 +28,7 @@
                                 <th>#</th>
                                 <th>Assignment Title</th>
                                 <th>Message</th>
+                                <th>Category</th>
                                 <th>Uploaded Date</th>
                                 <th>Actions</th>
                             </tr>
@@ -38,6 +39,7 @@
                                 <td>{{ forloop.counter }}</td>
                                 <td><b>{{ announcement.title|capfirst }}</b></td>
                                 <td>{{ announcement.description|truncatechars:20 }}</td>
+                                <td><b>{{ announcement.category|capfirst }}</b></td>
                                 <td>{{ announcement.created_at }}</td>
                                 <td>
                                     <a href="{% url "edit_announcement" announcement.title %}" class="btn btn-primary btn-sm edit-btn">

@@ -46,6 +46,7 @@ ALOWED_HOST_ONLINE = config ("ALOWED_HOST_ONLINE")
 
 JWT_ALGORITHM = config("JWT_ALGORITHM")
 ACCESS_TOKEN_EXPIRES_IN = config("ACCESS_TOKEN_EXPIRES_IN")
+INVITE_ADMIN_LINK = config("INVITE_ADMIN_LINK")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/

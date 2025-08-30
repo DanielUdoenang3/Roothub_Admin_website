@@ -11,7 +11,7 @@ from roothub_app.utils.token import create_access_token, decode_access_token
 from .models import *
 import smtplib
 from datetime import datetime, timedelta
-from roothub_app.backend.email_backend import send_forgot_password_email, send_login_body
+from roothub_app.backend.email_backend import send_forgot_password_email, send_login_body, send_password_change
 from .AdminView import get_user_announcements
 
 # Create your views here.
@@ -600,7 +600,9 @@ def forgot_password(request):
 
         if email:
             token = create_access_token(data={"email": email})
-            send_forgot_password_email(token=token, email=email)
+            sent = send_forgot_password_email(token=token, email=email)
+            if not sent:
+                messages.error(request, "Email not sent check your internet connection")
             messages.success(request, f"An email has been sent successfully to {email}")
 
     return render(request, "forgot-password.html")
@@ -618,7 +620,7 @@ def forgot_password_link(request, token):
             return render(request, "forgot-password.html")
         
         if not email:
-            print("No email has been recieved")
+            print("No email has been recieved") # This is for debugging
 
     if request.method == "POST":
         password1 = request.POST.get("password1")
@@ -627,7 +629,11 @@ def forgot_password_link(request, token):
         if password1 == password2:
             checked_email.set_password(password2)
             checked_email.save()
-            messages.success(request, "Password reseted successfully you can now login")
+            sent = send_password_change(email)
+            if not sent:
+                messages.error(request, "Email not sent check your internet connection")
+            messages.success(request, """Password changed successfully 
+                             You can now login""")
             return render(request, "index.html")
         else:
             messages.error(request, "Password does not match")

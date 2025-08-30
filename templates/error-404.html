@@ -31,9 +31,9 @@
 {% if user.user_type=="1" %}
 <a href="{% url "admin_home" %}" class="btn btn-primary">Back to Home</a>
 {% elif user.user_type=="2" %}
-<a href="#}" class="btn btn-primary">Back to Home</a>
+<a href="{% url "trainer_home" %}" class="btn btn-primary">Back to Home</a>
 {% else %}
-<a href="#" class="btn btn-primary">Back to Home</a>
+<a href="{% url "trainee_home" %}" class="btn btn-primary">Back to Home</a>
 {% endif %}
 </div>
 </div>
