@@ -86,8 +86,12 @@ class Trainers(models.Model):
     competent_skills = models.TextField()
     account_no = models.CharField(max_length=255, blank=True, null=True)
     bank = models.CharField(max_length=255, blank=True, null=True)
+
+    commission_rate = models.CharField(max_length=255, blank=True, null=True) #Newly Added
+
+    trainer_assignment = models.ForeignKey('TrainerCourseAssignment', on_delete=models.CASCADE, related_name="trainer_assignment", blank=True, null=True)
+    course_id = models.ManyToManyField('Courses', related_name='trainers', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    course_id = models.ManyToManyField('Courses', related_name='trainers')
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -100,6 +104,7 @@ class Courses(models.Model):
     months = models.CharField(max_length=200)
     number_of_presentation = models.CharField(max_length=100, blank=True, null=True)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True, on_delete=models.CASCADE)
+    level_id = models.ForeignKey('Level', blank=True, null=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
@@ -114,14 +119,9 @@ class Level(models.Model):
     course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-
-class CourseLevelTrainer(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    level_id = models.ForeignKey(Level, blank=True, null=True,on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
-    trainer_id = models.ForeignKey(Trainers, blank=True, null=True,on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True) # Delete
+    
+    def __str__(self):
+        return self.level
 
 class Trainee(models.Model):
     TRAINEE_CATEGORIES = [
@@ -161,9 +161,8 @@ class Trainee(models.Model):
     course_of_study = models.CharField(max_length=255, blank=True, null=True)
     matric_number = models.CharField(max_length=255, blank=True, null=True)
     duration_of_intership = models.CharField(max_length=255, blank=True, null=True)
-    amount_paid = models.CharField(max_length=255, blank=True, null=True)
-    date_of_payment = models.DateField(blank=True, null=True)
     commencement_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True) # Newly Added
 
     # Next of Kin(nok)
     nok_first_name = models.CharField(max_length=255, blank=True, null=True)
@@ -172,7 +171,9 @@ class Trainee(models.Model):
     nok_phone = models.CharField(max_length=255, blank=True, null=True)
     nok_relationship = models.CharField(max_length=255, blank=True, null=True)
 
-    course_id = models.ForeignKey(Courses, on_delete=models.SET_NULL, related_name="trainees", blank=True, null=True)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="trainees", blank=True, null=True)
+    paymenthistory_id = models.ForeignKey('PaymentHistory', on_delete=models.CASCADE, related_name="payment_history", blank=True, null=True)
+    trainee_assignment = models.ForeignKey('TraineeCourseAssignment', on_delete=models.CASCADE, related_name="trainee_assignment", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -313,6 +314,40 @@ class Payment(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Transaction {self.transaction_id} - {self.status}"
+
+class PaymentHistory(models.Model):
+    Payment_Method = (
+        ('Cash', 'Cash'),
+        ('Bank Transfer', 'Bank Transfer'),
+        ('Card', 'Card')
+    )
+
+    id = models.AutoField(primary_key=True, unique=True)
+    trainee = models.ForeignKey(Trainee, on_delete=models.CASCADE, related_name="payment_histories")
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="payment_histories")
+    amount_paid = models.CharField(max_length=255)
+    installmental_payment = models.CharField(max_length=255) #for monthly Payment Users and for 70% upfront and 30% later Users(2 installment)
+    payment_date = models.DateField()
+    payment_method = models.CharField(max_length=255, choices=Payment_Method)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment of {self.amount_paid} by {self.trainee.trainee_name.username} for {self.course.course_name}"
+
+class TutorPayroll(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    trainer = models.ForeignKey(Trainers, on_delete=models.CASCADE, related_name="payrolls")
+    month = models.CharField(max_length=100)
+    year = models.CharField(max_length=100)
+    total_salary = models.CharField(max_length=255)
+    amount_paid = models.CharField(max_length=255)
+    payment_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payroll of {self.amount_paid} to {self.trainer.trainer_name.username} for {self.month}/{self.year}"
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):

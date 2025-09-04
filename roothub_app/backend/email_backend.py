@@ -119,6 +119,28 @@ def generate_invite_link(email, schoolname, ALLOWED_HOST_ONLINE):
     }
     return render_to_string("emails/invite_admin.html", context)
 
+def generate_payment_reminder_to_trainees(email, schoolname, trainee_name, support_email):
+    """
+    Generate payment reminder email to trainees
+    """
+    context = {
+        "schoolname": schoolname,
+        "trainee_name":trainee_name,
+        "support_email":support_email,
+    }
+    return render_to_string("emails/notification-for-payment.html", context)
+
+def generate_payment_reminder_to_admins(email, schoolname, trainee_name, support_email):
+    """
+    Generate payment reminder email to admins
+    """
+    context = {
+        "schoolname": schoolname,
+        "trainee_name":trainee_name,
+        "support_email":support_email,
+    }
+    return render_to_string("emails/notification-for-payment-admin.html", context)
+
 def send_forgot_password_email(token: str, email: str):
     """Sends a forgot password email."""
     subject = "Password reset"
@@ -199,6 +221,23 @@ def send_invite_link(email, schoolname, token):
     link = f"{settings.INVITE_ADMIN_LINK}/set_password/{token}/"
     body = generate_invite_link(email=email, schoolname=email, ALLOWED_HOST_ONLINE=link)
     return send_email(to_email=email, subject=subject, body=body)
+
+def send_payment_reminder_to_trainees(email, schoolname, trainee_name):
+    """
+    Send Payment Reminders to Trainees
+    """
+    subject = "Payment Reminder"
+    body = generate_payment_reminder_to_trainees(email=email, schoolname=schoolname, trainee_name=trainee_name, support_email=settings.EMAIL_HOST_USER)
+    return send_email(to_email=email, subject=subject, body=body)
+
+def send_payment_reminder_to_admin(email: list, schoolname: str, trainee_name: str):
+    """
+    Send Payment Reminders to Admins
+    """
+    subject = "Payment Reminder"
+    for e in email:
+        body = generate_payment_reminder_to_admins(email=e, schoolname=schoolname, trainee_name=trainee_name, support_email=settings.EMAIL_HOST_USER)
+        send_email(to_email=e, subject=subject, body=body)
 
 # class EmailBackend:
 #     def __init__(self, smtp_server, smtp_port, username, password):

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Overdue Notification - {{schoolname}}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+        }
+        .hero {
+            background: linear-gradient(90deg, #007bff 0%, #2E86C1 100%);
+            color: #fff;
+            padding: 2rem 0 1rem 0;
+            text-align: center;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.08);
+            max-width: 480px;
+            margin: 2rem auto;
+            padding: 2rem 2rem 1.5rem 2rem;
+        }
+        .card h3 {
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        .alert {
+            background: #ffe5e5;
+            color: #c0392b;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        .details {
+            margin: 1rem 0;
+            font-size: 1.05rem;
+            color: #333;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: #007bff;
+            color: #fff;
+            font-weight: 500;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+            transition: background 0.2s;
+        }
+        .cta-btn:hover {
+            background: #2E86C1;
+        }
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.95rem;
+            margin-top: 2rem;
+        }
+        .icon {
+            font-size: 2.5rem;
+            color: #c0392b;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="icon">&#9888;</div>
+        <h2>Payment Overdue Alert</h2>
+    </div>
+    <div class="card">
+        <div class="alert">
+            Immediate Attention Required: Trainee Payment Overdue
+        </div>
+        <h3>{{schoolname}} Admin Notification</h3>
+        <div class="details">
+            Dear Admin,<br><br>
+            This is to inform you that the payment for trainee <strong>{{trainee_name}}</strong> is currently <span style="color:#c0392b;font-weight:600;">overdue</span>.<br>
+            Please review the trainee’s account and take the necessary action to resolve this matter promptly.
+        </div>
+        <a href="mailto:{{support_email}}" class="cta-btn">Contact Support</a>
+    </div>
+    <div class="footer">
+        If you have any questions, please reach out to <a href="mailto:{{support_email}}" style="color:#007bff;">{{support_email}}</a>.<br>
+        &copy; {{schoolname}} {{now|date:"Y"}}
+    </div>
+</body>
+</html>
