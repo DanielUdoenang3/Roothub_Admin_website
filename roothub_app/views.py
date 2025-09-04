@@ -138,7 +138,8 @@ def profile(request):
         elif user == "2":
             trainer = Trainers.objects.get(trainer_name=request.user)
             courses = Courses.objects.filter(trainer_id=trainer).all()
-            experience = trainer.experience
+            skill_expertise = trainer.skill_expertise
+            competent_skills = trainer.competent_skills
 
             course = []
             for coursess in courses:
@@ -148,7 +149,8 @@ def profile(request):
             trainer_content = {
                 "courses_for_trainer":course,
                 "user_all":trainer,  
-                "experience":experience,
+                "skill_expertise":skill_expertise,
+                "competent_skills":competent_skills,
             }
     except Exception as e:
         print(e)
@@ -245,6 +247,9 @@ def change_password(request):
             if new_password == confirm_password:
                 users.set_password(new_password)
                 users.save()
+                sent = send_password_change(user.email, schoolname)
+                if not sent:
+                    messages.error(request, "Email not sent check your internet connection")
                 messages.success(request, "Your password has been updated successfully")
             else:
                 messages.error(request, "Your new password does not match")
@@ -629,7 +634,7 @@ def forgot_password_link(request, token):
         if password1 == password2:
             checked_email.set_password(password2)
             checked_email.save()
-            sent = send_password_change(email)
+            sent = send_password_change(email, schoolname)
             if not sent:
                 messages.error(request, "Email not sent check your internet connection")
             messages.success(request, """Password changed successfully 

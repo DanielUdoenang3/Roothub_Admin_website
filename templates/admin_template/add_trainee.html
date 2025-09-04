@@ -210,7 +210,7 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group local-forms">
                                     <label>Amount Paid</label>
-                                    <input type="tel" name="amount_paid" class="form-control" placeholder="Amount Paid">
+                                    <input type="number" name="amount_paid" class="form-control" placeholder="Amount Paid">
                                 </div>
                             </div>
 
@@ -374,7 +374,7 @@
             // SIWES Intern section show/hide logic
             traineeCategorySelect.addEventListener('change', function() {
                 if (traineeCategorySelect.value === 'SIWES') {
-                    siwesSectionHead.style.display = 'block'
+                    siwesSectionHead.style.display = 'block';
                     siwesSection.style.display = 'block';
                     siwesSection2.style.display = 'block';
                     siwesSection3.style.display = 'block';
@@ -389,8 +389,15 @@
             // On page load, check if SIWES is selected
             if (traineeCategorySelect.value === 'SIWES') {
                 siwesSection.style.display = 'block';
+                siwesSection.style.display = 'block';
+                siwesSection2.style.display = 'block';
+                siwesSection3.style.display = 'block';
+                siwesSection4.style.display = 'block'
             } else {
                 siwesSection.style.display = 'none';
+                siwesSection2.style.display = 'none';
+                siwesSection3.style.display = 'none';
+                siwesSection4.style.display = 'none';
             }
         });
     </script>

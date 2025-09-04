@@ -40,6 +40,28 @@ class Admin(models.Model):
 
     def __str__(self):
         return self.admin_name.first_name
+    
+class SubAdmin(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    sub_admin_name = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    gender = models.CharField(max_length=50, choices=[('Male', 'Male'), ('Female', 'Female')])
+    phone = models.CharField(
+        max_length=15,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',
+                message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+            )
+        ]
+    )
+    address = models.TextField(blank=True)
+    personal_info = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sub_admin_name.first_name} - Sub Admin"
 
 class Trainers(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -74,7 +96,7 @@ class Trainers(models.Model):
 class Courses(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     course_name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.CharField(max_length=100, blank=True, null=True)
     months = models.CharField(max_length=200)
     number_of_presentation = models.CharField(max_length=100, blank=True, null=True)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True, on_delete=models.CASCADE)
@@ -99,7 +121,7 @@ class CourseLevelTrainer(models.Model):
     course_id = models.ForeignKey(Courses, blank=True, null=True,on_delete=models.CASCADE)
     trainer_id = models.ForeignKey(Trainers, blank=True, null=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True) # Delete
 
 class Trainee(models.Model):
     TRAINEE_CATEGORIES = [
@@ -215,36 +237,6 @@ class AttendanceReport(models.Model):
     def __str__(self):
         return f"Attendance Report for {self.student_id} - Status: {'Present' if self.status else 'Absent'}"
 
-class FeedBackStudent(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    student_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
-    feedback = models.TextField()
-    feedback_reply = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
-class FeedBackTrainer(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
-    feedback = models.TextField()
-    feedback_reply = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
-class NotificationStudent(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    student_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
-class NotificationTrainer(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
 class Assignment(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)
@@ -304,28 +296,8 @@ class Fix_Class(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.description} at {self.class_date} during {self.start_class} to {self.end_class}"
-    
-class PaymentHistory(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_date = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-    def __str__(self):
-        return f"Payment of {self.amount} for {self.course_id} by {self.trainee_id}"
-    
-class PaymentMethod(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
-    method_name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.method_name
-
-class PaymentTransaction(models.Model):
+class Payment(models.Model):
     Transaction_Status = (
         ('Success', 'Success'),
         ('Pending', 'Pending'),
@@ -333,18 +305,14 @@ class PaymentTransaction(models.Model):
     )
 
     id = models.AutoField(primary_key=True, unique=True)
-    payment_history = models.ForeignKey(PaymentHistory, on_delete=models.CASCADE)
-    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=50, choices=Transaction_Status, default='Pending')
+    commission_rate = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Transaction {self.transaction_id} - {self.status}"
-    
-class Payment(models.Model):
-    id = models.AutoField(primary_key=True, unique=True)
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -355,6 +323,8 @@ def create_user_profile(sender, instance, created, **kwargs):
             Trainers.objects.create(trainer_name=instance)
         if instance.user_type == 3:
             Trainee.objects.create(trainee_name=instance)
+        if instance.user_type == 4:
+            SubAdmin.objects.create(sub_admin_name=instance)
 
 @receiver(post_save, sender=CustomUser)
 def save_user_profile(sender, instance, **kwargs):
@@ -364,3 +334,5 @@ def save_user_profile(sender, instance, **kwargs):
         instance.trainers.save()
     if instance.user_type == 3:
         instance.trainee.save()
+    if instance.user_type == 4:
+        instance.sub_admin.save()

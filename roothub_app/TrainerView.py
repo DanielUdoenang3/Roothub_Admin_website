@@ -1,30 +1,32 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee, Fix_Class
+from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee, Fix_Class, TrainerCourseAssignment
 from django.db.models import Q
 from django.contrib import messages
 
 @login_required(login_url="/")
 def home(request):
     trainer = Trainers.objects.get(trainer_name=request.user)
-    courses = Courses.objects.filter(trainer_id=trainer).all()
+    assignment = TrainerCourseAssignment.objects.filter(trainer_id=trainer.id).all()
+    # print(assignment.course_id)
+    print(assignment.count())
     dates = Presentation.objects.values_list('date', flat=True).distinct()
-    trainer_courses = Courses.objects.filter(trainer_id=trainer)
+    # trainer_courses = Courses.objects.filter(trainer_id=trainer)
     fix_classes = Fix_Class.objects.all()
     
-    courses_with_trainees = []
-    for course in courses:
-        trainees_count = Trainee.objects.filter(course_id=course).count()
-        courses_with_trainees.append({
-            'course': course,
-            'trainees_count': trainees_count
-        })
+    # courses_with_trainees = []
+    # for course in courses:
+    #     trainees_count = Trainee.objects.filter(course_id=course).count()
+    #     courses_with_trainees.append({
+    #         'course': course,
+    #         'trainees_count': trainees_count
+    #     })
 
     content = {
         'trainer': trainer,
-        'courses_with_trainees': courses_with_trainees,
+        # 'courses_with_trainees': courses_with_trainees,
         "dates":dates,
-        "trainer_courses":trainer_courses,
+        # "trainer_courses":trainer_courses,
         "fix_classes":fix_classes
     }
     return render(request, "trainer_template/home.html", content)

@@ -31,50 +31,35 @@
                     <h4 class="user-name mb-0">{{ trainee.trainee_name.get_full_name }}</h4>
                     <h6 class="text-muted">{{ trainee.course_id.course_name }}</h6>
                     <div class="user-Location"><i class="fas fa-map-marker-alt"></i> {{ trainee.address }}</div>
-                    </div>
-                    <div class="col-auto profile-btn">
-                        <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-primary">
-                            Edit
-                        </a>
-                    </div>
+                </div>
+                <div class="col-auto profile-btn">
+                    <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-primary">
+                        Edit
+                    </a>
                 </div>
             </div>
         </div>
-                <!-- <div class="tab-content">
-                    <div class="tab-pane show active" id="bottom-justified-tab1">
-                    Tab content 1
-                    </div>
-                    <div class="tab-pane" id="bottom-justified-tab2">
-                    Tab content 2
-                    </div>
-                    <div class="tab-pane" id="bottom-justified-tab3">
-                    Tab content 3
-                    </div>
-                </div> -->
         <div class="profile-menu">
-            <ul class="nav nav-tabs nav-tabs-bottom nav-justified">
+            <ul class="nav nav-tabs nav-tabs-bottom nav-justified" id="traineeTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#bottom-justified-tab1" data-bs-toggle="tab">Home</a>
+                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#bottom-justified-tab1" role="tab">Personal Details</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#bottom-justified-tab2" data-bs-toggle="tab">Profile</a>
+                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#bottom-justified-tab2" role="tab">Payment Plan and History</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#bottom-justified-tab3" data-bs-toggle="tab">Messages</a>
+                    <a class="nav-link" id="messages-tab" data-bs-toggle="tab" href="#bottom-justified-tab3" role="tab">Trainee Progress</a>
                 </li>
             </ul>
         </div>
-        <div class="tab-content profile-tab-cont">
-
-            <div class="tab-pane show active" id="bottom-justified-tab1">
-
+        <div class="tab-content profile-tab-cont" id="traineeTabContent">
+            <div class="tab-pane show active" id="bottom-justified-tab1" role="tabpanel">
                 <div class="row">
-                    <div class="col-lg-9">
+                    <div class="col-lg-8">
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title d-flex justify-content-between">
                                 <span>Personal Details</span>
-                                {% comment %} <a class="edit-link" data-bs-toggle="modal" href="{% url "edit_trainee" trainee.trainee_name.username %}"><i class="far fa-edit me-1"></i>Edit</a> {% endcomment %}
                                 </h5>
                                 <div class="row">
                                     <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name</p>
@@ -89,6 +74,32 @@
                                     <p class="col-sm-9"><a href="tel:{{ trainee.phone }}">{{ trainee.phone }}</a></p>
                                 </div>
                                 <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Gender</p>
+                                    <p class="col-sm-9">{{ trainee.gender }}</p>
+                                </div>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Trainee Category</p>
+                                    <p class="col-sm-9">{{ trainee.category }}</p>
+                                </div>
+                                {% if trainee.category == 'SIWES' %}
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name of School</p>
+                                    <p class="col-sm-9">{{ trainee.name_of_school }}</p>
+                                </div>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course of Study</p>
+                                    <p class="col-sm-9">{{ trainee.course_of_study }}</p>
+                                </div>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Matric Number</p>
+                                    <p class="col-sm-9">{{ trainee.matric_number }}</p>
+                                </div>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Duration of Internship</p>
+                                    <p class="col-sm-9">{{ trainee.duration_of_intership }}</p>
+                                </div>
+                                {% endif %}
+                                <div class="row">
                                     <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course Studing</p>
                                     <p class="col-sm-9">{{ trainee.course_id.course_name }}</p>
                                 </div>
@@ -102,75 +113,69 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-sm-4">
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title d-flex justify-content-between">
                                 <span>Account Status</span>
-                                {% comment %} <a class="edit-link" href="#"><i class="far fa-edit me-1"></i> Edit</a> {% endcomment %}
                                 </h5>
                                 {% if trainee.trainee_name.is_active == True %}
                                     <button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Active</button>
                                 {% else %}
                                 <button class="btn btn-danger" type="button"><i class="fas fa-times"></i>      Not Active</button>
                                 {% endif %}
+                                <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">If account is active do you want to deactivate</p>
+                                {% if trainee.trainee_name.is_active == True %}
+                                    <a href="#"><button class="btn btn-danger" type="button"><i class="fas fa-times"></i>      Deactivate</button></a>
+                                {% else %}
+                                <a href="#"><button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Activate</button></a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div id="bottom-justified-tab2" class="tab-pane">
+            <div class="tab-pane" id="bottom-justified-tab2" role="tabpanel">
                 <div class="row">
                     <div class="col-lg-9">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Change Password</h5>
-                                    <div class="row">
-                                        <div class="col-md-10 col-lg-6">
-                                            <form method="post">
-                                                <div class="form-group">
-                                                    <label>Old Password</label>
-                                                    <input disabled type="text" value="{{user.password}}" class="form-control">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>New Password</label>
-                                                    <input type="text" name="password1" required class="form-control">
-                                                </div>
-                                                <button class="btn btn-primary" type="submit">Save Changes</button>
-                                            </form>
-                                        </div>
-                                    </div>
+                                <h5 class="card-title">Payment Plan</h5>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Plan</p>
+                                    <p class="col-sm-9">{{ trainee.payment_option }}</p>
+                                </div>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Total Fee</p>
+                                    <p class="col-sm-9">{{ trainee.course_id.price }} --- {{ trainee.course_id.course_name }}</p>
+                                </div>
+                                {% if trainee.payment_option == "Monthly Payment" %}
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount to be paid Monthly</p>
+                                    <p class="col-sm-9">{{ monthly }}</p>
+                                </div>
+                                {% endif %}
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount Paid</p>
+                                    <p class="col-sm-9">{{ trainee.amount_paid }}</p>
+                                </div>
+                                <div class="row">
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount Remaining</p>
+                                    <p class="col-sm-9">{{ remaining }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div id="bottom-justified-tab3" class="tab-pane" style="display: none;">
+            <div class="tab-pane" id="bottom-justified-tab3" role="tabpanel">
                 <div class="row">
                     <div class="col-lg-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Change Passwordss</h5>
-                                        <div class="row">
-                                            <div class="col-md-10 col-lg-6">
-                                                <form method="post">
-                                                    <div class="form-group">
-                                                        <label>Old Password</label>
-                                                        <input disabled type="text" value="{{user.password}}" class="form-control">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>New Passwordsss</label>
-                                                        <input type="text" name="password1" required class="form-control">
-                                                    </div>
-                                                    <button class="btn btn-primary" type="submit">Save Changes</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Messages</h5>
+                                <p>No messages available.</p>
+                                <!-- Add your messages content here -->
                             </div>
                         </div>
                     </div>
@@ -179,17 +184,5 @@
         </div>
     </div>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function(){
-        const tab1 = document.getElementById('bottom-justified-tab1');
-        const tab2 = document.getElementById('bottom-justified-tab2');
-        const tab3 = documnet.getElementById('bottom-justified-tab3');
-        const link = document.getElementsByTagName('a')
-
-        if (link.item == '#bottom-justified-tab3') {
-            tab3.style.display = 'block'
-        }
-    })
-</script>
 {% endif %}
-{% endblock %}
+{% endblock main_content %}

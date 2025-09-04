@@ -86,13 +86,13 @@
 {% include "includes/messages.html" %}
 <div class="row">
     <div class="col-xl-2 col-sm-4 col-6 d-flex">
-        <div class="card bg-comman w-100">
+        <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
                         <h6> Total Courses</h6>
                         <p>
-                            <h3>{{ courses_with_trainees|length }}</h3>
+                            <h3>{{ no_of_trainees|length }}</h3>
                         </p>
                     </div>
                     <div class="db-icon">
@@ -103,7 +103,7 @@
         </div>
     </div>
     <div class="col-xl-5 col-sm-6 col-12 d-flex">
-        <div class="card bg-comman w-100">
+        <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
@@ -126,7 +126,7 @@
         </div>
     </div>
     <div class="col-xl-5 col-sm-6 col-12 d-flex">
-        <div class="card bg-comman w-100">
+        <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
@@ -177,7 +177,7 @@
                 <div id="calendar-doctor" class="calendar-container"></div>
                     <div class="calendar-info calendar-info1">
                         <div class="up-come-header">
-                            <h2>Upcoming Events</h2>
+                            <h2>Upcoming Classes</h2>
                             <span><a href="javascript:;" data-bs-toggle="modal" data-bs-target="#con-close-modal"><i class="feather-plus"></i></a></span>
                         </div>
                         {% for classes in fix_classes %}

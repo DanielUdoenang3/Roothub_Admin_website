@@ -157,7 +157,6 @@
    </div>
    <div class="student-profile-head">
    <div class="profile-bg-img">
-   {% comment %} <img class="img-fluid avatar-md rounded" src="{% static 'assets/img/roothub.jpg'%}" alt="Profile"> {% endcomment %}
    </div>
    <div class="row">
    <div class="col-lg-4 col-md-4">
@@ -338,11 +337,20 @@
       <i class="feather-user"></i>
       </div>
       <div class="views-personal">
-      <h4>Experience</h4>
+      <h4>Skill Expertise</h4>
       {% if request.user.user_type == "2" %}
-      <h5>{{ trainer_content.user_all.experience }}</h5>
-      {% else %}
-      <h5>{{ trainee_content.user_all.experience }}</h5>
+      <h5>{{ trainer_content.user_all.skill_expertise }}</h5>
+      {% endif %}
+      </div>
+   </div>
+   <div class="personal-activity">
+      <div class="personal-icons">
+      <i class="feather-user"></i>
+      </div>
+      <div class="views-personal">
+      <h4>Competent Skill</h4>
+      {% if request.user.user_type == "2" %}
+      <h5>{{ trainer_content.user_all.competent_skills }}</h5>
       {% endif %}
       </div>
    </div>

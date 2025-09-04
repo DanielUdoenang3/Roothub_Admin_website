@@ -1088,9 +1088,24 @@ def trainee_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainee = get_object_or_404(Trainee, trainee_name=user)
 
+    if trainee.payment_option == "70% upfront and 30% later":
+        main = float(trainee.course_id.price) * 0.3
+        not_main = float(trainee.course_id.price) - float(trainee.amount_paid)
+        if (float(trainee.course_id.price) - float(trainee.amount_paid)) == main:
+            remaining = main
+        else:
+            remaining = not_main
+    elif trainee.payment_option == "Monthly Payment":
+        monthly = int(trainee.course_id.price) // int(trainee.course_id.months)
+        remaining = float(trainee.course_id.price) - float(trainee.amount_paid)
+    else:
+        remaining =  float(trainee.course_id.price) - trainee.amount_paid
+
     context={
         'user':user,
         'trainee':trainee,
+        "remaining":remaining,
+        "monthly":monthly,
     }
 
     return render(request, 'admin_template/view_trainee_details.html', context)
@@ -1099,13 +1114,29 @@ def trainer_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainer = get_object_or_404(Trainers, trainer_name=user)
     course = Courses.objects.filter(trainer_id=trainer)
-    assignment = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
+    assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
+    month = None
+
+    total_salary = 0
+    for assignment in assignments:
+        trainees = TraineeCourseAssignment.objects.filter(
+            trainer_id=trainer,
+            course_id=assignment.course_id,
+            level_id=assignment.level_id,
+        )
+        course_fee = assignment.course_id.price
+        # Optionally filter trainees by payment date/month
+        if month:
+            trainees = trainees.filter(trainee_id__payments__date__month=month)
+        total_salary += len(trainees) * int(course_fee)  # 30% example
+    # return total_salary
 
     context={
         'user':user,
         'trainer':trainer,
         'course':course,
         'assignment':assignment,
+        'total_salary':total_salary,
     }
 
     return render(request, 'admin_template/view_trainer_details.html', context)

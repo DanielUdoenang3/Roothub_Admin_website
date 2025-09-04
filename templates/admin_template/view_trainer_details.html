@@ -41,12 +41,15 @@
                 </div>
             </div>
             <div class="profile-menu">
-                <ul class="nav nav-tabs nav-tabs-solid">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-bs-toggle="tab" href="#per_details_tab">About</a>
-                    </li>
-                </ul>
-            </div>
+            <ul class="nav nav-tabs nav-tabs-bottom nav-justified" id="traineeTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#per_details_tab" role="tab">Personal Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#bottom-justified-tab2" role="tab">Payment</a>
+                </li>
+            </ul>
+        </div>
             <div class="tab-content profile-tab-cont">
     
                 <div class="tab-pane show active" id="per_details_tab">
@@ -81,8 +84,12 @@
                                         </p>
                                     </div>
                                     <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Experience</p>
-                                        <p class="col-sm-9">{{ trainer.experience }}</p>
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Skill Expertise</p>
+                                        <p class="col-sm-9">{{ trainer.skill_expertise }}</p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Competent Skills</p>
+                                        <p class="col-sm-9">{{ trainer.competent_skills }}</p>
                                     </div>
                                     <div class="row">
                                         <p class="col-sm-3 text-muted text-sm-end mb-0">Address</p>
@@ -111,37 +118,34 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="tab-pane show" id="bottom-justified-tab2">
     
-    
-                <!-- <div id="password_tab" class="tab-pane">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Change Password</h5>
-                                <div class="row">
-                                    <div class="col-md-10 col-lg-6">
-                                        <form method="post">
-                                            {% csrf_token %}
-                                            <div class="form-group">
-                                                <label>Old Password</label>
-                                                <input disabled type="text" value="{{user.password}}" class="form-control">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>New Password</label>
-                                                <input type="text" name="password1" required class="form-control">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Confirm Password</label>
-                                                <input type="text" name="password2" class="form-control">
-                                            </div>
-                                            <button class="btn btn-primary" type="submit">Save Changes</button>
-                                        </form>
+                    <div class="row">
+                        <div class="col-lg-9">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex justify-content-between">
+                                    <span>Payment</span>
+                                    </h5>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">How much to be paid</p>
+                                        <p class="col-sm-9">{{ total_salary }}</p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Number of Trainee assigned</p>
+                                        <p class="col-sm-9">{{ total_salary }}</p>
+                                    </div>
+                                    <div class="row">
+                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3"></p>
+                                        <p class="col-sm-9">{{ total_salary }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                
-                </div> -->
+                </div>
+
             </div>
         </div>
     </div>    

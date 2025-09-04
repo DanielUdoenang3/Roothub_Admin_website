@@ -120,21 +120,21 @@
                         <div class="col-12 col-sm-5" id="select-siwes-intern2" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Course of Study</label>
-                                <input type="text" class="form-control" name="course_of_study" placeholder="Enter Course of Study" value="{{ trainee.name_of_school }}" value="{{ trainee.name_of_school }}">
+                                <input type="text" class="form-control" name="course_of_study" placeholder="Enter Course of Study" value="{{ trainee.course_of_study }}">
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6" id="select-siwes-intern3" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Matric Number</label>
-                                <input type="text" class="form-control" name="matric_number" placeholder="Enter Matric Number" value="{{ trainee.name_of_school }}">
+                                <input type="text" class="form-control" name="matric_number" placeholder="Enter Matric Number" value="{{ trainee.matric_number }}">
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-5" id="select-siwes-intern4" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Duration of Internship</label>
-                                <input type="text" class="form-control" name="internship_duration" placeholder="Enter Duration of Internship" value="{{ trainee.name_of_school }}">
+                                <input type="text" class="form-control" name="internship_duration" placeholder="Enter Duration of Internship" value="{{ trainee.duration_of_intership }}">
                             </div>
                         </div>
                         
@@ -195,7 +195,7 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
                                 <label>Amount Paid</label>
-                                <input type="tel" name="amount_paid" class="form-control" placeholder="Amount Paid" value="{{ trainee.amount_paid }}">
+                                <input type="number" name="amount_paid" class="form-control" placeholder="Amount Paid" value="{{ trainee.amount_paid }}">
                             </div>
                         </div>
 
@@ -356,7 +356,7 @@
         // SIWES Intern section show/hide logic
         traineeCategorySelect.addEventListener('change', function() {
             if (traineeCategorySelect.value === 'SIWES') {
-                siwesSectionHead.style.display = 'block'
+                siwesSectionHead.style.display = 'block';
                 siwesSection.style.display = 'block';
                 siwesSection2.style.display = 'block';
                 siwesSection3.style.display = 'block';
@@ -371,206 +371,17 @@
         // On page load, check if SIWES is selected
         if (traineeCategorySelect.value === 'SIWES') {
             siwesSection.style.display = 'block';
+            siwesSection.style.display = 'block';
+            siwesSection2.style.display = 'block';
+            siwesSection3.style.display = 'block';
+            siwesSection4.style.display = 'block'
         } else {
             siwesSection.style.display = 'none';
+            siwesSection2.style.display = 'none';
+            siwesSection3.style.display = 'none';
+            siwesSection4.style.display = 'none';
         }
     });
 </script>
 {% endif %}
 {% endblock main_content %}
-
-{% comment %} {% extends "base.html" %}
-{% load static %}
-
-{% block main_content %}
-{% if request.user.user_type == "1" %}
-<div class="page-header mb-4">
-    <div class="row align-items-center">
-        <div class="col">
-            <h3 class="page-title"><i class="fas fa-user-edit me-2 text-primary"></i>Edit Trainee: <span class="text-dark">{{ trainee.trainee_name.first_name|capfirst }} {{ trainee.trainee_name.last_name|capfirst }}</span></h3>
-            <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}"><i class="fas fa-users me-1"></i>Trainees</a></li>
-                <li class="breadcrumb-item active">Edit / {{ trainee.trainee_name.username|capfirst }}</li>
-            </ul>
-        </div>
-    </div>
-</div>
-<div class="row justify-content-center">
-    <div class="col-lg-10 col-md-12">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-                    {% csrf_token %}
-                    {% include "includes/messages.html" %}
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <h5 class="form-title mb-3"><span class="text-primary"><i class="fas fa-id-card me-2"></i>Personal Details</span></h5>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>First Name</label>
-                                <input type="text" class="form-control" name="first_name" placeholder="Edit First Name" value="{{ trainee.trainee_name.first_name|capfirst }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Middle Name</label>
-                                <input type="text" class="form-control" name="middle_name" placeholder="Edit Middle Name" value="{{ trainee.trainee_name.middle_name|capfirst }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Edit Last Name" value="{{ trainee.trainee_name.last_name|capfirst }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Gender</label>
-                                <select class="form-control form-select" name="gender" required>
-                                    <option disabled selected hidden>Select Gender</option>
-                                    <option value="Male" {% if trainee.gender == 'Male' %}selected{% endif %}>Male</option>
-                                    <option value="Female" {% if trainee.gender == "Female" %}selected{% endif %}>Female</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Mobile</label>
-                                <input type="text" class="form-control" name="phone" placeholder="Edit Phone" value="{{ trainee.phone }}" required>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-4">
-                            <div class="form-group local-forms">
-                                <label>Trainee Category</label>
-                                <select name="category" class="form-control form-select" required>
-                                    <option value="" disabled selected>Select Trainee Category</option>
-                                    <option value="Regular">Regular Trainee</option>
-                                    <option value="SIWES">SIWES Intern</option>
-                                    <option value="Extern">Extern</option>
-                                    <option value="Triptern">Triptern</option>
-                                    <option value="Bootcamp">Bootcamp Kid</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Username</label>
-                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainee.trainee_name.username|capfirst }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Email</label>
-                                <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainee.trainee_name.email }}" required>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 text-center">
-                            <div class="form-group students-up-files">
-                                <label>Current Profile Picture</label>
-                                <div class="uplod mb-2">
-                                    <img src="{{ trainee.trainee_name.profile_pic.url }}" alt="Profile Picture" class="img-thumbnail shadow-sm" style="width:120px;height:120px;object-fit:cover;">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 text-center">
-                            <div class="form-group students-up-files">
-                                <label>Upload New Profile Picture <span class="text-muted">(150px X 150px)</span></label>
-                                <div class="uplod">
-                                    <label class="file-upload image-upbtn mb-0">
-                                        <i class="fas fa-upload me-1"></i>Choose File <input type="file" accept="image/*" name="profile_pic">
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12" id="select-siwes-head" style="display:none;">
-                            <h5 class="form-title"><span>SIWES Details</span></h5>
-                        </div>
-
-                        <div class="col-12 col-sm-7" id="select-siwes-intern" style="display:none;">
-                            <div class="form-group local-forms">
-                                <label>Name of School</label>
-                                <input type="text" class="form-control" name="school_name" placeholder="Enter Name of School" required>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-5" id="select-siwes-intern2" style="display:none;">
-                            <div class="form-group local-forms">
-                                <label>Course of Study</label>
-                                <input type="text" class="form-control" name="course_of_study" placeholder="Enter Course of Study" required>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6" id="select-siwes-intern3" style="display:none;">
-                            <div class="form-group local-forms">
-                                <label>Matric Number</label>
-                                <input type="text" class="form-control" name="matric_number" placeholder="Enter Matric Number" required>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-5" id="select-siwes-intern4" style="display:none;">
-                            <div class="form-group local-forms">
-                                <label>Duration of Internship</label>
-                                <input type="text" class="form-control" name="internship_duration" placeholder="Enter Duration of Internship" required>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <h5 class="form-title mb-3"><span class="text-primary"><i class="fas fa-map-marker-alt me-2"></i>Address</span></h5>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Address</label>
-                                <input type="text" class="form-control" name="address" placeholder="Edit address" value="{{ trainee.address }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>City</label>
-                                <input type="text" class="form-control" name="city" placeholder="Edit City" value="{{ trainee.city }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>State</label>
-                                <input type="text" class="form-control" name="state" placeholder="Edit State" value="{{ trainee.state }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group local-forms">
-                                <label>Country</label>
-                                <input type="text" class="form-control" name="country" placeholder="Edit Country" value="{{ trainee.country }}">
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <h5 class="form-title mb-3"><span class="text-primary"><i class="fas fa-book-reader me-2"></i>Course Selection</span></h5>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="form-group local-forms">
-                                <label>Select a Course</label>
-                                <select name="course" class="form-control form-select" required>
-                                    <option value="" selected disabled>Select a Course you would love to Study</option>
-                                    {% for course in courses %}
-                                    <option value="{{ course.id }}"{% if trainee.course_id.id == course.id %}selected{% endif %}>{{ course.course_name }}  ------  ₦{{ course.price }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-12 mt-4">
-                            <div class="student-submit text-center">
-                                <button type="submit" class="btn btn-primary btn-lg px-5"><i class="fas fa-save me-2"></i>Save Changes</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-{% endblock main_content %} {% endcomment %}
