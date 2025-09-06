@@ -21,6 +21,7 @@ urlpatterns = [
     # Trainer
     path('add_trainer', AdminView.add_trainer, name="add_trainer"),
     path('add_trainer_save', AdminView.add_trainer_save, name="add_trainer_save"),
+    path('ajax/get-levels/', AdminView.get_levels_for_course, name='get_levels_for_course'),
     path('view_trainer', AdminView.view_trainer, name="view_trainer"),
 
     # Trainee

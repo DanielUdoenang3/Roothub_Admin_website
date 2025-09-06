@@ -90,7 +90,8 @@ class Trainers(models.Model):
     commission_rate = models.CharField(max_length=255, blank=True, null=True) #Newly Added
 
     trainer_assignment = models.ForeignKey('TrainerCourseAssignment', on_delete=models.CASCADE, related_name="trainer_assignment", blank=True, null=True)
-    course_id = models.ManyToManyField('Courses', related_name='trainers', blank=True, null=True)
+    trainer_payroll = models.ForeignKey('TrainerPayroll', on_delete=models.CASCADE, related_name="trainer_payroll", blank=True, null=True)
+    course_id = models.ManyToManyField('Courses', related_name='trainers', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -132,6 +133,11 @@ class Trainee(models.Model):
         ('Bootcamp', 'Bootcamp Kid'),
     ]
 
+    COURSE_PORTION = [
+        ('Full Course', 'Full Course'),
+        ('Level', 'Level'),
+    ]
+
     PAYMENT_OPTION = [
         ('Full Payment', 'Full Payment'),
         ('70% upfront and 30% later', '70% upfront and 30% later'),
@@ -159,6 +165,9 @@ class Trainee(models.Model):
     country = models.CharField(max_length=255, blank=True, null=True)
     name_of_school = models.CharField(max_length=255, blank=True, null=True)
     course_of_study = models.CharField(max_length=255, blank=True, null=True)
+    portion_type = models.CharField(max_length=100, choices=COURSE_PORTION, blank=True, null=True)
+    levels = models.ManyToManyField('Level', blank=True, related_name='trainees')
+    portion_value = models.CharField(max_length=255, blank=True, null=True)
     matric_number = models.CharField(max_length=255, blank=True, null=True)
     duration_of_intership = models.CharField(max_length=255, blank=True, null=True)
     commencement_date = models.DateField(blank=True, null=True)
@@ -326,8 +335,9 @@ class PaymentHistory(models.Model):
     trainee = models.ForeignKey(Trainee, on_delete=models.CASCADE, related_name="payment_histories")
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="payment_histories")
     amount_paid = models.CharField(max_length=255)
+    upfront_due_date = models.DateField(blank=True, null=True)
     installmental_payment = models.CharField(max_length=255) #for monthly Payment Users and for 70% upfront and 30% later Users(2 installment)
-    payment_date = models.DateField()
+    payment_date = models.DateField(blank=True, null=True)
     payment_method = models.CharField(max_length=255, choices=Payment_Method)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -335,7 +345,7 @@ class PaymentHistory(models.Model):
     def __str__(self):
         return f"Payment of {self.amount_paid} by {self.trainee.trainee_name.username} for {self.course.course_name}"
 
-class TutorPayroll(models.Model):
+class TrainerPayroll(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     trainer = models.ForeignKey(Trainers, on_delete=models.CASCADE, related_name="payrolls")
     month = models.CharField(max_length=100)

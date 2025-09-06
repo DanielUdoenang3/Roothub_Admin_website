@@ -91,6 +91,7 @@ def add_trainer_save(request):
             competent_skills = request.POST.get("competent_skills")
             account_no = request.POST.get("account_no")
             bank = request.POST.get("bank")
+            commission_rate = request.POST.get("commission_rate")
             
             if CustomUser.objects.filter(email__iexact=email).exists():
                 messages.error(request, "Email already exists!")
@@ -137,6 +138,7 @@ def add_trainer_save(request):
                 trainer.birthday = birthday
                 trainer.competent_skills = competent_skills
                 trainer.bank = bank
+                trainer.commission_rate = commission_rate
                 trainer.save()
                 user.save()
 
@@ -205,6 +207,12 @@ def add_trainee_save(request):
             next_email = request.POST.get("next_email")
             next_phone = request.POST.get("next_phone")
             relation = request.POST.get("relation")
+            installmental_payment = request.POST.get("installmental_payment")
+            payment_method = request.POST.get("payment_method")
+            upfront_due_date = request.POST.get("upfront_due_date")
+            portion_type = request.POST.get("portion_type")
+            portion_values= request.POST.getlist("portion_value")
+
 
             if CustomUser.objects.filter(email__iexact=email).exists():
                 messages.error(request, "Email already exists!")
@@ -256,25 +264,109 @@ def add_trainee_save(request):
                     trainees.matric_number = matric_number
                     trainees.duration_of_intership = internship_duration
                     trainees.payment_option = payment
-                    trainees.amount_paid = amount_paid
-                    trainees.date_of_payment = date_of_payment
                     trainees.commencement_date = commencement_date
                     trainees.nok_first_name = next_first_name
                     trainees.nok_last_name = next_last_name
                     trainees.nok_email = next_email
                     trainees.nok_phone = next_phone
                     trainees.nok_relationship = relation
+                    trainees.portion_type = portion_type
+
+                    selected_course = Courses.objects.get(id=course_choice)
+                    trainees.course_id = selected_course
+                    
+                    if portion_type == "Level":
+                        # Save selected levels as ManyToMany
+                        levels = Level.objects.filter(id__in=portion_values, course_id=selected_course)
+                        total_levels = Level.objects.filter(course_id=selected_course).count()
+                        if levels.count() == total_levels:
+                            messages.error(request, "You cannot select all levels. Please select fewer levels or choose Full Course.")
+                            return redirect("add_trainee")
+                        trainees.save()  # Save first to get PK for M2M
+                        trainees.levels.set(levels)
+                    else:
+                        trainees.save()
+                        trainees.levels.clear()
                 except Exception as ex:
                     print(ex)
                     messages.error(request, "An error saving the Trainee details occured")
                     return redirect("add_trainee")
-                try:
-                    selected_course = Courses.objects.get(id=course_choice)
-                    trainees.course_id = selected_course 
+                try: 
+                
+                    course_price = float(selected_course.price or 0)
+                    course_months = int(selected_course.months or 1)
+                    if portion_type == "Level" and portion_values:
+                        total_levels = Level.objects.filter(course_id=selected_course).count()
+                        selected_levels = len(portion_values)
+                        per_level_price = course_price / total_levels if total_levels else 0
+                        final_price = per_level_price * selected_levels
+                        months = selected_levels
+                    else:
+                        final_price = course_price
+                        months = course_months
+
+                    payment_histories = []
+                    if payment == "Full Payment":
+                        payment_histories.append(PaymentHistory(
+                            trainee=trainees,
+                            course=selected_course,
+                            amount_paid=int(amount_paid),
+                            installmental_payment="1",
+                            payment_date=date_of_payment,
+                            upfront_due_date=None,
+                            payment_method=payment_method,
+                        ))
+                    elif payment == "70% upfront and 30% later":
+                        # First installment
+
+                        payment_histories.append(PaymentHistory(
+                            trainee=trainees,
+                            course=selected_course,
+                            amount_paid=amount_paid,
+                            installmental_payment="1",
+                            payment_date=date_of_payment,
+                            upfront_due_date=upfront_due_date,
+                            payment_method=payment_method,
+                        ))
+                        # Second installment (not paid yet, create as pending)
+                        payment_histories.append(PaymentHistory(
+                            trainee=trainees,
+                            course=selected_course,
+                            amount_paid=0,
+                            installmental_payment="2",
+                            payment_date=None,
+                            upfront_due_date=upfront_due_date,
+                            payment_method=payment_method,
+                        ))
+                    elif payment == "Monthly Payment":
+                        if months <= 1:
+                            messages.error(request, "Monthly payment is not available for this course/selection.")
+                            return redirect("add_trainee")
+                        
+                        # Create PaymentHistory for each installment (first paid, rest pending)
+                        monthly_amount = round(final_price / months, 2)
+                        paid_installment = int(installmental_payment or 1)
+                        for i in range(1, months + 1):
+                            paid = amount_paid if i == paid_installment else 0
+                            payment_histories.append(PaymentHistory(
+                                trainee=trainees,
+                                course=selected_course,
+                                amount_paid=paid,
+                                installmental_payment=str(i),
+                                payment_date=date_of_payment if i == paid_installment else None,
+                                upfront_due_date=None,
+                                payment_method=payment_method,
+                            ))
+                    
+                    for ph in payment_histories:
+                        ph.save()
+                    # Optionally, set the latest payment as the current paymenthistory_id
+                    if payment_histories:
+                        trainees.paymenthistory_id = payment_histories[0]
                     trainees.save()
                     user.save()
 
-                    send_add_trainee(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email)
+                    # send_add_trainee(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email)
                 except Exception as ex:
                     print(ex)
                     messages.error(request, "Select a course or you add Course")
@@ -289,6 +381,15 @@ def add_trainee_save(request):
             return redirect("add_trainee")
     else:
         return HttpResponse("This is showing because this request is not on Post. Try going back or refresh this page")
+
+@login_required(login_url="/")
+def get_levels_for_course(request):
+    course_id = request.GET.get('course_id')
+    levels = []
+    if course_id:
+        levels_qs = Level.objects.filter(course_id=course_id)
+        levels = [{"id": lvl.id, "level": lvl.level} for lvl in levels_qs]
+    return JsonResponse({"levels": levels})
 
 @login_required(login_url="/")
 def view_trainee(request):
@@ -350,7 +451,7 @@ def add_course_save(request):
             else:
                 try:
                     new_course = Courses.objects.create(course_name=course_name , price=price_value, months=month, number_of_presentation=presentations)
-                    new_course.save()
+                    
 
                     i = 1
                     while True:
@@ -358,13 +459,15 @@ def add_course_save(request):
                         level_desc = request.POST.get(f'level_desc_{i}')
                         if not level_name:
                             break
-                        Level.objects.create(
+                        level = Level.objects.create(
                             level=level_name,
                             course_id=new_course,
                             descriptions=level_desc if level_desc else ""
                             # You can add a description field to Level if needed
                         )
                         i += 1
+
+                    new_course.save()
 
                     messages.success(request, f"The Course: '{course_name}' has been added successfully with its corresponding price '{price}'!")
                     return redirect("add_course") 
@@ -1087,19 +1190,20 @@ def delete_announcement(request, announcement_title):
 def trainee_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
     trainee = get_object_or_404(Trainee, trainee_name=user)
+    monthly = None
 
     if trainee.payment_option == "70% upfront and 30% later":
         main = float(trainee.course_id.price) * 0.3
-        not_main = float(trainee.course_id.price) - float(trainee.amount_paid)
-        if (float(trainee.course_id.price) - float(trainee.amount_paid)) == main:
+        not_main = float(trainee.course_id.price) - float(trainee.paymenthistory_id.amount_paid)
+        if (float(trainee.course_id.price) - float(trainee.paymenthistory_id.amount_paid)) == main:
             remaining = main
         else:
             remaining = not_main
     elif trainee.payment_option == "Monthly Payment":
         monthly = int(trainee.course_id.price) // int(trainee.course_id.months)
-        remaining = float(trainee.course_id.price) - float(trainee.amount_paid)
+        remaining = float(trainee.course_id.price) - float(trainee.paymenthistory_id.amount_paid)
     else:
-        remaining =  float(trainee.course_id.price) - trainee.amount_paid
+        remaining =  float(trainee.course_id.price) - trainee.paymenthistory_id.amount_paid
 
     context={
         'user':user,
