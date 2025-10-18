@@ -15,7 +15,7 @@ class CustomUser(AbstractUser):
         (3, "Trainee"),
     )
 
-    user_type = models.CharField(choices=USER_CHOICE, max_length=50, default=1)
+    user_type = models.CharField(max_length=50, choices=USER_CHOICE, default=1)
     profile_pic = models.ImageField(upload_to="profile_pic", default="blank.webp")
     middle_name = models.CharField(max_length=200, blank=True)
 
@@ -166,7 +166,6 @@ class Trainee(models.Model):
     name_of_school = models.CharField(max_length=255, blank=True, null=True)
     course_of_study = models.CharField(max_length=255, blank=True, null=True)
     portion_type = models.CharField(max_length=100, choices=COURSE_PORTION, blank=True, null=True)
-    levels = models.ManyToManyField('Level', blank=True, related_name='trainees')
     portion_value = models.CharField(max_length=255, blank=True, null=True)
     matric_number = models.CharField(max_length=255, blank=True, null=True)
     duration_of_intership = models.CharField(max_length=255, blank=True, null=True)
@@ -181,8 +180,12 @@ class Trainee(models.Model):
     nok_relationship = models.CharField(max_length=255, blank=True, null=True)
 
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="trainees", blank=True, null=True)
+    levels = models.ManyToManyField('Level', related_name="trainees", blank=True)
     paymenthistory_id = models.ForeignKey('PaymentHistory', on_delete=models.CASCADE, related_name="payment_history", blank=True, null=True)
     trainee_assignment = models.ForeignKey('TraineeCourseAssignment', on_delete=models.CASCADE, related_name="trainee_assignment", blank=True, null=True)
+    completed = models.BooleanField(default=False)
+    suspended = models.BooleanField(default=False)
+    terminated =  models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -330,11 +333,18 @@ class PaymentHistory(models.Model):
         ('Bank Transfer', 'Bank Transfer'),
         ('Card', 'Card')
     )
+    
+    PAYMENT_OPTION = [
+        ('Full Payment', 'Full Payment'),
+        ('70% upfront and 30% later', '70% upfront and 30% later'),
+        ('Monthly Payment', 'Monthly Payment'),
+    ]
 
     id = models.AutoField(primary_key=True, unique=True)
     trainee = models.ForeignKey(Trainee, on_delete=models.CASCADE, related_name="payment_histories")
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="payment_histories")
     amount_paid = models.CharField(max_length=255)
+    payment_option = models.CharField(max_length=100, choices=PAYMENT_OPTION, blank=True, null=True)
     upfront_due_date = models.DateField(blank=True, null=True)
     installmental_payment = models.CharField(max_length=255) #for monthly Payment Users and for 70% upfront and 30% later Users(2 installment)
     payment_date = models.DateField(blank=True, null=True)

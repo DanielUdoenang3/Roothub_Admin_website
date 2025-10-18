@@ -4,238 +4,350 @@
 
 {% if request.user.user_type == "1" %}
 
-<div class="page-header">
-    <div class="row align-items-center">
-        <div class="col">
-            <h3 class="page-title"><i class="fas fa-user-plus me-2 text-primary"></i>Assign Trainee</h3>
-            <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}"><i class="fas fa-users me-1"></i>Trainees</a></li>
-                <li class="breadcrumb-item active">Assign Trainee</li>
-            </ul>
-        </div>
+<div class="page-header mb-3">
+  <div class="row align-items-center">
+    <div class="col">
+      <h3 class="page-title"><i class="fas fa-user-plus text-primary me-2"></i>Assign Trainee</h3>
+      <ul class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'view_trainee' %}"><i class="fas fa-users me-1"></i>Trainees</a></li>
+        <li class="breadcrumb-item active">Assign Trainee</li>
+      </ul>
     </div>
+  </div>
 </div>
-<div class="row">
-    <div class="col-sm-12">
-        <div class="card shadow-lg border-0">
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {% include "includes/messages.html" %}
-                    <div class="row">
-                        <div class="col-12">
-                            <h5 class="form-title"><span>Assign Trainee to a Trainer</span></h5>
-                        </div>
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group local-forms">
-                                <label for="trainee-select">Select Trainee</label>
-                                <select class="form-control form-select" name="trainee" id="trainee-select" required>
-                                    <option disabled selected hidden>Select Trainee</option>
-                                    {% for trainee in trainees %}
-                                        <option value="{{ trainee.id }}">{{ trainee.trainee_name.first_name }} {{ trainee.trainee_name.last_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group local-forms">
-                                <label for="course-select">Course Intended</label>
-                                <input type="text" class="form-control" id="course-name" name="course_name" readonly placeholder="Course will appear here">
-                                <input type="hidden" name="course" id="course-id">
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div id="levels-section"></div>
-                        </div>
-                        <div class="col-12">
-                            <div id="trainers-by-level-container"></div>
-                        </div>
-                        <div class="col-12">
-                            <div id="assignment-summary" class="mb-3"></div>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary btn-lg w-100"><i class="fas fa-plus me-2"></i>Assign Trainee</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+
+<form id="assign-form" method="post" action="{% url 'assign_trainee' %}">
+  {% csrf_token %}
+  {% include "includes/messages.html" %}
+  <div class="row g-3">
+    <div class="col-12">
+      <h5 class="form-title">Assign Trainee to Trainer(s)</h5>
     </div>
-</div>
+
+    <div class="col-md-6">
+      <label class="form-label">Select Trainee</label>
+      <select id="trainee-select" name="trainee" class="form-select" required>
+        <option value="" disabled selected hidden>Search / Choose trainee</option>
+        {% for trainee in trainees %}
+          <option value="{{ trainee.id }}">{{ trainee.trainee_name.first_name }} {{ trainee.trainee_name.last_name }} — {{ trainee.course_id.course_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Course</label>
+      <div class="input-group">
+        <input id="course-name" class="form-control" readonly placeholder="Course will appear here">
+        <input id="course-id" type="hidden" name="course">
+        <span class="input-group-text" style="min-width:180px;">
+          <span id="portion-badge" class="badge bg-secondary me-2">—</span>
+          <small id="levels-count" class="text-muted"></small>
+        </span>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card mb-3 border-0 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div><i class="fas fa-layer-group me-2 text-primary"></i><strong>Course Levels</strong></div>
+          <div class="small text-muted">Toggle levels to load trainers</div>
+        </div>
+        <div class="card-body" id="levels-section" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0"><i class="fas fa-chalkboard-teacher me-2 text-primary"></i>Trainers</h6>
+        <div class="input-group input-group-sm w-auto">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input id="trainer-search" class="form-control form-control-sm" placeholder="Filter trainers by name or email">
+        </div>
+      </div>
+
+      <div id="trainers-by-level-container" aria-live="polite"></div>
+    </div>
+
+    <div class="col-12">
+      <div id="assignment-summary" class="mb-3"></div>
+    </div>
+
+    <div class="col-12">
+      <button id="submit-btn" type="submit" class="btn btn-primary btn-lg w-100"><i class="fas fa-check me-2"></i>Assign Trainee</button>
+    </div>
+  </div>
+</form>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const traineeSelect = document.getElementById('trainee-select');
-        const courseNameInput = document.getElementById('course-name');
-        const courseIdInput = document.getElementById('course-id');
-        const trainerSelect = document.getElementById('trainer-select');
-        // Card-style multi-select for levels
-        let levelsData = [];
-        const levelsSection = document.getElementById('levels-section');
-        const trainersByLevelContainer = document.getElementById('trainers-by-level-container');
-        const assignmentSummary = document.getElementById('assignment-summary');
-        const form = document.querySelector('form');
-        const submitBtn = form.querySelector('button[type="submit"]');
+document.addEventListener('DOMContentLoaded', function() {
+  const traineeSelect = document.getElementById('trainee-select');
+  const courseNameInput = document.getElementById('course-name');
+  const courseIdInput = document.getElementById('course-id');
+  const levelsSection = document.getElementById('levels-section');
+  const trainersByLevelContainer = document.getElementById('trainers-by-level-container');
+  const assignmentSummary = document.getElementById('assignment-summary');
+  const form = document.getElementById('assign-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const trainerSearch = document.getElementById('trainer-search');
+  const portionBadge = document.getElementById('portion-badge');
+  const levelsCountEl = document.getElementById('levels-count');
 
-        // Reset fields
-        function resetFields() {
-            courseNameInput.value = '';
-            courseIdInput.value = '';
-            levelsData = [];
-            levelsSection.innerHTML = '';
-            trainersByLevelContainer.innerHTML = '';
-            assignmentSummary.innerHTML = '';
-        }
+  let levelsData = [];
+  let traineeSelectedLevelIds = [];   // strings
+  let traineeIsFullCourse = false;
+  let preAssignedTrainers = {};      // { levelId: trainerId }
+  let trainersCache = {};            // { levelId: [trainerObj,...] }
 
-        // Fetch course for trainee
-        traineeSelect.addEventListener('change', function() {
-            resetFields();
-            const traineeId = this.value;
-            if (!traineeId) return;
-            courseNameInput.value = 'Loading...';
-            fetch(`/get_trainee_course/${traineeId}/`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.id && data.name) {
-                        courseNameInput.value = data.name;
-                        courseIdInput.value = data.id;
-                        loadLevels(data.id);
-                    } else {
-                        courseNameInput.value = 'No course found';
-                    }
-                })
-                .catch(() => {
-                    courseNameInput.value = 'Error fetching course';
-                });
-        });
+  function clearUI() {
+    courseNameInput.value = '';
+    courseIdInput.value = '';
+    levelsSection.innerHTML = '';
+    trainersByLevelContainer.innerHTML = '';
+    assignmentSummary.innerHTML = '';
+    trainerSearch.value = '';
+    levelsData = [];
+    traineeSelectedLevelIds = [];
+    traineeIsFullCourse = false;
+    preAssignedTrainers = {};
+    trainersCache = {};
+    portionBadge.textContent = '—';
+    portionBadge.className = 'badge bg-secondary me-2';
+    levelsCountEl.textContent = '';
+  }
 
-        // Load levels for course
-        function loadLevels(courseId) {
-            levelsSection.innerHTML = '<div class="text-center py-2"><span class="spinner-border spinner-border-sm text-primary"></span> Loading levels...</div>';
-            fetch(`/get_course_levels/${courseId}/`)
-                .then(res => res.json())
-                .then(data => {
-                    levelsData = data.levels;
-                    if (levelsData.length === 0) {
-                        levelsSection.innerHTML = '<div class="alert alert-warning">No levels found</div>';
-                    } else {
-                        renderLevelCards();
-                    }
-                })
-                .catch(() => {
-                    levelsSection.innerHTML = '<div class="alert alert-danger">Error loading levels</div>';
-                });
-        }
+  function tplAvatar(name) {
+    return `<span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" style="width:34px;height:34px;font-weight:600;">${(name||'T')[0].toUpperCase()}</span>`;
+  }
 
-        // Render card-style selector for levels
-        function renderLevelCards() {
-            levelsSection.innerHTML = '';
-            const row = document.createElement('div');
-            row.className = 'row';
-            levelsData.forEach(level => {
-                const col = document.createElement('div');
-                col.className = 'col-md-4 mb-3';
-                const card = document.createElement('div');
-                card.className = 'card border-0 shadow-sm h-100';
-                card.innerHTML = `<div class="card-body d-flex align-items-center">
-                    <input class="form-check-input me-2" type="checkbox" id="level_${level.id}" value="${level.id}">
-                    <label class="form-check-label w-100" for="level_${level.id}">
-                        <i class="fas fa-layer-group me-1 text-primary"></i>
-                        <span class="fw-bold">${level.name}</span>
-                    </label>
-                </div>`;
-                card.querySelector('input').addEventListener('change', updateSelectedLevels);
-                col.appendChild(card);
-                row.appendChild(col);
-            });
-            levelsSection.appendChild(row);
-        }
+  async function safeJsonFetch(url, options) {
+    const res = await fetch(url, options);
+    const ctype = (res.headers.get('content-type') || '').toLowerCase();
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error('Fetch failed', url, res.status, txt.slice(0, 1000));
+      throw new Error(`Request failed ${res.status}`);
+    }
+    if (!ctype.includes('application/json')) {
+      const txt = await res.text();
+      console.error('Expected JSON but got:', url, ctype, txt.slice(0, 1000));
+      throw new Error('Server returned non-JSON response (see console).');
+    }
+    return res.json();
+  }
 
-        // Update trainer display and assignment summary
-        function updateSelectedLevels() {
-            const selected = Array.from(levelsSection.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
-            showTrainersForLevels(selected);
-            updateAssignmentSummary(selected);
-        }
-
-        function updateAssignmentSummary(selectedLevels) {
-            if (!selectedLevels.length) {
-                assignmentSummary.innerHTML = '';
-                return;
-            }
-            const selectedNames = selectedLevels.map(lid => {
-                const levelObj = levelsData.find(l => l.id == lid);
-                return levelObj ? `<span class='badge bg-primary me-2'>${levelObj.name}</span>` : '';
-            }).join(' ');
-            assignmentSummary.innerHTML = `<div class='alert alert-info'><i class='fas fa-info-circle me-2'></i>Selected Levels: ${selectedNames}</div>`;
-        }
-
-        // When levels are selected, fetch trainers for each level
-        // Show trainers for selected levels in a modern card grid
-        function showTrainersForLevels(selectedLevels) {
-            const courseId = courseIdInput.value;
-            trainersByLevelContainer.innerHTML = '';
-            if (!courseId || selectedLevels.length === 0) return;
-            trainersByLevelContainer.innerHTML = '<div class="text-center py-3"><span class="spinner-border text-primary" role="status"></span> Loading trainers for selected levels...</div>';
-            fetch(`/get_trainers_for_levels/${courseId}/?` + selectedLevels.map(lid => `level_ids[]=${lid}`).join('&'))
-                .then(res => res.json())
-                .then(data => {
-                    trainersByLevelContainer.innerHTML = '';
-                    const trainersByLevel = data.trainers_by_level;
-                    selectedLevels.forEach(levelId => {
-                        const trainers = trainersByLevel[levelId] || [];
-                        const levelObj = levelsData.find(l => l.id == levelId);
-                        const levelName = levelObj ? levelObj.name : 'Level';
-                        const card = document.createElement('div');
-                        card.className = 'card mb-4 border-0 shadow-sm';
-                        card.innerHTML = `<div class="card-header bg-gradient bg-primary text-white d-flex align-items-center justify-content-between">
-                            <span><i class="fas fa-layer-group me-2"></i><strong>${levelName}</strong></span>
-                            <span class="badge bg-success">Select Trainer</span>
-                        </div>`;
-                        const body = document.createElement('div');
-                        body.className = 'card-body row';
-                        if (trainers.length === 0) {
-                            body.innerHTML = '<div class="col-12"><div class="alert alert-warning">No trainers found for this level.</div></div>';
-                        } else {
-                            trainers.forEach(trainer => {
-                                const radioId = `trainer_for_level_${levelId}_${trainer.id}`;
-                                const avatar = `<span class="avatar bg-primary text-white rounded-circle me-2" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;">${trainer.name.split(' ')[0][0]}</span>`;
-                                const radio = `<div class="col-md-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-body d-flex align-items-center">
-                                            <input class="form-check-input me-2" type="radio" name="trainer_for_level_${levelId}" id="${radioId}" value="${trainer.id}" required>
-                                            <label class="form-check-label w-100" for="${radioId}">
-                                                ${avatar}
-                                                <span class="fw-bold">${trainer.name}</span>
-                                                <span class="badge bg-info ms-2">Trainer</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>`;
-                                body.innerHTML += radio;
-                            });
-                        }
-                        card.appendChild(body);
-                        trainersByLevelContainer.appendChild(card);
-                    });
-                })
-                .catch(() => {
-                    trainersByLevelContainer.innerHTML = '<div class="alert alert-danger">Error loading trainers for levels.</div>';
-                });
-        }
-
-        // Professional UX: show loading spinner on submit
-        form.addEventListener('submit', function() {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Assigning...';
-        });
+  // Render level cards and attach listeners
+  function renderLevels() {
+    levelsSection.innerHTML = '';
+    if (!levelsData.length) {
+      levelsSection.innerHTML = '<div class="text-muted small">No levels configured for this course.</div>';
+      return;
+    }
+    const row = document.createElement('div');
+    row.className = 'row g-3';
+    levelsData.forEach(level => {
+      const levelId = String(level.id);
+      const isChecked = traineeSelectedLevelIds.includes(levelId);
+      const disabled = traineeIsFullCourse ? 'disabled' : '';
+      const col = document.createElement('div');
+      col.className = 'col-md-4';
+      col.innerHTML = `
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body d-flex align-items-center">
+            <div class="me-3 text-center" style="width:54px;">${tplAvatar(level.name)}</div>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-bold">${level.name}</div>
+                  <div class="text-muted small">${level.description || ''}</div>
+                </div>
+                <div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input level-checkbox" type="checkbox" id="level_${levelId}" value="${levelId}" ${isChecked ? 'checked' : ''} ${disabled}>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-2 small text-muted">Trainers for this level will appear below.</div>
+            </div>
+          </div>
+        </div>`;
+      row.appendChild(col);
     });
+    levelsSection.appendChild(row);
+
+    if (!traineeIsFullCourse) {
+      const boxes = levelsSection.querySelectorAll('.level-checkbox');
+      boxes.forEach(cb => cb.addEventListener('change', async () => {
+        traineeSelectedLevelIds = Array.from(levelsSection.querySelectorAll('.level-checkbox:checked')).map(i => i.value);
+        if (traineeSelectedLevelIds.length === 0) {
+          traineeIsFullCourse = true;
+          traineeSelectedLevelIds = levelsData.map(l => String(l.id));
+          portionBadge.className = 'badge bg-success me-2';
+          portionBadge.textContent = 'Full Course';
+        } else {
+          traineeIsFullCourse = false;
+          portionBadge.className = 'badge bg-warning me-2';
+          portionBadge.textContent = 'Partial';
+        }
+        try {
+          await fetchAndRenderTrainersForLevels(courseIdInput.value, traineeSelectedLevelIds);
+          updateSummary();
+        } catch (e) {
+          console.error(e);
+        }
+      }));
+    }
+  }
+
+  // Fetch trainers grouped by level and render radios (pre-select using preAssignedTrainers)
+  async function fetchAndRenderTrainersForLevels(courseId, levelIds) {
+    trainersByLevelContainer.innerHTML = `<div class="text-center py-3"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Loading trainers...</div>`;
+    try {
+      const query = (Array.isArray(levelIds) && levelIds.length) ? `${levelIds.map(id=>`level_ids[]=${encodeURIComponent(id)}`).join('&')}` : '';
+      const url = `/get_trainers_for_levels/${courseId}/` + (query ? `?${query}` : '');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('trainers fetch failed');
+      const data = await res.json(); // expected { trainers_by_level: { levelId: [trainerObj,..], ... } }
+      const trainers_by_level = data.trainers_by_level || {};
+      trainersCache = trainers_by_level;
+
+      trainersByLevelContainer.innerHTML = '';
+      levelsData.forEach(level => {
+        const lid = String(level.id);
+        if (!levelIds.includes(lid)) return;
+        const trainers = trainers_by_level[lid] || [];
+        const card = document.createElement('div');
+        card.className = 'card mb-3 shadow-sm';
+        card.innerHTML = `
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div><i class="fas fa-layer-group me-2 text-primary"></i><strong>${level.name}</strong></div>
+            <div class="small text-muted">${trainers.length} trainer${trainers.length === 1 ? '' : 's'}</div>
+          </div>
+          <div class="card-body">
+            <div class="row trainer-list" data-level-id="${lid}"></div>
+          </div>`;
+        trainersByLevelContainer.appendChild(card);
+
+        const list = card.querySelector('.trainer-list');
+        if (!trainers.length) {
+          list.innerHTML = `<div class="col-12"><div class="alert alert-warning mb-0">No trainers available for this level.</div></div>`;
+          return;
+        }
+
+        trainers.forEach(tr => {
+          const radioName = `trainer_for_level_${lid}`;
+          const radioId = `${radioName}_${tr.id}`;
+          const checked = (String(preAssignedTrainers[lid]) === String(tr.id)) ? 'checked' : '';
+          const col = document.createElement('div');
+          col.className = 'col-md-6 mb-2';
+          col.innerHTML = `
+            <div class="card border-0 h-100">
+              <div class="card-body d-flex align-items-center">
+                <input class="form-check-input me-2 trainer-radio" type="radio" name="${radioName}" id="${radioId}" value="${tr.id}" ${checked} required>
+                <label class="form-check-label w-100" for="${radioId}">
+                  ${tplAvatar(tr.name)}
+                  <span class="fw-bold">${tr.name}</span><br>
+                  <small class="text-muted">${tr.email || ''}</small>
+                </label>
+              </div>
+            </div>`;
+          list.appendChild(col);
+        });
+      });
+
+      // attach search filter
+      trainerSearch.oninput = function() {
+        const q = this.value.trim().toLowerCase();
+        document.querySelectorAll('.trainer-list').forEach(container => {
+          Array.from(container.children).forEach(cardCol => {
+            const text = cardCol.innerText.toLowerCase();
+            cardCol.style.display = (!q || text.includes(q)) ? '' : 'none';
+          });
+        });
+      };
+    } catch (err) {
+      console.error(err);
+      trainersByLevelContainer.innerHTML = `<div class="alert alert-warning">No trainers available for the selected levels.</div>`;
+    }
+  }
+
+  function updateSummary() {
+    if (traineeIsFullCourse || traineeSelectedLevelIds.length === 0) {
+      assignmentSummary.innerHTML = `<div class="alert alert-info"><i class="fas fa-book me-2"></i><strong>Full Course:</strong> ${courseNameInput.value} — You may choose a trainer per level below.</div>`;
+      return;
+    }
+    const badges = traineeSelectedLevelIds.map(id => {
+      const level = levelsData.find(l => String(l.id) === String(id));
+      return `<span class="badge bg-primary me-2">${level ? level.name : id}</span>`;
+    }).join('');
+    assignmentSummary.innerHTML = `<div class="alert alert-info"><i class="fas fa-layer-group me-2"></i>Selected levels: ${badges}</div>`;
+  }
+
+  // Fetch trainee details (course, levels, trainee levels, assigned trainers)
+  traineeSelect.addEventListener('change', async function() {
+    clearUI();
+    const traineeId = this.value;
+    if (!traineeId) return;
+
+    courseNameInput.value = 'Loading...';
+    try {
+      const json = await safeJsonFetch(`/api/trainee/${traineeId}/details/`);
+      courseNameInput.value = json.course ? json.course.name : '';
+      courseIdInput.value = json.course ? json.course.id : '';
+      levelsData = Array.isArray(json.levels) ? json.levels : [];
+      preAssignedTrainers = json.assigned_trainers || {};
+      traineeIsFullCourse = !!json.is_full_course;
+
+      if (traineeIsFullCourse) {
+        traineeSelectedLevelIds = levelsData.map(l => String(l.id));
+        portionBadge.className = 'badge bg-success me-2';
+        portionBadge.textContent = 'Full Course';
+      } else {
+        traineeSelectedLevelIds = Array.isArray(json.trainee_level_ids) ? json.trainee_level_ids.map(String) : [];
+        portionBadge.className = 'badge bg-warning me-2';
+        portionBadge.textContent = 'Partial';
+      }
+
+      levelsCountEl.textContent = `${levelsData.length} levels`;
+
+      renderLevels();
+      await fetchAndRenderTrainersForLevels(courseIdInput.value, traineeSelectedLevelIds);
+      updateSummary();
+    } catch (err) {
+      console.error(err);
+      courseNameInput.value = 'Error loading trainee details';
+      portionBadge.className = 'badge bg-danger me-2';
+      portionBadge.textContent = 'Error';
+      trainersByLevelContainer.innerHTML = `<div class="alert alert-danger">Failed to load data: ${err.message}</div>`;
+    }
+  });
+
+  // Validate required trainer selections before submit
+  form.addEventListener('submit', function(e) {
+    const targetLevels = (traineeIsFullCourse || traineeSelectedLevelIds.length === 0) ? levelsData.map(l => String(l.id)) : traineeSelectedLevelIds;
+    const missing = [];
+    for (const lid of targetLevels) {
+      const chosen = form.querySelector(`input[name="trainer_for_level_${lid}"]:checked`);
+      if (!chosen) missing.push(lid);
+    }
+    if (missing.length) {
+      e.preventDefault();
+      const names = missing.map(id => (levelsData.find(l => String(l.id) === String(id)) || {name: id}).name);
+      alert('Please choose a trainer for: ' + names.join(', '));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Assigning...`;
+  });
+
+});
 </script>
+
 {% else %}
-    <div class="alert alert-danger text-center">
-        <h4 class="alert-heading">Access Denied!</h4>
-        <p>You do not have permission to access this page.</p>
-        <hr>
-        <p class="mb-0">Please contact the administrator if you believe this is an error.</p>
-    </div>
+  <div class="alert alert-danger text-center">
+    <h4 class="alert-heading">Access Denied!</h4>
+    <p>You do not have permission to access this page.</p>
+  </div>
 {% endif %}
+
 {% endblock main_content %}

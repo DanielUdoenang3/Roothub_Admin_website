@@ -3,7 +3,6 @@
 
 {% block main_content %}
 {% if request.user.user_type == "1" %}
-
 <div class="page-header mb-4">
     <div class="row align-items-center">
         <div class="col">
@@ -23,32 +22,33 @@
                     {% csrf_token %}
                     {% include "includes/messages.html" %}
                     <div class="row">
+                        <!-- Personal Details -->
                         <div class="col-12">
                             <h5 class="form-title"><span>Personal Details</span></h5>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>First Name </label>
-                                <input type="text" class="form-control" name="first_name" placeholder="Edit First Name" value="{{ trainee.trainee_name.first_name|capfirst }}">
+                                <input type="text" class="form-control" name="first_name" value="{{ trainee.trainee_name.first_name|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Middle Name</label>
-                                <input type="text" class="form-control" name="middle_name" placeholder="Edit Middle Name" value="{{ trainee.trainee_name.middle_name|capfirst }}">
+                                <input type="text" class="form-control" name="middle_name" value="{{ trainee.trainee_name.middle_name|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Last Name</label>
-                                <input type="text" class="form-control" name="last_name" placeholder="Edit Last Name" value="{{ trainee.trainee_name.last_name|capfirst }}">
+                                <input type="text" class="form-control" name="last_name" value="{{ trainee.trainee_name.last_name|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Gender </label>
-                                <select class="form-control form-select" aria-hidden="true" name="gender">
-                                    <option disabled selected hidden>Select Gender</option>
+                                <select class="form-control form-select" name="gender">
+                                    <option disabled>Select Gender</option>
                                     <option value="Male" {% if trainee.gender == 'Male' %}selected{% endif %}>Male</option>
                                     <option value="Female" {% if trainee.gender == "Female" %}selected{% endif %}>Female</option>
                                 </select>
@@ -57,32 +57,30 @@
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Mobile </label>
-                                <input type="text" class="form-control" name="phone" placeholder="Edit Phone" value="{{ trainee.phone }}">
+                                <input type="text" class="form-control" name="phone" value="{{ trainee.phone }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Trainee Category</label>
-                                <select name="category" class="form-control form-select" required>
-                                    <option value="" disabled selected>Select Trainee Category</option>
-                                    <option value="Regular" {% if trainee.category == 'Regular' %}selected{% endif %}>Regular Trainee</option>
-                                    <option value="SIWES" {% if trainee.category == 'SIWES' %}selected{% endif %}>SIWES Intern</option>
-                                    <option value="Extern" {% if trainee.category == 'Extern' %}selected{% endif %}>Extern</option>
-                                    <option value="Triptern" {% if trainee.category == 'Triptern' %}selected{% endif %}>Triptern</option>
-                                    <option value="Bootcamp" {% if trainee.category == 'Bootcamp' %}selected{% endif %}>Bootcamp Kid</option>
+                                <select name="category" class="form-control form-select">
+                                    <option value="" disabled>Select Trainee Category</option>
+                                    {% for cat, cat_label in trainee.TRAINEE_CATEGORIES %}
+                                    <option value="{{ cat }}" {% if trainee.category == cat %}selected{% endif %}>{{ cat_label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Username </label>
-                                <input type="text" class="form-control" name="username" placeholder="Edit Username" value="{{ trainee.trainee_name.username|capfirst }}">
+                                <input type="text" class="form-control" name="username" value="{{ trainee.trainee_name.username|capfirst }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Email</label>
-                                <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainee.trainee_name.email }}">
+                                <input type="email" class="form-control" name="email" value="{{ trainee.trainee_name.email }}">
                             </div>
                         </div>
                         <center>
@@ -105,75 +103,71 @@
                                 </div>
                             </div>
                         </center>
-
+                        <!-- SIWES Details -->
                         <div class="col-12" id="select-siwes-head" style="display:none;">
                             <h5 class="form-title"><span>SIWES Details</span></h5>
                         </div>
-
                         <div class="col-12 col-sm-7" id="select-siwes-intern" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Name of School</label>
-                                <input type="text" class="form-control" name="school_name" placeholder="Enter Name of School" value="{{ trainee.name_of_school }}">
+                                <input type="text" class="form-control" name="school_name" value="{{ trainee.name_of_school }}">
                             </div>
                         </div>
-
                         <div class="col-12 col-sm-5" id="select-siwes-intern2" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Course of Study</label>
-                                <input type="text" class="form-control" name="course_of_study" placeholder="Enter Course of Study" value="{{ trainee.course_of_study }}">
+                                <input type="text" class="form-control" name="course_of_study" value="{{ trainee.course_of_study }}">
                             </div>
                         </div>
-
                         <div class="col-12 col-sm-6" id="select-siwes-intern3" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Matric Number</label>
-                                <input type="text" class="form-control" name="matric_number" placeholder="Enter Matric Number" value="{{ trainee.matric_number }}">
+                                <input type="text" class="form-control" name="matric_number" value="{{ trainee.matric_number }}">
                             </div>
                         </div>
-
                         <div class="col-12 col-sm-5" id="select-siwes-intern4" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Duration of Internship</label>
-                                <input type="text" class="form-control" name="internship_duration" placeholder="Enter Duration of Internship" value="{{ trainee.duration_of_intership }}">
+                                <input type="text" class="form-control" name="internship_duration" value="{{ trainee.duration_of_intership }}">
                             </div>
                         </div>
-                        
+                        <!-- Address -->
                         <div class="col-12">
                             <h5 class="form-title"><span>Address</span></h5>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>City </label>
-                                <input type="text" class="form-control" name="city" placeholder="Edit City" value="{{ trainee.city }}">
+                                <input type="text" class="form-control" name="city" value="{{ trainee.city }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>State </label>
-                                <input type="text" class="form-control" name="state" placeholder="Edit State" value="{{ trainee.state }}">
+                                <input type="text" class="form-control" name="state" value="{{ trainee.state }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Country </label>
-                                <input type="text" class="form-control" name="country" placeholder="Edit Country" value="{{ trainee.country }}">
+                                <input type="text" class="form-control" name="country" value="{{ trainee.country }}">
                             </div>
                         </div>
                         <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
                                 <label>Address</label>
-                                <textarea class="form-control" name="address" placeholder="Enter Full Address" rows="3">{{ trainee.address }}</textarea>
+                                <textarea class="form-control" name="address" rows="3">{{ trainee.address }}</textarea>
                             </div>
                         </div>
-
+                        <!-- Course and Payment -->
                         <div class="col-12">
-                            <h5 class="form-title"><span>Choice of Course</span></h5>
+                            <h5 class="form-title"><span>Course and Payment Option Selection</span></h5>
                         </div>
                         <div class="col-12 col-sm-8">
                             <div class="form-group local-forms">
                                 <label>Select a Course</label>
                                 <select name="course" class="form-control form-select" required>
-                                    <option value="" selected disabled>Select a Course you would love to Study</option>
+                                    <option value="" disabled>Select a Course you would love to Study</option>
                                     {% for course in courses %}
                                     <option value="{{ course.id }}"{% if trainee.course_id.id == course.id %}selected{% endif %}>{{ course.course_name }}  ------  {{ course.price }}</option>
                                     {% endfor %}
@@ -182,74 +176,110 @@
                         </div>
                         <div class="col-12 col-sm-8">
                             <div class="form-group local-forms">
+                                <label>Course Portion</label>
+                                <select name="portion_type" id="portion_type" class="form-control form-select" required>
+                                    <option value="Full Course" {% if trainee.portion_type == "Full Course" %}selected{% endif %}>Full Course</option>
+                                    <option value="Level" {% if trainee.portion_type == "Level" %}selected{% endif %}>Specific Level(s)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8" id="portion-value-section" style="display:none;">
+                            <div class="form-group" id="portion-value-container" name="portion_value_container">
+                                <!-- Content will be injected by JS -->
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-8">
+                            <div class="form-group local-forms">
                                 <label>Payment Option</label>
                                 <select name="payment" class="form-control form-select" required>
-                                    <option value="" disabled selected>Select Payment Option</option>
-                                    <option value="Full Payment" {% if trainee.payment_option == 'Full Payment' %}selected{% endif %}>Full Payment</option>
-                                    <option value="70% upfront and 30% later" {% if trainee.payment_option == '70% upfront and 30% later' %}selected{% endif %}>70% upfront and 30% later</option>
-                                    <option value="Monthly Payment" {% if trainee.payment_option == 'Monthly Payment' %}selected{% endif %}>Monthly Payment</option>
+                                    <option value="" disabled>Select Payment Option</option>
+                                    {% for opt, opt_label in trainee.PAYMENT_OPTION %}
+                                    <option value="{{ opt }}" {% if trainee.payment_option == opt %}selected{% endif %}>{{ opt_label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label>Amount Paid</label>
+                                <input type="number" name="amount_paid" class="form-control" value="{{ trainee.paymenthistory_id.amount_paid }}">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group local-forms">
+                                <label>Date of Payment</label>
+                                <input type="date" name="date_of_payment" class="form-control" value="{{ trainee.paymenthistory_id.payment_date|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-5">
+                            <div class="form-group local-forms">
+                                <label>Payment Method</label>
+                                <select name="payment_method" class="form-control form-select" required>
+                                    <option value="" disabled selected>Select Payment Method</option>
+                                    <option {% if trainee.paymenthistory_id.payment_method == 'Cash' %}selected{% endif %}>Cash</option>
+                                    <option {% if trainee.paymenthistory_id.payment_method == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                                    <option {% if trainee.paymenthistory_id.payment_method == 'Card' %}selected{% endif %}>Card</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-5" id="installment-section" style="display:none;">
                             <div class="form-group local-forms">
-                                <label>Amount Paid</label>
-                                <input type="number" name="amount_paid" class="form-control" placeholder="Amount Paid" value="{{ trainee.amount_paid }}">
+                                <label>Installmental Payment</label>
+                                <select name="installmental_payment" id="installmental_payment" class="form-control form-select">
+                                    <option value="" disabled selected>Select Installment</option>
+                                    <!-- Options will be populated by JS -->
+                                </select>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-6" id="due-date-section" style="display:none;">
                             <div class="form-group local-forms">
-                                <label>Date of Payment</label>
-                                <input type="date" name="date_of_payment" class="form-control" placeholder="Select Date of Payment" value="{{ trainee.date_of_payment|date:'Y-m-d' }}">
+                                <label>Due Date for Remaining 30%</label>
+                                <input type="date" name="due_date_30" class="form-control" placeholder="Select Due Date" value="{{ trainee.paymenthistory_id.upfront_due_date|date:'Y-m-d' }}">
+                                <span class="fw-bold text-danger"><small id="remaining-amount-info" name="upfront_due_date" class="form-text text-muted"></small></span>
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-7">
                             <div class="form-group local-forms">
                                 <label>Commencement Date</label>
-                                <input type="date" class="form-control" name="commencement_date" placeholder="Enter Commencement Date" value="{{ trainee.commencement_date|date:'Y-m-d' }}" required>
+                                <input type="date" class="form-control" name="commencement_date" value="{{ trainee.commencement_date|date:'Y-m-d' }}">
                             </div>
                         </div>
-
+                        <!-- Next of Kin -->
                         <div class="col-12">
                             <h5 class="form-title"><span>Next of Kin</span></h5>
                         </div>
-
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>First Name</label>
-                                <input type="text" name="next_first_name" class="form-control" placeholder="Enter First Name" value="{{ trainee.nok_first_name }}" required>
+                                <input type="text" name="next_first_name" class="form-control" value="{{ trainee.nok_first_name }}">
                             </div>
                         </div>
-
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Last Name</label>
-                                <input type="text" name="next_last_name" class="form-control" placeholder="Enter Last Name" value="{{ trainee.nok_last_name }}" required>
+                                <input type="text" name="next_last_name" class="form-control" value="{{ trainee.nok_last_name }}">
                             </div>
                         </div>
-
                         <div class="col-12 col-sm-4">
                             <div class="form-group local-forms">
                                 <label>Email</label>
-                                <input type="email" name="next_email" class="form-control" placeholder="Enter Email" value="{{ trainee.nok_email }}" required>
+                                <input type="email" name="next_email" class="form-control" value="{{ trainee.nok_email }}">
                             </div>
                         </div>
-                        
                         <div class="col-12 col-sm-5">
                             <div class="form-group local-forms">
                                 <label>Phone</label>
-                                <input type="text" name="next_phone" class="form-control" placeholder="Enter Phone Number" value="{{ trainee.nok_phone }}" required>
+                                <input type="text" name="next_phone" class="form-control" value="{{ trainee.nok_phone }}">
                             </div>
                         </div>
-                        
-
                         <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
                                 <label>Relation</label>
-                                <input type="text" name="relation" class="form-control" placeholder="Enter Relationship" value="{{ trainee.nok_relationship }}" required>
+                                <input type="text" name="relation" class="form-control" value="{{ trainee.nok_relationship }}">
                             </div>
                         </div>
                         <div class="col-12">
@@ -264,124 +294,271 @@
     </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get references to the select elements
-        const courseSelect = document.querySelector('select[name="course"]');
-        const paymentSelect = document.querySelector('select[name="payment"]');
-        const traineeCategorySelect = document.querySelector('select[name="category"]');
-        const siwesSectionHead = document.getElementById('select-siwes-head');
-        const siwesSection = document.getElementById('select-siwes-intern');
-        const siwesSection2 = document.getElementById('select-siwes-intern2');
-        const siwesSection3 = document.getElementById('select-siwes-intern3');
-        const siwesSection4 = document.getElementById('select-siwes-intern4');
+document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.querySelector('select[name="course"]');
+    const paymentSelect = document.querySelector('select[name="payment"]');
+    const paymentMethodSelect = document.querySelector('select[name="payment_method"]');
+    const amountPaidInput = document.querySelector('input[name="amount_paid"]');
+    const installmentSection = document.getElementById('installment-section');
+    const installmentSelect = document.getElementById('installmental_payment');
+    const dueDateSection = document.getElementById('due-date-section');
+    const remainingAmountInfo = document.getElementById('remaining-amount-info');
+    const portionTypeSelect = document.getElementById('portion_type');
+    const portionValueSection = document.getElementById('portion-value-section');
+    const portionValueContainer = document.getElementById('portion-value-container');
 
-        // Create a display area for payment info, styled professionally
-        let paymentInfo = document.createElement('div');
+    // Payment info panel (insert if missing)
+    let paymentInfo = document.getElementById('payment-info');
+    if (!paymentInfo) {
+        paymentInfo = document.createElement('div');
         paymentInfo.id = 'payment-info';
         paymentInfo.className = 'alert alert-info mt-3';
         paymentInfo.style.display = 'none';
-
-        // Insert paymentInfo directly below the Payment Option select field
         const paymentFormGroup = paymentSelect.closest('.form-group');
-        paymentFormGroup.appendChild(paymentInfo);
+        if (paymentFormGroup) paymentFormGroup.appendChild(paymentInfo);
+    }
 
-        // Store course data for quick lookup
-        let courseData = {};
-        {% for course in courses %}
-            courseData["{{ course.id }}"] = {
-                price: {{ course.price|floatformat:2 }},
-                months: {{ course.months|default:1 }}
-            };
+    // Course metadata (injected by template)
+    let courseData = {};
+    {% for course in courses %}
+        courseData["{{ course.id }}"] = {
+            price: {{ course.price|floatformat:2 }},
+            months: {{ course.months|default:1 }}
+        };
+    {% endfor %}
+
+    // Levels already selected for this trainee (string ids)
+    const selectedLevels = [
+        {% for lvl in trainee.levels.all %}
+            "{{ lvl.id }}",
         {% endfor %}
+    ];
 
-        function formatCurrency(amount) {
-            return '₦' + Number(amount).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    function formatCurrency(amount) {
+        return '₦' + Number(amount).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function getLevelCheckboxes() {
+        return Array.from(portionValueContainer.querySelectorAll('.level-checkbox'));
+    }
+    function getSelectedLevelsCount() {
+        return getLevelCheckboxes().filter(b => b.checked).length;
+    }
+    function getTotalLevelsCount() {
+        return getLevelCheckboxes().length;
+    }
+
+    function getSelectedPriceAndMonths() {
+        const courseId = courseSelect.value;
+        const course = courseData[courseId];
+        if (!course) return { price: 0, months: 1 };
+
+        if (portionTypeSelect.value === 'Level') {
+            const total = getTotalLevelsCount();
+            const selected = getSelectedLevelsCount();
+            if (total > 0 && selected > 0) {
+                const perLevel = course.price / total;
+                return { price: perLevel * selected, months: selected };
+            }
+            return { price: 0, months: 1 };
         }
+        return { price: course.price, months: course.months || 1 };
+    }
 
-        function updatePaymentInfo() {
-            const courseId = courseSelect.value;
-            const paymentOption = paymentSelect.value;
-            paymentInfo.innerHTML = '';
-            paymentInfo.style.display = 'none';
+    function updateInstallmentOptions() {
+        const paymentOption = paymentSelect.value;
+        const { months } = getSelectedPriceAndMonths();
+        installmentSelect.innerHTML = '<option value="" disabled selected>Select Installment</option>';
+        installmentSection.style.display = 'none';
 
-            if (!courseId || !paymentOption) {
-                return;
-            }
-
-            const course = courseData[courseId];
-            if (!course) {
-                paymentInfo.innerHTML = '<span style="color: #e74c3c;">Invalid course selection.</span>';
-                paymentInfo.style.display = 'block';
-                return;
-            }
-
-            const price = parseFloat(course.price);
-            // Always get months from the selected course
-            let months = parseInt(course.months);
-            if (isNaN(months) || months <= 0) months = 1;
-
-            if (paymentOption === 'Full Payment') {
-                paymentInfo.innerHTML = `
-                    <i class="fas fa-money-bill-wave"></i>
-                    <strong>Full Payment:</strong> The total amount to be paid is <span style="color:#155724;">${formatCurrency(price)}</span>.
-                `;
-            } else if (paymentOption === '70% upfront and 30% later') {
-                const upfront = price * 0.7;
-                const later = price * 0.3;
-                paymentInfo.innerHTML = `
-                    <i class="fas fa-coins"></i>
-                    <strong>70% Upfront, 30% Later:</strong><br>
-                    Pay <span style="color:#155724;">${formatCurrency(upfront)}</span> now (70%)<br>
-                    and <span style="color:#856404;">${formatCurrency(later)}</span> later (30%).
-                `;
-            } else if (paymentOption === 'Monthly Payment') {
-                if (months <= 0) {
-                    paymentInfo.innerHTML = '<span style="color: #e67e22;">Course duration not specified for monthly payment.</span>';
-                } else {
-                    const monthly = price / months;
-                    paymentInfo.innerHTML = `
-                        <i class="fas fa-calendar-alt"></i>
-                        <strong>Monthly Payment:</strong><br>
-                        Pay <span style="color:#155724;">${formatCurrency(monthly)}</span> per month for <strong>${months}</strong> month(s).<br>
-                        <span>Total: ${formatCurrency(price)}</span>
-                    `;
-                }
-            }
-            paymentInfo.style.display = 'block';
-        }
-
-        courseSelect.addEventListener('change', updatePaymentInfo);
-        paymentSelect.addEventListener('change', updatePaymentInfo);
-
-        // SIWES Intern section show/hide logic
-        traineeCategorySelect.addEventListener('change', function() {
-            if (traineeCategorySelect.value === 'SIWES') {
-                siwesSectionHead.style.display = 'block';
-                siwesSection.style.display = 'block';
-                siwesSection2.style.display = 'block';
-                siwesSection3.style.display = 'block';
-                siwesSection4.style.display = 'block';
+        const monthlyOpt = paymentSelect.querySelector('option[value="Monthly Payment"]');
+        if (paymentOption === 'Monthly Payment') {
+            if (!months || months <= 1) {
+                if (monthlyOpt) monthlyOpt.disabled = true;
             } else {
-                siwesSection.style.display = 'none';
-                siwesSection2.style.display = 'none';
-                siwesSection3.style.display = 'none';
-                siwesSection4.style.display = 'none';
+                if (monthlyOpt) monthlyOpt.disabled = false;
+                for (let i = 1; i <= months; i++) {
+                    let suffix = 'th';
+                    if (i === 1) suffix = 'st'; else if (i === 2) suffix = 'nd'; else if (i === 3) suffix = 'rd';
+                    installmentSelect.insertAdjacentHTML('beforeend', `<option value="${i}">${i}${suffix} Installment</option>`);
+                }
+                // pre-select existing installment if available (template may set data-selected)
+                const pre = "{{ trainee.paymenthistory_id.installmental_payment|default_if_none:'' }}";
+                if (pre) {
+                    setTimeout(()=> { installmentSelect.value = pre; }, 50);
+                }
+                installmentSection.style.display = 'block';
             }
-        });
-        // On page load, check if SIWES is selected
-        if (traineeCategorySelect.value === 'SIWES') {
-            siwesSection.style.display = 'block';
-            siwesSection.style.display = 'block';
-            siwesSection2.style.display = 'block';
-            siwesSection3.style.display = 'block';
-            siwesSection4.style.display = 'block'
         } else {
-            siwesSection.style.display = 'none';
-            siwesSection2.style.display = 'none';
-            siwesSection3.style.display = 'none';
-            siwesSection4.style.display = 'none';
+            if (monthlyOpt) monthlyOpt.disabled = false;
+        }
+    }
+
+    function updateDueDateSection() {
+        const paymentOption = paymentSelect.value;
+        const { price } = getSelectedPriceAndMonths();
+        dueDateSection.style.display = 'none';
+        remainingAmountInfo.innerHTML = '';
+
+        if (paymentOption !== '70% upfront and 30% later' || price <= 0) return;
+
+        const paid = parseFloat(amountPaidInput.value) || 0;
+        const upfront = Math.round(price * 0.7 * 100) / 100;
+        const later = Math.round((price - upfront) * 100) / 100;
+
+        let html = `<div><strong>Total:</strong> ${formatCurrency(price)}</div>`;
+        html += `<div><strong>Upfront (70%):</strong> ${formatCurrency(upfront)}</div>`;
+        html += `<div><strong>Remaining (30%):</strong> ${formatCurrency(later)}</div>`;
+
+        if (paid < upfront) {
+            const remUpfront = Math.round((upfront - paid) * 100) / 100;
+            html += `<div class="text-danger">Outstanding upfront: ${formatCurrency(remUpfront)}</div>`;
+        } else {
+            const remaining_total = Math.max(0, Math.round((price - paid) * 100) / 100);
+            html += `<div><strong>Remaining to be paid later:</strong> ${formatCurrency(remaining_total)}</div>`;
+        }
+
+        remainingAmountInfo.innerHTML = html;
+        dueDateSection.style.display = 'block';
+    }
+
+    function updatePaymentInfo() {
+        const paymentOption = paymentSelect.value;
+        const { price, months } = getSelectedPriceAndMonths();
+        paymentInfo.innerHTML = '';
+        paymentInfo.style.display = 'none';
+        if (price <= 0 || !paymentOption) return;
+
+        let html = '';
+        if (portionTypeSelect.value === 'Level') {
+            const selected = getSelectedLevelsCount();
+            const total = getTotalLevelsCount();
+            const perLevel = selected ? (price / selected) : 0;
+            html += `<div class="mb-2"><span class="badge bg-primary">Level Selection</span></div>`;
+            html += `<div><strong>Selected:</strong> ${selected} / ${total}</div>`;
+            html += `<div><strong>Price per selected level:</strong> ${formatCurrency(perLevel)}</div>`;
+            html += `<div><strong>Total:</strong> ${formatCurrency(price)}</div>`;
+        } else {
+            html += `<div><strong>Total course price:</strong> ${formatCurrency(price)}</div>`;
+        }
+
+        if (paymentOption === 'Full Payment') {
+            html += `<div class="mt-2"><strong>Full Payment:</strong> Pay ${formatCurrency(price)} now.</div>`;
+        } else if (paymentOption === '70% upfront and 30% later') {
+            const upfront = Math.round(price * 0.7 * 100) / 100;
+            const later = Math.round((price - upfront) * 100) / 100;
+            html += `<div class="mt-2"><strong>70%:</strong> ${formatCurrency(upfront)} — <strong>30%:</strong> ${formatCurrency(later)}</div>`;
+        } else if (paymentOption === 'Monthly Payment') {
+            const monthly = months ? (price / months) : price;
+            html += `<div class="mt-2"><strong>Monthly:</strong> ${formatCurrency(monthly)} per month for ${months} month(s). Total ${formatCurrency(price)}</div>`;
+        }
+
+        paymentInfo.innerHTML = html;
+        paymentInfo.style.display = 'block';
+    }
+
+    function updateLevelRelatedViews() {
+        updatePaymentInfo();
+        updateInstallmentOptions();
+        updateDueDateSection();
+    }
+
+    // Build level checkboxes HTML and pre-check trainee's selections
+    function renderLevels(levels) {
+        if (!levels || levels.length === 0) {
+            portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-danger">No levels available for this course.</div>';
+            return;
+        }
+        let html = '<label class="mb-2">Select Level(s)</label>';
+        html += '<div class="row" id="levels-checkbox-group">';
+        levels.forEach(level => {
+            const isChecked = selectedLevels.includes(String(level.id)) ? 'checked' : '';
+            html += `
+                <div class="col-12 col-md-6 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input level-checkbox" type="checkbox" name="portion_value" id="level_${level.id}" value="${level.id}" ${isChecked}>
+                        <label class="form-check-label" for="level_${level.id}">${level.name || level.level}</label>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        html += '<small class="form-text text-muted">Select one or more levels, but not all.</small>';
+        html += '<div id="level-warning" class="text-danger mt-2" style="display:none;">You cannot select all levels. Please select fewer levels or choose "Full Course".</div>';
+        portionValueContainer.innerHTML = html;
+
+        // attach listeners and prevent selecting all
+        const checkboxes = portionValueContainer.querySelectorAll('.level-checkbox');
+        const warning = portionValueContainer.querySelector('#level-warning');
+        checkboxes.forEach(cb => cb.addEventListener('change', function() {
+            const checked = Array.from(checkboxes).filter(c => c.checked);
+            if (checked.length === checkboxes.length) {
+                this.checked = false;
+                warning.style.display = 'block';
+            } else {
+                warning.style.display = 'none';
+            }
+            updateLevelRelatedViews();
+        }));
+        // initial update after rendering
+        updateLevelRelatedViews();
+    }
+
+    // Load levels via AJAX for a course and render (used on load & when course changes)
+    function loadAndRenderLevels(courseId) {
+        portionValueContainer.innerHTML = '<label>Select Level(s)</label><div id="level-loading">Loading...</div>';
+        fetch(`/ajax/get-levels/?course_id=${courseId}`)
+            .then(r => r.json())
+            .then(data => {
+                renderLevels(data.levels || []);
+            })
+            .catch(() => {
+                portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-danger">Error loading levels.</div>';
+            });
+    }
+
+    // Listen for changes
+    portionTypeSelect.addEventListener('change', function() {
+        portionValueSection.style.display = (this.value === 'Level') ? 'block' : 'none';
+        portionValueContainer.innerHTML = '';
+        if (this.value === 'Level') {
+            const c = courseSelect.value;
+            if (c) loadAndRenderLevels(c);
+            else portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-warning">Please select a course first.</div>';
+        } else {
+            portionValueContainer.innerHTML = '';
+            updateLevelRelatedViews();
         }
     });
+
+    courseSelect.addEventListener('change', function() {
+        if (portionTypeSelect.value === 'Level') {
+            loadAndRenderLevels(this.value);
+        }
+        updateLevelRelatedViews();
+    });
+
+    paymentSelect.addEventListener('change', updateLevelRelatedViews);
+    amountPaidInput.addEventListener('input', updateDueDateSection);
+
+    // Pre-select payment method if provided by server-side (input already has value attr in template)
+    const serverPayMethod = "{{ trainee.paymenthistory_id.payment_method|default_if_none:'' }}";
+    if (serverPayMethod) paymentMethodSelect.value = serverPayMethod;
+
+    // If page loaded with "Level" preselected, trigger rendering and pre-check boxes
+    if (portionTypeSelect.value === 'Level') {
+        const currentCourse = courseSelect.value;
+        if (currentCourse) loadAndRenderLevels(currentCourse);
+        portionValueSection.style.display = 'block';
+    } else {
+        portionValueSection.style.display = 'none';
+    }
+
+    // initial UI updates
+    updateInstallmentOptions();
+    updateDueDateSection();
+    updatePaymentInfo();
+});
 </script>
 {% endif %}
 {% endblock main_content %}

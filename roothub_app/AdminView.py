@@ -11,6 +11,7 @@ from .models import *
 # from .forms import SendAnnouncement
 # from django.views.generic import CreateView
 from django.db.models import Q
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count
 from roothub_app.backend.email_backend import send_add_trainee, send_add_trainer, send_assign_trainer, send_invite_link
@@ -209,9 +210,10 @@ def add_trainee_save(request):
             relation = request.POST.get("relation")
             installmental_payment = request.POST.get("installmental_payment")
             payment_method = request.POST.get("payment_method")
-            upfront_due_date = request.POST.get("upfront_due_date")
+            upfront_due_date = request.POST.get("due_date_30")
             portion_type = request.POST.get("portion_type")
-            portion_values= request.POST.getlist("portion_value")
+            portion_values = request.POST.getlist("portion_value")
+            print(portion_values)
 
 
             if CustomUser.objects.filter(email__iexact=email).exists():
@@ -239,19 +241,24 @@ def add_trainee_save(request):
                     user = CustomUser.objects.create_user(
                         first_name=first_name,
                         middle_name=middle_name,
-                        last_name=last_name,
+                       last_name=last_name,
                         email=email,
                         password=password,
                         username=username,
                         profile_pic=profile_pic,
                         user_type=3
                     )
+                    
                 except Exception as e:
                     print(e)
                     messages.error(request, "An error saving the Custom User occured")
                     return redirect("add_trainee")
+                
                 try:
+                    # Always lookup by unique key only (trainee_name). Use defaults OR update if already exists.
                     trainees = user.trainee
+
+                  # Prepare values to set/update
                     trainees.gender = gender
                     trainees.address = address
                     trainees.category = category
@@ -271,32 +278,52 @@ def add_trainee_save(request):
                     trainees.nok_phone = next_phone
                     trainees.nok_relationship = relation
                     trainees.portion_type = portion_type
+                    trainees.course_id = Courses.objects.get(id=course_choice)
+                    trainees.save()
 
-                    selected_course = Courses.objects.get(id=course_choice)
-                    trainees.course_id = selected_course
-                    
+                    # Handle portion_type == "Level" safely:
                     if portion_type == "Level":
-                        # Save selected levels as ManyToMany
-                        levels = Level.objects.filter(id__in=portion_values, course_id=selected_course)
-                        total_levels = Level.objects.filter(course_id=selected_course).count()
-                        if levels.count() == total_levels:
+                        # Normalize selected ids
+                        selected_ids = [int(x) for x in portion_values if x and str(x).isdigit()]
+                        if not selected_ids:
+                            messages.error(request, "No levels were selected.")
+                            return redirect("add_trainee")
+
+                        # Fetch levels that belong to the chosen course
+                        levels_qs = Level.objects.filter(id__in=selected_ids, course_id=trainees.course_id)                        
+                        if not levels_qs.exists():
+                            messages.error(request, "Selected levels are invalid for the chosen course.")                          
+                            return redirect("add_trainee")
+
+                        total_levels = Level.objects.filter(course_id=trainees.course_id).count()
+                        if total_levels and levels_qs.count() >= total_levels:
                             messages.error(request, "You cannot select all levels. Please select fewer levels or choose Full Course.")
                             return redirect("add_trainee")
-                        trainees.save()  # Save first to get PK for M2M
-                        trainees.levels.set(levels)
-                    else:
+                        # Ensure instance saved before setting M2M
                         trainees.save()
-                        trainees.levels.clear()
+                        # Safe M2M assignment — require a ManyToMany 'levels' field on Trainee model
+                        if hasattr(trainees, 'levels') and hasattr(trainees.levels, 'set'):
+                            trainees.levels.set(levels_qs)
+                            print(trainees.levels.all())
+                            trainees.save()
+                        else:
+                            messages.error(request, "Trainee model does not have a 'levels' ManyToManyField; update model/migrations.")
+                            return redirect("add_trainee")
+                    else:
+                        # Full course selected: clear any M2M if present
+                        if hasattr(trainees, 'levels') and hasattr(trainees.levels, 'clear'):
+                            trainees.levels.clear()
+                        trainees.save()
                 except Exception as ex:
                     print(ex)
                     messages.error(request, "An error saving the Trainee details occured")
                     return redirect("add_trainee")
                 try: 
                 
-                    course_price = float(selected_course.price or 0)
-                    course_months = int(selected_course.months or 1)
+                    course_price = float(Courses.objects.get(id=course_choice).price or 0)
+                    course_months = int(Courses.objects.get(id=course_choice).months or 1)
                     if portion_type == "Level" and portion_values:
-                        total_levels = Level.objects.filter(course_id=selected_course).count()
+                        total_levels = Level.objects.filter(course_id=Courses.objects.get(id=course_choice)).count()
                         selected_levels = len(portion_values)
                         per_level_price = course_price / total_levels if total_levels else 0
                         final_price = per_level_price * selected_levels
@@ -309,29 +336,31 @@ def add_trainee_save(request):
                     if payment == "Full Payment":
                         payment_histories.append(PaymentHistory(
                             trainee=trainees,
-                            course=selected_course,
+                            course=Courses.objects.get(id=course_choice),
                             amount_paid=int(amount_paid),
                             installmental_payment="1",
                             payment_date=date_of_payment,
                             upfront_due_date=None,
                             payment_method=payment_method,
+                            payment_option = payment,
                         ))
                     elif payment == "70% upfront and 30% later":
                         # First installment
 
                         payment_histories.append(PaymentHistory(
                             trainee=trainees,
-                            course=selected_course,
+                            course=Courses.objects.get(id=course_choice),
                             amount_paid=amount_paid,
                             installmental_payment="1",
                             payment_date=date_of_payment,
                             upfront_due_date=upfront_due_date,
                             payment_method=payment_method,
+                            payment_option = payment
                         ))
                         # Second installment (not paid yet, create as pending)
                         payment_histories.append(PaymentHistory(
                             trainee=trainees,
-                            course=selected_course,
+                            course=Courses.objects.get(id=course_choice),
                             amount_paid=0,
                             installmental_payment="2",
                             payment_date=None,
@@ -350,12 +379,13 @@ def add_trainee_save(request):
                             paid = amount_paid if i == paid_installment else 0
                             payment_histories.append(PaymentHistory(
                                 trainee=trainees,
-                                course=selected_course,
+                                course=Courses.objects.get(id=course_choice),
                                 amount_paid=paid,
                                 installmental_payment=str(i),
                                 payment_date=date_of_payment if i == paid_installment else None,
                                 upfront_due_date=None,
                                 payment_method=payment_method,
+                                payment_option = payment
                             ))
                     
                     for ph in payment_histories:
@@ -459,7 +489,7 @@ def add_course_save(request):
                         level_desc = request.POST.get(f'level_desc_{i}')
                         if not level_name:
                             break
-                        level = Level.objects.create(
+                        Level.objects.create(
                             level=level_name,
                             course_id=new_course,
                             descriptions=level_desc if level_desc else ""
@@ -742,6 +772,65 @@ def get_current_trainer(request, course_id):
     else:
         trainer_name = None
     return JsonResponse({'trainer': trainer_name})
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["GET"])
+@login_required(login_url="/")
+def get_trainee_details(request, trainee_id):
+    """
+    Return trainee's course, course levels, trainee.level(s) and current assignments.
+    JSON:
+    { course: {id,name}, levels: [{id,name,description}], trainee_level_ids: [..], is_full_course: bool, assigned_trainers: { levelId: trainerId, course: trainerId } }
+    """
+    try:
+        trainee = Trainee.objects.select_related('course_id', 'trainee_name').get(pk=trainee_id)
+    except Trainee.DoesNotExist:
+        return JsonResponse({'error': 'no trainee'}, status=404)
+
+    course = trainee.course_id
+    course_data = {'id': course.id, 'name': getattr(course, 'course_name', str(course))} if course else None
+
+    # get all levels for course — use actual model field names, then map to 'name'/'description' keys for the frontend
+    levels_qs = Level.objects.filter(course_id=course).values('id', 'level', 'descriptions')
+    levels = []
+    for l in levels_qs:
+        levels.append({
+            'id': l['id'],
+            'name': l.get('level') or '',
+            'description': l.get('descriptions') or ''
+        })
+
+    # trainee levels: handle both M2M 'levels' or single FK 'level'
+    trainee_level_ids = []
+    if hasattr(trainee, 'levels'):
+        trainee_level_ids = [str(l.id) for l in trainee.levels.all()]
+    elif hasattr(trainee, 'level') and getattr(trainee, 'level'):
+        trainee_level_ids = [str(getattr(trainee, 'level').id)]
+
+    # determine if trainee is full course (portion_type or lack of levels)
+    is_full_course = (getattr(trainee, 'portion_type', '') != 'Level') or (len(trainee_level_ids) == 0)
+
+    # fetch existing TraineeCourseAssignment entries for this trainee+course to pre-select trainers
+    assigned = {}
+    try:
+        tca_qs = TraineeCourseAssignment.objects.filter(trainee_id=trainee, course_id=course)
+        for a in tca_qs:
+            level_obj = getattr(a, 'level_id', None)
+            trainer_obj = getattr(a, 'trainer_id', None)
+            if level_obj:
+                assigned[str(getattr(level_obj, 'id', level_obj))] = str(getattr(trainer_obj, 'id', trainer_obj))
+            else:
+                assigned['course'] = str(getattr(trainer_obj, 'id', trainer_obj))
+    except Exception:
+        assigned = {}
+
+    return JsonResponse({
+        'course': course_data,
+        'levels': levels,
+        'trainee_level_ids': trainee_level_ids,
+        'is_full_course': is_full_course,
+        'assigned_trainers': assigned
+    })
 
 @login_required(login_url="/")
 def edit_trainer(request,trainer):
@@ -835,23 +924,24 @@ def edit_trainee(request, trainee):
     user = get_object_or_404(CustomUser, username=trainee)
     trainees = get_object_or_404(Trainee, trainee_name=user)
     courses = Courses.objects.all()
+    payment_history_qs = PaymentHistory.objects.filter(trainee=trainees)
 
-    try:
-        if request.method == "POST":
-            first_name = request.POST.get("first_name").capitalize()
-            middle_name = request.POST.get("middle_name").capitalize()
-            last_name = request.POST.get("last_name").capitalize()
+    if request.method == "POST":
+        try:
+            # --- gather form data ---
+            first_name = request.POST.get("first_name", "").capitalize()
+            middle_name = request.POST.get("middle_name", "").capitalize()
+            last_name = request.POST.get("last_name", "").capitalize()
             category = request.POST.get("category")
             gender = request.POST.get("gender")
             phone  = request.POST.get("phone")
             profile_pic = request.FILES.get('profile_pic')
-            username = request.POST.get("username").lower().strip()
-            email = request.POST.get("email").lower().replace(' ', '')
+            username = request.POST.get("username", "").lower().strip()
+            email = request.POST.get("email", "").lower().replace(' ', '')
             school_name  = request.POST.get("school_name")
             course_of_study  = request.POST.get("course_of_study")
             matric_number  = request.POST.get("matric_number")
             internship_duration  = request.POST.get("internship_duration")
-            # password = request.POST.get("password1")
             address = request.POST.get("address")
             city = request.POST.get("city")
             state = request.POST.get("state")
@@ -866,40 +956,42 @@ def edit_trainee(request, trainee):
             next_email = request.POST.get("next_email")
             next_phone = request.POST.get("next_phone")
             relation = request.POST.get("relation")
+            installmental_payment = request.POST.get("installmental_payment")
+            payment_method = request.POST.get("payment_method")
+            upfront_due_date = request.POST.get("upfront_due_date") or request.POST.get("due_date_30")
+            portion_type = request.POST.get("portion_type")
+            portion_values = request.POST.getlist("portion_value")  # list of ids as strings
 
-            if email != user.email:
-                if CustomUser.objects.filter(email__iexact=email).exists():
-                    messages.error(request, "Email already exists!")
-                    return redirect("edit_trainer",trainee)
-                else:
-                    user.email = email
+            # --- validations (same style as add_trainee_save) ---
+            if email and email != user.email and CustomUser.objects.filter(email__iexact=email).exists():
+                messages.error(request, "Email already exists!")
+                return redirect("edit_trainee", trainee)
 
-            elif gender == "Select Gender":
+            if gender == "Select Gender":
                 messages.error(request, "Select Student Gender!")
                 return redirect("edit_trainee", trainee)
 
-            elif len(phone) < 11 or len(phone) > 15:
+            if phone and (len(phone) < 11 or len(phone) > 15):
                 messages.error(request, "Input an appropriate phone number")
                 return redirect("edit_trainee", trainee)
 
-            if username != user.username:
-                if CustomUser.objects.filter(username__iexact=username).exists():
-                    messages.error(request, "Username already exists!")
-                    return redirect("edit_trainer",trainee)
-                else:
-                    user.username = username
+            if username and username != user.username and CustomUser.objects.filter(username__iexact=username).exists():
+                messages.error(request, "Username already exists!")
+                return redirect("edit_trainee", trainee)
 
+            # --- update user ---
             user.first_name = first_name
             user.middle_name = middle_name
             user.last_name = last_name
-            user.email = email
-            user.username = username
+            if email:
+                user.email = email
+            if username:
+                user.username = username
             if profile_pic:
                 user.profile_pic = profile_pic
-            else:
-                user.profile_pic=user.profile_pic
             user.save()
 
+            # --- update trainee fields ---
             trainees.gender = gender
             trainees.address = address
             trainees.category = category
@@ -912,27 +1004,221 @@ def edit_trainee(request, trainee):
             trainees.matric_number = matric_number
             trainees.duration_of_intership = internship_duration
             trainees.payment_option = payment
-            trainees.amount_paid = amount_paid
-            trainees.date_of_payment = date_of_payment
             trainees.commencement_date = commencement_date
             trainees.nok_first_name = next_first_name
             trainees.nok_last_name = next_last_name
             trainees.nok_email = next_email
             trainees.nok_phone = next_phone
             trainees.nok_relationship = relation
+            trainees.portion_type = portion_type
 
-            selected_course = Courses.objects.get(id=course_choice)
-            trainees.course_id = selected_course
+            # course assignment
+            if course_choice:
+                selected_course = Courses.objects.get(id=course_choice)
+                trainees.course_id = selected_course
             trainees.save()
 
-            messages.success(request, "Trainee details updated successfully")
-            return redirect("view_trainee")
-    except Exception as e:
-        print(e)
-        messages.error(request, "An Unexcepted error occured")
-        return redirect("edit_trainee", trainee)
+            # --- handle Level selection (M2M safe) ---
+            if portion_type == "Level":
+                # normalize incoming ids
+                selected_ids = [int(x) for x in portion_values if x and str(x).isdigit()]
+                if not selected_ids:
+                    messages.error(request, "No levels were selected.")
+                    return redirect("edit_trainee", trainee)
 
+                # fetch only levels that belong to the selected course
+                levels_qs = Level.objects.filter(id__in=selected_ids, course_id=trainees.course_id)
+                if not levels_qs.exists():
+                    messages.error(request, "Selected levels are invalid for the chosen course.")
+                    return redirect("edit_trainee", trainee)
 
+                total_levels = Level.objects.filter(course_id=trainees.course_id).count()
+                if total_levels and levels_qs.count() >= total_levels:
+                    messages.error(request, "You cannot select all levels. Please select fewer levels or choose Full Course.")
+                    return redirect("edit_trainee", trainee)
+
+                # ensure trainee persisted
+                trainees.save()
+                try:
+                    trainees.refresh_from_db()
+                except Exception:
+                    pass
+
+                # Replace M2M safely (this removes previous links and sets only the selected ones)
+                if hasattr(trainees, 'levels') and hasattr(trainees.levels, 'set'):
+                    from django.db import transaction
+                    with transaction.atomic():
+                        # clear existing links then set new ones (atomic)
+                        print("Check b4 clear", trainees.levels.all())
+                        trainees.levels.clear()
+                        print("Lemme check here for clear", trainees.levels.all())
+                        trainees.levels.set(levels_qs)
+                        print("For seting new one", trainees.levels.all())
+                        trainees.save()
+                        print("After setting ", trainees.levels.all())
+
+                        # delete any TraineeCourseAssignment entries for this trainee+course
+                        # that refer to levels NOT in the new selection (remove stale assignments)
+                        TraineeCourseAssignment.objects.filter(
+                            trainee_id=trainees,
+                            course_id=trainees.course_id
+                        ).exclude(level_id__in=levels_qs).delete()
+                        print("After setting 2", trainees.levels.all())
+                else:
+                    # fallback for older FK schema: set first matched level
+                    if hasattr(trainees, 'level'):
+                        trainees.levels = levels_qs.first()
+                        print("Are you here?")
+                        trainees.save()
+                        # remove per-level assignments for other levels for same course
+                        TraineeCourseAssignment.objects.filter(
+                            trainee_id=trainees,
+                            course_id=trainees.course_id
+                        ).exclude(level_id=trainees.levels).delete()
+                    else:
+                        messages.error(request, "Trainee model does not have a 'levels' ManyToManyField; update model/migrations.")
+                        return redirect("edit_trainee", trainee)
+            else:
+                # Full course selected: clear any M2M and remove per-level assignments for the course
+                if hasattr(trainees, 'levels') and hasattr(trainees.levels, 'clear'):
+                    trainees.levels.clear()
+                    print("Checking again for clearity", trainees.levels.all())
+                trainees.save()
+                # delete per-level assignments for this trainee + course
+                # TraineeCourseAssignment.objects.filter(trainee_id=trainees, course_id=trainees.course_id).delete()
+
+            # --- update PaymentHistory for this course: remove old entries for this course and recreate ---
+            try:
+                if selected_course:
+                    # ensure trainee persisted
+                    trainees.save()
+                    try:
+                        trainees.refresh_from_db()
+                    except Exception:
+                        pass
+
+                    # defensive check: trainee must exist in DB
+                    if not Trainee.objects.filter(pk=getattr(trainees, 'pk', None)).exists():
+                        messages.error(request, "Trainee record not found. Cannot update payment history.")
+                        return redirect("edit_trainee", trainee)
+
+                    # re-fetch a fresh DB-backed Trainee instance and use it for FK inserts
+                    trainee_db = Trainee.objects.get(pk=trainees.pk)
+
+                    # parse numeric safely
+                    try:
+                        amt_paid_val = float(amount_paid) if amount_paid not in (None, "") else 0.0
+                    except Exception:
+                        amt_paid_val = 0.0
+
+                    # compute final_price and months depending on selection
+                    course_price = float(selected_course.price or 0)
+                    course_months = int(selected_course.months or 1)
+                    if portion_type == "Level" and portion_values:
+                        total_levels = Level.objects.filter(course_id=selected_course).count()
+                        selected_levels = len([x for x in portion_values if x and str(x).isdigit()])
+                        per_level_price = course_price / total_levels if total_levels else 0
+                        final_price = per_level_price * selected_levels
+                        months = selected_levels or 1
+                    else:
+                        final_price = course_price
+                        months = course_months
+
+                    # Detect payment option change: check existing histories for this trainee+course
+                    existing_ph_qs = PaymentHistory.objects.filter(trainee=trainee_db, course=selected_course)
+                    previous_payment_option = existing_ph_qs.order_by("id").first()
+                    old_payment_type = previous_payment_option.payment_option if previous_payment_option else None
+
+                    # if payment option changed -> recreate; otherwise update first entry
+                    recreate = (old_payment_type != payment)
+
+                    from django.db import transaction
+                    if recreate:
+                        with transaction.atomic():
+                            # remove old entries first
+                            existing_ph_qs.delete()
+
+                            new_ph = []
+                            if payment == "Full Payment":
+                                new_ph.append(PaymentHistory(
+                                    trainee=trainee_db,
+                                    course=selected_course,
+                                    amount_paid=amt_paid_val,
+                                    installmental_payment="1",
+                                    payment_date=date_of_payment or None,
+                                    upfront_due_date=None,
+                                    payment_method=payment_method,
+                                    payment_option=payment,
+                                ))
+                            elif payment == "70% upfront and 30% later":
+                                upfront_amt = round(final_price * 0.7, 2)
+                                new_ph.append(PaymentHistory(
+                                    trainee=trainee_db,
+                                    course=selected_course,
+                                    amount_paid=amt_paid_val,
+                                    installmental_payment="1",
+                                    payment_date=date_of_payment or None,
+                                    upfront_due_date=upfront_due_date or None,
+                                    payment_method=payment_method,
+                                    payment_option=payment,
+                                ))
+                                new_ph.append(PaymentHistory(
+                                    trainee=trainee_db,
+                                    course=selected_course,
+                                    amount_paid=0.0,
+                                    installmental_payment="2",
+                                    payment_date=None,
+                                    upfront_due_date=upfront_due_date or None,
+                                    payment_method=payment_method,
+                                    payment_option=payment,
+                                ))
+                            elif payment == "Monthly Payment":
+                                if months <= 1:
+                                    messages.error(request, "Monthly payment is not available for this course/selection.")
+                                    return redirect("edit_trainee", trainee)
+                                paid_installment = int(installmental_payment or 1)
+                                for i in range(1, months + 1):
+                                    paid = amt_paid_val if i == paid_installment else 0
+                                    new_ph.append(PaymentHistory(
+                                        trainee=trainee_db,
+                                        course=selected_course,
+                                        amount_paid=paid,
+                                        installmental_payment=str(i),
+                                        payment_date=(date_of_payment if i == paid_installment else None),
+                                        upfront_due_date=None,
+                                        payment_method=payment_method,
+                                        payment_option=payment,
+                                    ))
+
+                            # Save new payment history entries using the DB-backed trainee instance
+                            for ph in new_ph:
+                                ph.save()
+
+                            if new_ph:
+                                trainee_db.paymenthistory_id = new_ph[0]
+                                trainees.levels.set(levels_qs)
+                                trainee_db.save()
+                    else:
+                        # same payment option: update the primary history row (non-destructive)
+                        primary_ph = existing_ph_qs.order_by('id').first()
+                        if primary_ph:
+                            primary_ph.amount_paid = amt_paid_val
+                            primary_ph.payment_method = payment_method or primary_ph.payment_method
+                            primary_ph.payment_date = date_of_payment or primary_ph.payment_date
+                            primary_ph.upfront_due_date = upfront_due_date or primary_ph.upfront_due_date
+                            primary_ph.save()
+                            trainee_db.paymenthistory_id = primary_ph
+                            trainee_db.save()
+            except Exception as ph_ex:
+                print("PaymentHistory error:", ph_ex)
+                messages.error(request, "Payment history update failed.")
+                return redirect("edit_trainee", trainee)
+        except Exception as excepts:
+            print(excepts)
+            messages.error(request, "An Unexpected error occurred")
+            return redirect("edit_trainee", trainee)
+            
+    # GET: render form with existing data
     content = {
         "trainee": trainees,
         "courses": courses,

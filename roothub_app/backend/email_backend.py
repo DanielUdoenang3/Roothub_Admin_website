@@ -219,7 +219,7 @@ def send_invite_link(email, schoolname, token):
     """
     subject = f"Admin Invitation from {schoolname}"
     link = f"{settings.INVITE_ADMIN_LINK}/set_password/{token}/"
-    body = generate_invite_link(email=email, schoolname=email, ALLOWED_HOST_ONLINE=link)
+    body = generate_invite_link(email=email, schoolname=schoolname, ALLOWED_HOST_ONLINE=link)
     return send_email(to_email=email, subject=subject, body=body)
 
 def send_payment_reminder_to_trainees(email, schoolname, trainee_name):

@@ -153,28 +153,28 @@
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>City</label>
-                                    <input type="text" class="form-control" name="city" placeholder="Enter City">
+                                    <input type="text" class="form-control" name="city" placeholder="Enter City" required>
                                 </div>
                             </div>
                             
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>State</label>
-                                    <input type="text" class="form-control" name="state" placeholder="Enter State">
+                                    <input type="text" class="form-control" name="state" placeholder="Enter State" required>
                                 </div>
                             </div>
                             
                             <div class="col-12 col-sm-4">
                                 <div class="form-group local-forms">
                                     <label>Country</label>
-                                    <input type="text" class="form-control" name="country" placeholder="Enter Country">
+                                    <input type="text" class="form-control" name="country" placeholder="Enter Country" required>
                                 </div>
                             </div>
 
                             <div class="col-12 col-sm-6">
                                 <div class="form-group local-forms">
                                     <label>Address</label>
-                                    <textarea class="form-control" name="address" placeholder="Enter Full Address" rows="3"></textarea>
+                                    <textarea class="form-control" name="address" placeholder="Enter Full Address" rows="3" required></textarea>
                                 </div>
                             </div>
                             
@@ -225,14 +225,14 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group local-forms">
                                     <label>Amount Paid</label>
-                                    <input type="number" name="amount_paid" class="form-control" placeholder="Amount Paid">
+                                    <input type="number" name="amount_paid" class="form-control" placeholder="Amount Paid" required>
                                 </div>
                             </div>
 
                             <div class="col-12 col-sm-6">
                                 <div class="form-group local-forms">
                                     <label>Date of Payment</label>
-                                    <input type="date" name="date_of_payment" class="form-control" placeholder="Select Date of Payment">
+                                    <input type="date" name="date_of_payment" class="form-control" placeholder="Select Date of Payment" required>
                                 </div>
                             </div>
 
@@ -243,7 +243,7 @@
                                         <option value="" disabled selected>Select Payment Method</option>
                                         <option value="Cash">Cash</option>
                                         <option value="Bank Transfer">Bank Transfer</option>
-                                        <option value="Monthly Payment">Card</option>
+                                        <option value="Card">Card</option>
                                     </select>
                                 </div>
                             </div>
@@ -262,7 +262,7 @@
                                 <div class="form-group local-forms">
                                     <label>Due Date for Remaining 30%</label>
                                     <input type="date" name="due_date_30" class="form-control" placeholder="Select Due Date">
-                                    <small id="remaining-amount-info" class="form-text text-muted"></small>
+                                    <span class="fw-bold text-danger"><small id="remaining-amount-info" name="upfront_due_date" class="form-text text-muted"></small></span>
                                 </div>
                             </div>
 
@@ -345,17 +345,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const portionValueSection = document.getElementById('portion-value-section');
     const portionValueContainer = document.getElementById('portion-value-container');
 
-    // Create a display area for payment info, styled professionally
+    // Payment info panel
     let paymentInfo = document.createElement('div');
     paymentInfo.id = 'payment-info';
     paymentInfo.className = 'alert alert-info mt-3';
     paymentInfo.style.display = 'none';
-
-    // Insert paymentInfo directly below the Payment Option select field
     const paymentFormGroup = paymentSelect.closest('.form-group');
-    paymentFormGroup.appendChild(paymentInfo);
+    if (paymentFormGroup) paymentFormGroup.appendChild(paymentInfo);
 
-    // Store course data for quick lookup
+    // course data (from Django context)
     let courseData = {};
     {% for course in courses %}
         courseData["{{ course.id }}"] = {
@@ -365,141 +363,168 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endfor %}
 
     function formatCurrency(amount) {
-        return '₦' + Number(amount).toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Get the correct price and months based on selection
+    function getLevelCheckboxes() {
+        return Array.from(portionValueContainer.querySelectorAll('.level-checkbox'));
+    }
+
+    function getSelectedLevelsCount() {
+        const boxes = getLevelCheckboxes();
+        return boxes.filter(b => b.checked).length;
+    }
+
+    function getTotalLevelsCount() {
+        return getLevelCheckboxes().length;
+    }
+
+    // Compute effective price and months depending on Full vs Level selection
     function getSelectedPriceAndMonths() {
         const courseId = courseSelect.value;
         const course = courseData[courseId];
         if (!course) return { price: 0, months: 1 };
 
         if (portionTypeSelect.value === 'Level') {
-            const totalLevels = portionValueContainer.querySelectorAll('.level-checkbox').length;
-            const selectedLevels = portionValueContainer.querySelectorAll('.level-checkbox:checked').length;
+            const totalLevels = getTotalLevelsCount();
+            const selectedLevels = getSelectedLevelsCount();
             if (totalLevels > 0 && selectedLevels > 0) {
                 const perLevelPrice = course.price / totalLevels;
                 return {
                     price: perLevelPrice * selectedLevels,
-                    months: selectedLevels // Each level is assumed to be 1 month
+                    months: selectedLevels
                 };
             }
+            // nothing selected -> price 0
+            return { price: 0, months: 1 };
         }
-        // Full course fallback
-        return { price: course.price, months: course.months };
+
+        return { price: course.price, months: course.months || 1 };
     }
 
-    // Payment Option: Monthly Installments
-        function updateInstallmentOptions() {
+    // Populate installment options for monthly payment
+    function updateInstallmentOptions() {
         const paymentOption = paymentSelect.value;
         const { months } = getSelectedPriceAndMonths();
         installmentSelect.innerHTML = '<option value="" disabled selected>Select Installment</option>';
         installmentSection.style.display = 'none';
 
-        // Disable Monthly Payment if only one month/level is selected
         if (paymentOption === 'Monthly Payment') {
-            if (months <= 1) {
+            if (!months || months <= 1) {
                 installmentSection.style.display = 'none';
-                paymentSelect.querySelector('option[value="Monthly Payment"]').disabled = true;
+                // disable Monthly Payment option visually
+                const monthlyOpt = paymentSelect.querySelector('option[value="Monthly Payment"]');
+                if (monthlyOpt) monthlyOpt.disabled = true;
             } else {
-                paymentSelect.querySelector('option[value="Monthly Payment"]').disabled = false;
+                const monthlyOpt = paymentSelect.querySelector('option[value="Monthly Payment"]');
+                if (monthlyOpt) monthlyOpt.disabled = false;
                 for (let i = 1; i <= months; i++) {
                     let suffix = 'th';
                     if (i === 1) suffix = 'st';
                     else if (i === 2) suffix = 'nd';
                     else if (i === 3) suffix = 'rd';
-                    installmentSelect.innerHTML += `<option value="${i}">${i}${suffix} Installment</option>`;
+                    installmentSelect.insertAdjacentHTML('beforeend', `<option value="${i}">${i}${suffix} Installment</option>`);
                 }
                 installmentSection.style.display = 'block';
+
+                // Try preserve previously selected installment if present
+                const prev = installmentSelect.getAttribute('data-selected');
+                if (prev) installmentSelect.value = prev;
             }
         } else {
-            paymentSelect.querySelector('option[value="Monthly Payment"]').disabled = false;
+            const monthlyOpt = paymentSelect.querySelector('option[value="Monthly Payment"]');
+            if (monthlyOpt) monthlyOpt.disabled = false;
         }
     }
 
-    // Payment Option: 70/30 Due Date
+    // Show due-date + remaining amount for 70/30 option
     function updateDueDateSection() {
         const paymentOption = paymentSelect.value;
         const { price } = getSelectedPriceAndMonths();
         dueDateSection.style.display = 'none';
-        remainingAmountInfo.textContent = '';
+        remainingAmountInfo.innerHTML = '';
 
-        if (paymentOption === '70% upfront and 30% later' && price > 0) {
-            const paid = parseFloat(amountPaidInput.value);
-            const later = Math.round((price - (isNaN(paid) ? 0 : paid)) * 100) / 100;
-            dueDateSection.style.display = 'block';
-            remainingAmountInfo.textContent = `Remaining amount to be paid: <span class="fw-bold text-danger">${formatCurrency(later)}</span>`;
-            if (price === paid) {
-                dueDateSection.style.display = 'none';
-            }
-        }
-    }
-
-    // Payment Info for Full Course or Level(s)
-    function updatePaymentInfo() {
-        const paymentOption = paymentSelect.value;
-        const { price, months } = getSelectedPriceAndMonths();
-        paymentInfo.innerHTML = '';
-        paymentInfo.style.display = 'none';
-
-        if (price <= 0 || !paymentOption) {
+        if (paymentOption !== '70% upfront and 30% later' || price <= 0) {
             return;
         }
 
-        if (portionTypeSelect.value === 'Level') {
-            // Level selection payment info
-            const selectedLevels = portionValueContainer.querySelectorAll('.level-checkbox:checked').length;
-            const totalLevels = portionValueContainer.querySelectorAll('.level-checkbox').length;
-            const perLevelPrice = totalLevels > 0 ? price / selectedLevels : 0;
-            paymentInfo.innerHTML = `
-                <div class="mb-2">
-                    <span class="badge bg-primary">Level Selection</span>
-                </div>
-                <strong>Selected Levels:</strong> ${selectedLevels} <br>
-                <strong>Price per Level:</strong> ${formatCurrency(perLevelPrice)} <br>
-                <strong>Total Price:</strong> <span class="fw-bold text-success">${formatCurrency(price)}</span>
-            `;
+        const paid = parseFloat(amountPaidInput.value) || 0;
+        const upfront = Math.round(price * 0.7 * 100) / 100;
+        const later = Math.round((price - upfront) * 100) / 100;
+        let text = '';
+
+        if (paid < upfront) {
+            const remaining_upfront = Math.round((upfront - paid) * 100) / 100;
+            text += `<div><strong>Total for selection:</strong> ${formatCurrency(price)}</div>`;
+            text += `<div><strong>Required upfront (70%):</strong> ${formatCurrency(upfront)} — you still owe <span class="fw-bold text-danger">${formatCurrency(remaining_upfront)}</span> upfront.</div>`;
+            text += `<div><strong>Remaining 30% due later:</strong> ${formatCurrency(later)}</div>`;
         } else {
-            // Full course payment info
-            if (paymentOption === 'Full Payment') {
-                paymentInfo.innerHTML = `
-                    <i class="fas fa-money-bill-wave"></i>
-                    <strong>Full Payment:</strong> The total amount to be paid is <span class="fw-bold text-success">${formatCurrency(price)}</span>.
-                `;
-            } else if (paymentOption === '70% upfront and 30% later') {
-                const upfront = price * 0.7;
-                const later = price * 0.3;
-                paymentInfo.innerHTML = `
-                    <i class="fas fa-coins"></i>
-                    <strong>70% Upfront, 30% Later:</strong><br>
-                    Pay <span class="fw-bold text-success">${formatCurrency(upfront)}</span> now (70%)<br>
-                    and <span class="fw-bold text-warning">${formatCurrency(later)}</span> later (30%).
-                `;
-            } else if (paymentOption === 'Monthly Payment') {
-                if (months <= 0) {
-                    paymentInfo.innerHTML = '<span class="text-warning">Course duration not specified for monthly payment.</span>';
-                } else {
-                    const monthly = price / months;
-                    paymentInfo.innerHTML = `
-                        <i class="fas fa-calendar-alt"></i>
-                        <strong>Monthly Payment:</strong><br>
-                        Pay <span class="fw-bold text-success">${formatCurrency(monthly)}</span> per month for <strong>${months}</strong> month(s).<br>
-                        <span>Total: ${formatCurrency(price)}</span>
-                    `;
-                }
-            }
+            // upfront paid (or overpaid). compute remaining overall
+            const remaining_total = Math.max(0, Math.round((price - paid) * 100) / 100);
+            text += `<div><strong>Upfront (70%) paid.</strong></div>`;
+            text += `<div><strong>Remaining amount to be paid later:</strong> ${formatCurrency(remaining_total)}</div>`;
         }
-        paymentInfo.style.display = 'block';
+
+        remainingAmountInfo.innerHTML = text;
+        dueDateSection.style.display = 'block';
     }
 
-    // Level Price Calculation (for Level selection)
+    // Build and show payment info panel (Full / Level + breakdowns)
+    function updatePaymentInfo() {
+        const paymentOption = paymentSelect.value;
+        const { price, months } = getSelectedPriceAndMonths();
+
+        paymentInfo.innerHTML = '';
+        paymentInfo.style.display = 'none';
+
+        if (price <= 0 || !paymentOption) return;
+
+        if (portionTypeSelect.value === 'Level') {
+            const selectedLevels = getSelectedLevelsCount();
+            const totalLevels = getTotalLevelsCount();
+            const perLevelPrice = selectedLevels ? (price / selectedLevels) : 0;
+
+            let html = '<div class="mb-2"><span class="badge bg-primary">Level Selection</span></div>';
+            html += `<div><strong>Selected Levels:</strong> ${selectedLevels} of ${totalLevels}</div>`;
+            html += `<div><strong>Price per selected level:</strong> ${formatCurrency(perLevelPrice)}</div>`;
+            html += `<div><strong>Total for selected levels:</strong> <span class="fw-bold text-success">${formatCurrency(price)}</span></div>`;
+
+            if (paymentOption === 'Full Payment') {
+                html += `<div class="mt-2"><strong>Full Payment:</strong> Pay ${formatCurrency(price)} now.</div>`;
+            } else if (paymentOption === '70% upfront and 30% later') {
+                const upfront = Math.round(price * 0.7 * 100) / 100;
+                const later = Math.round((price - upfront) * 100) / 100;
+                html += `<div class="mt-2"><strong>70% Upfront:</strong> ${formatCurrency(upfront)} — <strong>30% Later:</strong> ${formatCurrency(later)}</div>`;
+            } else if (paymentOption === 'Monthly Payment') {
+                const monthly = months ? (price / months) : price;
+                html += `<div class="mt-2"><strong>Monthly Payment:</strong> ${formatCurrency(monthly)} per month for <strong>${months}</strong> month(s). Total ${formatCurrency(price)}</div>`;
+            }
+
+            paymentInfo.innerHTML = html;
+            paymentInfo.style.display = 'block';
+        } else {
+            // Full-course logic (unchanged)
+            if (paymentOption === 'Full Payment') {
+                paymentInfo.innerHTML = `<i class="fas fa-money-bill-wave"></i> <strong>Full Payment:</strong> The total amount to be paid is <span class="fw-bold text-success">${formatCurrency(price)}</span>.`;
+            } else if (paymentOption === '70% upfront and 30% later') {
+                const upfront = Math.round(price * 0.7 * 100) / 100;
+                const later = Math.round((price - upfront) * 100) / 100;
+                paymentInfo.innerHTML = `<i class="fas fa-coins"></i> <strong>70% Upfront:</strong> ${formatCurrency(upfront)} — <strong>30% Later:</strong> ${formatCurrency(later)}.`;
+            } else if (paymentOption === 'Monthly Payment') {
+                const monthly = months ? (price / months) : price;
+                paymentInfo.innerHTML = `<i class="fas fa-calendar-alt"></i> <strong>Monthly:</strong> ${formatCurrency(monthly)} per month for <strong>${months}</strong> month(s). Total ${formatCurrency(price)}.`;
+            }
+            paymentInfo.style.display = 'block';
+        }
+    }
+
     function updateLevelPrice() {
         updatePaymentInfo();
         updateInstallmentOptions();
         updateDueDateSection();
     }
 
-    // Show/hide levels and fetch via AJAX
+    // load levels via AJAX and pre-check if editing (this template supports add/edit reuse)
     portionTypeSelect.addEventListener('change', function() {
         const val = this.value;
         portionValueSection.style.display = (val === 'Level') ? 'block' : 'none';
@@ -508,70 +533,58 @@ document.addEventListener('DOMContentLoaded', function() {
         if (val === 'Level') {
             portionValueContainer.innerHTML = '<label>Select Level(s)</label><div id="level-loading">Loading...</div>';
             const courseId = courseSelect.value;
-            if (courseId) {
-                fetch(`/ajax/get-levels/?course_id=${courseId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.levels.length > 0) {
-                            let html = '<label class="mb-2">Select Level(s)</label>';
-                            html += '<div class="row" id="levels-checkbox-group">';
-                            data.levels.forEach(level => {
-                                html += `
-                                    <div class="col-12 col-md-6 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input level-checkbox" type="checkbox" name="portion_value" id="level_${level.id}" value="${level.id}">
-                                            <label class="form-check-label" for="level_${level.id}">
-                                                ${level.name || level.level}
-                                            </label>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            html += '</div>';
-                            html += '<small class="form-text text-muted">Select one or more levels, but not all.</small>';
-                            html += '<div id="level-warning" class="text-danger mt-2" style="display:none;">You cannot select all levels. Please select fewer levels or choose "Full Course".</div>';
-                            portionValueContainer.innerHTML = html;
-
-                            // Prevent selecting all levels
-                            setTimeout(function() {
-                                const checkboxes = portionValueContainer.querySelectorAll('.level-checkbox');
-                                const warning = portionValueContainer.querySelector('#level-warning');
-                                checkboxes.forEach(cb => {
-                                    cb.addEventListener('change', function() {
-                                        const checked = Array.from(checkboxes).filter(c => c.checked);
-                                        if (checked.length === checkboxes.length) {
-                                            this.checked = false;
-                                            warning.style.display = 'block';
-                                        } else {
-                                            warning.style.display = 'none';
-                                        }
-                                        updateLevelPrice();
-                                    });
-                                });
-                                updateLevelPrice();
-                            }, 100);
-                        } else {
-                            portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-danger">No levels available for this course.</div>';
-                        }
-                    })
-                    .catch(() => {
-                        portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-danger">Error loading levels.</div>';
-                    });
-            } else {
+            if (!courseId) {
                 portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-warning">Please select a course first.</div>';
+                return;
             }
-        } else {
-            paymentInfo.style.display = 'none';
-            updatePaymentInfo(); // Show payment info for full course
-            updateInstallmentOptions();
-            updateDueDateSection();
-        }
-    });
 
-    // Reload levels if course changes and "Level" is selected
-    courseSelect.addEventListener('change', function() {
-        if (portionTypeSelect.value === 'Level') {
-            portionTypeSelect.dispatchEvent(new Event('change'));
+            fetch(`/ajax/get-levels/?course_id=${courseId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.levels || data.levels.length === 0) {
+                        portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-danger">No levels available for this course.</div>';
+                        return;
+                    }
+
+                    let html = '<label class="mb-2">Select Level(s)</label>';
+                    html += '<div class="row" id="levels-checkbox-group">';
+                    data.levels.forEach(level => {
+                        html += `
+                            <div class="col-12 col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input level-checkbox" type="checkbox" name="portion_value" id="level_${level.id}" value="${level.id}">
+                                    <label class="form-check-label" for="level_${level.id}">${level.name || level.level}</label>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    html += '<small class="form-text text-muted">Select one or more levels, but not all.</small>';
+                    html += '<div id="level-warning" class="text-danger mt-2" style="display:none;">You cannot select all levels. Please select fewer levels or choose "Full Course".</div>';
+                    portionValueContainer.innerHTML = html;
+
+                    // attach listeners
+                    const checkboxes = portionValueContainer.querySelectorAll('.level-checkbox');
+                    const warning = portionValueContainer.querySelector('#level-warning');
+                    checkboxes.forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const checked = Array.from(checkboxes).filter(c => c.checked);
+                            if (checked.length === checkboxes.length) {
+                                this.checked = false;
+                                warning.style.display = 'block';
+                            } else {
+                                warning.style.display = 'none';
+                            }
+                            updateLevelPrice();
+                        });
+                    });
+
+                    // initial update
+                    updateLevelPrice();
+                })
+                .catch(() => {
+                    portionValueContainer.innerHTML = '<label>Select Level(s)</label><div class="text-danger">Error loading levels.</div>';
+                });
         } else {
             updatePaymentInfo();
             updateInstallmentOptions();
@@ -579,51 +592,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Show payment info for full course when payment option changes
+    // event wiring
+    courseSelect.addEventListener('change', function() {
+        if (portionTypeSelect.value === 'Level') portionTypeSelect.dispatchEvent(new Event('change'));
+        updatePaymentInfo();
+        updateInstallmentOptions();
+        updateDueDateSection();
+    });
+
     paymentSelect.addEventListener('change', function() {
         updatePaymentInfo();
         updateInstallmentOptions();
         updateDueDateSection();
     });
 
-    courseSelect.addEventListener('change', function() {
-        updatePaymentInfo();
-        updateInstallmentOptions();
-        updateDueDateSection();
-    });
-
-    portionTypeSelect.addEventListener('change', function() {
-        updatePaymentInfo();
-        updateInstallmentOptions();
-        updateDueDateSection();
-    });
-
-    // Payment logic
     amountPaidInput.addEventListener('input', function() {
         updateDueDateSection();
+        updatePaymentInfo();
     });
 
-    // Attach to level checkboxes after they are loaded
-    function attachLevelCheckboxListeners() {
-        setTimeout(function() {
-            const checkboxes = document.querySelectorAll('.level-checkbox');
-            checkboxes.forEach(cb => {
-                cb.addEventListener('change', function() {
-                    updateLevelPrice();
-                    updateInstallmentOptions(); // <-- Add this line
-                    updateDueDateSection();
-                });
-            });
-            updateLevelPrice();
-            updateInstallmentOptions(); // <-- Add this line
-            updateDueDateSection();
-        }, 500);
-    }
-
-    portionTypeSelect.addEventListener('change', attachLevelCheckboxListeners);
-    courseSelect.addEventListener('change', attachLevelCheckboxListeners);
-
-    // SIWES Intern section show/hide logic
+    // SIWES toggles
     traineeCategorySelect.addEventListener('change', function() {
         const show = traineeCategorySelect.value === 'SIWES';
         siwesSectionHead.style.display = show ? 'block' : 'none';
@@ -632,7 +620,6 @@ document.addEventListener('DOMContentLoaded', function() {
         siwesSection3.style.display = show ? 'block' : 'none';
         siwesSection4.style.display = show ? 'block' : 'none';
     });
-    // On page load, check if SIWES is selected
     const showSiwes = traineeCategorySelect.value === 'SIWES';
     siwesSectionHead.style.display = showSiwes ? 'block' : 'none';
     siwesSection.style.display = showSiwes ? 'block' : 'none';
@@ -640,7 +627,21 @@ document.addEventListener('DOMContentLoaded', function() {
     siwesSection3.style.display = showSiwes ? 'block' : 'none';
     siwesSection4.style.display = showSiwes ? 'block' : 'none';
 
-    // Initialize payment and installment sections
+    // helper: attach listeners to dynamically added level checkboxes when they exist
+    function attachLevelListenersAfterLoad() {
+        setTimeout(() => {
+            const boxes = document.querySelectorAll('.level-checkbox');
+            if (boxes.length) {
+                boxes.forEach(b => b.addEventListener('change', () => {
+                    updateLevelPrice();
+                }));
+            }
+        }, 200);
+    }
+    portionTypeSelect.addEventListener('change', attachLevelListenersAfterLoad);
+    courseSelect.addEventListener('change', attachLevelListenersAfterLoad);
+
+    // initial state
     updateInstallmentOptions();
     updateDueDateSection();
     updatePaymentInfo();

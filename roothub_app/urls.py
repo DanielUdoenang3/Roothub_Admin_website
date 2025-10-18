@@ -45,6 +45,7 @@ urlpatterns = [
     path('get_course_levels/<int:course_id>/', AdminView.get_course_levels, name='get_course_levels'),
     path('get_trainers_for_levels/<int:course_id>/', AdminView.get_trainers_for_levels, name='get_trainers_for_levels'),
     path('get_trainer_assignments/<int:trainer_id>/', AdminView.get_trainer_assignments, name='get_trainer_assignments'),
+    path('api/trainee/<int:trainee_id>/details/', AdminView.get_trainee_details, name='api_trainee_details'),
 
 
     # Edit Trainer
