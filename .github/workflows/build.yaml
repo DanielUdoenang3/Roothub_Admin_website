@@ -6,16 +6,11 @@ on:
   pull_request:
     branches: [ "master" ]
   schedule:
-    - cron: '*/8 * * * *'
+    - cron: '*/8 * * * *'   # every 8 minutes (UTC)
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false                # don't cancel other matrix jobs if one fails
-      max-parallel: 4
-      matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11]  # remove EOL/experimental versions
 
     steps:
       - name: Checkout repository
@@ -26,12 +21,12 @@ jobs:
           uname -a
           lsb_release -a || true
           echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
-          echo "Matrix python: ${{ matrix.python-version }}"
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
+          check-latest: true
 
       - name: Show python
         run: |
@@ -49,7 +44,7 @@ jobs:
           python manage.py test
 
       - name: Deploy to Render (after tests pass)
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && secrets.RENDER_SERVICE_ID != '' && secrets.RENDER_API_KEY != ''
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -61,7 +56,8 @@ jobs:
           echo "✅ Render deployment triggered successfully!"
 
   wake_render:
-    if: github.event_name == 'schedule'
+    # only run on scheduled events and only if a ping URL secret is configured
+    if: github.event_name == 'schedule' && secrets.RENDER_PING_URL != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -69,17 +65,20 @@ jobs:
         env:
           RENDER_PING_URL: ${{ secrets.RENDER_PING_URL }}
         run: |
-          set -e
-          if [ -z "${RENDER_PING_URL}" ]; then
-            echo "ERROR: RENDER_PING_URL secret is not set"; exit 1
-          fi
+          set -euo pipefail
           echo "Pinging Render service to keep it awake..."
-          for i in 1 2 3; do
+          # try up to 5 times with backoff
+          attempt=0
+          max=5
+          while [ $attempt -lt $max ]; do
+            attempt=$((attempt + 1))
             if curl --fail --silent --show-error --max-time 10 "${RENDER_PING_URL}"; then
-              echo "Ping successful (attempt $i)"; exit 0
+              echo "Ping successful (attempt $attempt)"
+              exit 0
             else
-              echo "Ping attempt $i failed; retrying..."
-              sleep 2
+              echo "Ping attempt $attempt failed"
+              sleep $((attempt * 2))
             fi
           done
-          echo "All ping attempts failed"; exit 1
+          echo "All ping attempts failed"
+          exit 1
