@@ -72,32 +72,11 @@ jobs:
   #         echo "✅ Render deployment triggered successfully!"
 
   wake_render:
-    # run only for scheduled events; check secret at runtime
-    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - name: Wake Render (ping service URL stored in secret)
         env:
           RENDER_PING_URL: ${{ secrets.RENDER_PING_URL }}
         run: |
-          set -euo pipefail
-          if [ -z "${RENDER_PING_URL:-}" ]; then
-            echo "RENDER_PING_URL secret is not set; skipping wake job."
-            exit 0
-          fi
-          echo "Pinging Render service to keep it awake (hidden URL)."
-          attempt=1
-          max_attempts=5
-          while [ $attempt -le $max_attempts ]; do
-            if curl --fail --silent --show-error --max-time 10 "${RENDER_PING_URL}"; then
-              echo "Ping successful (attempt $attempt)"
-              exit 0
-            else
-              echo "Ping attempt $attempt failed; retrying..."
-              sleep $((attempt * 2))
-              attempt=$((attempt + 1))
-            fi
-          done
-          echo "All ping attempts failed; failing job."
-          exit 1
+          curl -f "$RENDER_PING_URL"
+          echo "Ping to Render successful."
