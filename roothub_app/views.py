@@ -608,11 +608,12 @@ def forgot_password(request):
             if not checked:
                 messages.error(request, "This email is not registered with us")
                 return render(request, "forgot-password.html")
-            token = create_access_token(data={"email": email})
-            sent = send_forgot_password_email(token=token, email=email)
-            if not sent:
-                messages.error(request, "Email not sent check your internet connection")
-            messages.success(request, f"An email has been sent successfully to {email}")
+            if checked:
+                token = create_access_token(data={"email": email})
+                sent = send_forgot_password_email(token=token, email=email)
+                if not sent:
+                    messages.error(request, "Email not sent check your internet connection")
+                messages.success(request, f"An email has been sent successfully to {email}")
         
 
     return render(request, "forgot-password.html")
