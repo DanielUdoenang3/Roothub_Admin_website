@@ -7,6 +7,7 @@ on:
     branches: [ "master" ]
   schedule:
     - cron: '*/8 * * * *'   # every 8 minutes (UTC)
+  workflow_dispatch:
 
 jobs:
   # build_and_deploy:
@@ -78,5 +79,5 @@ jobs:
         env:
           RENDER_PING_URL: ${{ secrets.RENDER_PING_URL }}
         run: |
-          curl -f "$RENDER_PING_URL"
+          curl -f "$RENDER_PING_URL" || exit 1
           echo "Ping to Render successful."
