@@ -6,46 +6,59 @@ on:
   pull_request:
     branches: [ "master" ]
   schedule:
-    # every 8 minutes
     - cron: '*/8 * * * *'
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false                # don't cancel other matrix jobs if one fails
       max-parallel: 4
       matrix:
-        python-version: [3.11, 3.12, 3.13, 3.14]
+        python-version: [3.8, 3.9, 3.10, 3.11]  # remove EOL/experimental versions
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Debug — runner info
+        run: |
+          uname -a
+          lsb_release -a || true
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
+          echo "Matrix python: ${{ matrix.python-version }}"
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Run Django Tests
-      run: |
-        python manage.py test
+      - name: Show python
+        run: |
+          which python
+          python --version
+          python -m pip --version
 
-    - name: Deploy to Render (after tests pass)
-      if: github.ref == 'refs/heads/master'
-      env:
-        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-      run: |
-        echo "Triggering Render deployment..."
-        curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
-          -H "Accept: application/json" \
-          -H "Authorization: Bearer $RENDER_API_KEY"
-        echo "✅ Render deployment triggered successfully!"
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Django Tests
+        run: |
+          python manage.py test
+
+      - name: Deploy to Render (after tests pass)
+        if: github.ref == 'refs/heads/master'
+        env:
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          echo "Triggering Render deployment..."
+          curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer $RENDER_API_KEY"
+          echo "✅ Render deployment triggered successfully!"
 
   wake_render:
     if: github.event_name == 'schedule'
@@ -61,7 +74,6 @@ jobs:
             echo "ERROR: RENDER_PING_URL secret is not set"; exit 1
           fi
           echo "Pinging Render service to keep it awake..."
-          # try up to 3 times, short timeout, fail if all attempts fail
           for i in 1 2 3; do
             if curl --fail --silent --show-error --max-time 10 "${RENDER_PING_URL}"; then
               echo "Ping successful (attempt $i)"; exit 0
