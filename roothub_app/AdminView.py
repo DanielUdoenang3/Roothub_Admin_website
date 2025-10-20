@@ -1047,23 +1047,23 @@ def edit_trainee(request, trainee):
                 # Replace M2M safely (this removes previous links and sets only the selected ones)
                 if hasattr(trainees, 'levels') and hasattr(trainees.levels, 'set'):
                     from django.db import transaction
-                    with transaction.atomic():
-                        # clear existing links then set new ones (atomic)
-                        print("Check b4 clear", trainees.levels.all())
-                        trainees.levels.clear()
-                        print("Lemme check here for clear", trainees.levels.all())
-                        trainees.levels.set(levels_qs)
-                        print("For seting new one", trainees.levels.all())
-                        trainees.save()
-                        print("After setting ", trainees.levels.all())
+                    # with transaction.atomic():
+                    # clear existing links then set new ones (atomic)
+                    print("Check b4 clear", trainees.levels.all())
+                    trainees.levels.clear()
+                    print("Lemme check here for clear", trainees.levels.all())
+                    trainees.levels.set(levels_qs)
+                    print("For seting new one", trainees.levels.all())
+                    trainees.save()
+                    print("After setting ", trainees.levels.all())
 
-                        # delete any TraineeCourseAssignment entries for this trainee+course
-                        # that refer to levels NOT in the new selection (remove stale assignments)
-                        TraineeCourseAssignment.objects.filter(
-                            trainee_id=trainees,
-                            course_id=trainees.course_id
-                        ).exclude(level_id__in=levels_qs).delete()
-                        print("After setting 2", trainees.levels.all())
+                    # delete any TraineeCourseAssignment entries for this trainee+course
+                    # that refer to levels NOT in the new selection (remove stale assignments)
+                    TraineeCourseAssignment.objects.filter(
+                        trainee_id=trainees,
+                        course_id=trainees.course_id
+                    ).exclude(level_id__in=levels_qs).delete()
+                    print("After setting 2", trainees.levels.all())
                 else:
                     # fallback for older FK schema: set first matched level
                     if hasattr(trainees, 'level'):
@@ -1134,70 +1134,70 @@ def edit_trainee(request, trainee):
 
                     from django.db import transaction
                     if recreate:
-                        with transaction.atomic():
-                            # remove old entries first
-                            existing_ph_qs.delete()
+                        # with transaction.atomic():
+                        # remove old entries first
+                        existing_ph_qs.delete()
 
-                            new_ph = []
-                            if payment == "Full Payment":
+                        new_ph = []
+                        if payment == "Full Payment":
+                            new_ph.append(PaymentHistory(
+                                trainee=trainee_db,
+                                course=selected_course,
+                                amount_paid=amt_paid_val,
+                                installmental_payment="1",
+                                payment_date=date_of_payment or None,
+                                upfront_due_date=None,
+                                payment_method=payment_method,
+                                payment_option=payment,
+                            ))
+                        elif payment == "70% upfront and 30% later":
+                            upfront_amt = round(final_price * 0.7, 2)
+                            new_ph.append(PaymentHistory(
+                                trainee=trainee_db,
+                                course=selected_course,
+                                amount_paid=amt_paid_val,
+                                installmental_payment="1",
+                                payment_date=date_of_payment or None,
+                                upfront_due_date=upfront_due_date or None,
+                                payment_method=payment_method,
+                                payment_option=payment,
+                            ))
+                            new_ph.append(PaymentHistory(
+                                trainee=trainee_db,
+                                course=selected_course,
+                                amount_paid=0.0,
+                                installmental_payment="2",
+                                payment_date=None,
+                                upfront_due_date=upfront_due_date or None,
+                                payment_method=payment_method,
+                                payment_option=payment,
+                            ))
+                        elif payment == "Monthly Payment":
+                            if months <= 1:
+                                messages.error(request, "Monthly payment is not available for this course/selection.")
+                                return redirect("edit_trainee", trainee)
+                            paid_installment = int(installmental_payment or 1)
+                            for i in range(1, months + 1):
+                                paid = amt_paid_val if i == paid_installment else 0
                                 new_ph.append(PaymentHistory(
                                     trainee=trainee_db,
                                     course=selected_course,
-                                    amount_paid=amt_paid_val,
-                                    installmental_payment="1",
-                                    payment_date=date_of_payment or None,
+                                    amount_paid=paid,
+                                    installmental_payment=str(i),
+                                    payment_date=(date_of_payment if i == paid_installment else None),
                                     upfront_due_date=None,
                                     payment_method=payment_method,
                                     payment_option=payment,
                                 ))
-                            elif payment == "70% upfront and 30% later":
-                                upfront_amt = round(final_price * 0.7, 2)
-                                new_ph.append(PaymentHistory(
-                                    trainee=trainee_db,
-                                    course=selected_course,
-                                    amount_paid=amt_paid_val,
-                                    installmental_payment="1",
-                                    payment_date=date_of_payment or None,
-                                    upfront_due_date=upfront_due_date or None,
-                                    payment_method=payment_method,
-                                    payment_option=payment,
-                                ))
-                                new_ph.append(PaymentHistory(
-                                    trainee=trainee_db,
-                                    course=selected_course,
-                                    amount_paid=0.0,
-                                    installmental_payment="2",
-                                    payment_date=None,
-                                    upfront_due_date=upfront_due_date or None,
-                                    payment_method=payment_method,
-                                    payment_option=payment,
-                                ))
-                            elif payment == "Monthly Payment":
-                                if months <= 1:
-                                    messages.error(request, "Monthly payment is not available for this course/selection.")
-                                    return redirect("edit_trainee", trainee)
-                                paid_installment = int(installmental_payment or 1)
-                                for i in range(1, months + 1):
-                                    paid = amt_paid_val if i == paid_installment else 0
-                                    new_ph.append(PaymentHistory(
-                                        trainee=trainee_db,
-                                        course=selected_course,
-                                        amount_paid=paid,
-                                        installmental_payment=str(i),
-                                        payment_date=(date_of_payment if i == paid_installment else None),
-                                        upfront_due_date=None,
-                                        payment_method=payment_method,
-                                        payment_option=payment,
-                                    ))
 
-                            # Save new payment history entries using the DB-backed trainee instance
-                            for ph in new_ph:
-                                ph.save()
+                        # Save new payment history entries using the DB-backed trainee instance
+                        for ph in new_ph:
+                            ph.save()
 
-                            if new_ph:
-                                trainee_db.paymenthistory_id = new_ph[0]
-                                trainees.levels.set(levels_qs)
-                                trainee_db.save()
+                        if new_ph:
+                            trainee_db.paymenthistory_id = new_ph[0]
+                            trainees.levels.set(levels_qs)
+                            trainee_db.save()
                     else:
                         # same payment option: update the primary history row (non-destructive)
                         primary_ph = existing_ph_qs.order_by('id').first()
