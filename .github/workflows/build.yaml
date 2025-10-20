@@ -9,67 +9,67 @@ on:
     - cron: '*/8 * * * *'   # every 8 minutes (UTC)
 
 jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
+  # build_and_deploy:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Debug — runner info
-        run: |
-          uname -a
-          lsb_release -a || true
-          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
+  #     - name: Debug — runner info
+  #       run: |
+  #         uname -a
+  #         lsb_release -a || true
+  #         echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-          check-latest: true
+  #     - name: Set up Python 3.11
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.11"
+  #         check-latest: true
 
-      - name: Show python
-        run: |
-          which python
-          python --version
-          python -m pip --version
+  #     - name: Show python
+  #       run: |
+  #         which python
+  #         python --version
+  #         python -m pip --version
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+  #     - name: Install Dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements.txt
 
-      - name: Run Django Tests
-        run: |
-          python manage.py test
+  #     - name: Run Django Tests
+  #       run: |
+  #         python manage.py test
 
-      - name: Deploy to Render (after tests pass)
-        if: github.ref == 'refs/heads/master'
-        env:
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: |
-          # fail early and clearly if secrets are not configured
-          if [ -z "${RENDER_SERVICE_ID:-}" ] || [ -z "${RENDER_API_KEY:-}" ]; then
-            echo "RENDER_SERVICE_ID or RENDER_API_KEY is not configured in repository secrets. Skipping deploy."
-            exit 0
-          fi
-          echo "Triggering Render deployment for service: ${RENDER_SERVICE_ID}"
-          set -euo pipefail
-          response=$(curl -sS -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
-            -H "Accept: application/json" \
-            -H "Authorization: Bearer ${RENDER_API_KEY}" \
-            -w "%{http_code}" -o /tmp/render_deploy_response.json || true)
-          http_code="${response:(-3)}"
-          body="$(cat /tmp/render_deploy_response.json || true)"
-          echo "Render response code: $http_code"
-          echo "Render response body (truncated):"
-          echo "$body" | sed -n '1,200p'
-          if [ "$http_code" != "201" ] && [ "$http_code" != "200" ]; then
-            echo "Render deploy API returned non-success code: $http_code"
-            exit 1
-          fi
-          echo "✅ Render deployment triggered successfully!"
+  #     - name: Deploy to Render (after tests pass)
+  #       if: github.ref == 'refs/heads/master'
+  #       env:
+  #         RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+  #         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+  #       run: |
+  #         # fail early and clearly if secrets are not configured
+  #         if [ -z "${RENDER_SERVICE_ID:-}" ] || [ -z "${RENDER_API_KEY:-}" ]; then
+  #           echo "RENDER_SERVICE_ID or RENDER_API_KEY is not configured in repository secrets. Skipping deploy."
+  #           exit 0
+  #         fi
+  #         echo "Triggering Render deployment for service: ${RENDER_SERVICE_ID}"
+  #         set -euo pipefail
+  #         response=$(curl -sS -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+  #           -H "Accept: application/json" \
+  #           -H "Authorization: Bearer ${RENDER_API_KEY}" \
+  #           -w "%{http_code}" -o /tmp/render_deploy_response.json || true)
+  #         http_code="${response:(-3)}"
+  #         body="$(cat /tmp/render_deploy_response.json || true)"
+  #         echo "Render response code: $http_code"
+  #         echo "Render response body (truncated):"
+  #         echo "$body" | sed -n '1,200p'
+  #         if [ "$http_code" != "201" ] && [ "$http_code" != "200" ]; then
+  #           echo "Render deploy API returned non-success code: $http_code"
+  #           exit 1
+  #         fi
+  #         echo "✅ Render deployment triggered successfully!"
 
   wake_render:
     # run only for scheduled events; check secret at runtime
