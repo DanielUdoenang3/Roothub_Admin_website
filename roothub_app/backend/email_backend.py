@@ -6,28 +6,48 @@ from email.utils import formataddr
 # from roothub_project import settings
 from django.conf import settings
 from django.template.loader import render_to_string
+import resend
+# from roothub_project import settings
+
+EMAIL_CRED = settings.RESEND_EMAIL
+resend.api_key = settings.RESEND_API_KEY
 
 def send_email(to_email, subject, body):
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = formataddr(("Roothub", settings.EMAIL_HOST_USER))
-    msg['To'] = Header(to_email, 'utf-8')
-    msg.attach(MIMEText(body, 'html', 'utf-8'))
+    """Send an Email using Resend"""
+    params = {
+        "from": EMAIL_CRED,
+        "to": [to_email],
+        "subject": subject,
+        "html": body
+    }
+        
+    email = resend.Emails.send(params)
+    if email:
+       return print(f"Email sent successfully to {to_email}.")
+    else:
+        return print(f"Failed to send email.")
 
-    try:
-        if settings.EMAIL_PORT == 465:
-            server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
-            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-            server.send_message(msg)
-        else:
-            server = smtplib.SMTP(settings.EMAIL_HOST, 587)
-            server.starttls()
-            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-            server.send_message(msg)
-        print(f"Email sent to {to_email}")
-    except Exception as e:
-        print(f"Error sending email to {to_email}: {e}")
-        raise # Re-raise the exception for the caller to handle
+# def send_email(to_email, subject, body):
+#     msg = MIMEMultipart('alternative')
+#     msg['Subject'] = Header(subject, 'utf-8')
+#     msg['From'] = formataddr(("Roothub", settings.EMAIL_HOST_USER))
+#     msg['To'] = Header(to_email, 'utf-8')
+#     msg.attach(MIMEText(body, 'html', 'utf-8'))
+
+#     try:
+#         if settings.EMAIL_PORT == 465:
+#             server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
+#             server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+#             server.send_message(msg)
+#         else:
+#             server = smtplib.SMTP(settings.EMAIL_HOST, 587)
+#             server.starttls()
+#             server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+#             server.send_message(msg)
+#         print(f"Email sent to {to_email}")
+#     except Exception as e:
+#         print(f"Error sending email to {to_email}: {e}")
+#         raise # Re-raise the exception for the caller to handle
 
 def generate_forgot_password_email(token: str, email: str):
     """Generate forgot password email body using Django templates."""
@@ -291,50 +311,6 @@ def send_payment_reminder_to_admin(email: list, schoolname: str, trainee_name: s
 #             ssl_context.check_hostname = False
 #             ssl_context.verify_mode = ssl.CERT_NONE
 #             return ssl_context
-
-# from django.template.loader import render_to_string
-# import resend
-# from roothub_project import settings
-
-# EMAIL_CRED = settings.RESEND_EMAIL
-# resend.api_key = "re_EBiZJgLh_JaEsrfcDpawxUpzAxvx2mLuE"
-
-# import resend
-
-# resend.api_key = "re_EBiZJgLh_JaEsrfcDpawxUpzAxvx2mLuE"
-
-# r = resend.Emails.send({
-#   "from": "onboarding@resend.dev",
-#   "to": "danieludoenangjnr33@gmail.com",
-#   "subject": "Hello World",
-#   "html": "<p>Congrats on sending your <strong>first email</strong>!</p>"
-# })
-
-# def send_forgot_password_email(email):
-
-#   """Sends an email."""
-#         # params = {
-#         #     "from": "Daniel <no-reply@yourdomain.com>",
-#         #     "to": email,
-#         #     "subject": "Test Email",
-#         #     "html": "<p>Hello from Resend!</p>"
-#         # }
-        
-#   email = resend.Emails.send(
-#     {
-#     "from": "Daniel <no-reply@yourdomain.com>",
-#     "to": email,
-#     "subject": "Test Email",
-#     "html": "<p>Hello from Resend!</p>"
-#     }
-#   )
-#   if email:
-#     print({
-#         "status": "success",
-#         "message": f"Email sent successfully to {email}.",
-#     })
-#   else:
-#     print("9Failed to send email.")
 
 # def generate_forgot_pwd_email(token: str, email: str):
 #     """Generate forgot password email body using Django templates."""

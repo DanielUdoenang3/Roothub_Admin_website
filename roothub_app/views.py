@@ -612,7 +612,9 @@ def forgot_password(request):
                 token = create_access_token(data={"email": email})
                 sent = send_forgot_password_email(token=token, email=email)
                 if not sent:
+                    print(sent)
                     messages.error(request, "Email not sent check your internet connection")
+                    return render(request, "forgot-password.html")
                 messages.success(request, f"An email has been sent successfully to {email}")
         
 
