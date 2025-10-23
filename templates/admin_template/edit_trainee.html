@@ -208,7 +208,7 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
                                 <label>Date of Payment</label>
-                                <input type="date" name="date_of_payment" class="form-control" value="{{ trainee.paymenthistory_id.payment_date|date:'Y-m-d' }}">
+                                <input type="date" name="date_of_payment" class="form-control" value="{{ date_of_payment|date:'Y-m-d' }}">
                             </div>
                         </div>
 
@@ -237,7 +237,7 @@
                         <div class="col-12 col-sm-6" id="due-date-section" style="display:none;">
                             <div class="form-group local-forms">
                                 <label>Due Date for Remaining 30%</label>
-                                <input type="date" name="due_date_30" class="form-control" placeholder="Select Due Date" value="{{ trainee.paymenthistory_id.upfront_due_date|date:'Y-m-d' }}">
+                                <input type="date" name="due_date_30" class="form-control" placeholder="Select Due Date" value="{{ due_date|date:'Y-m-d' }}">
                                 <span class="fw-bold text-danger"><small id="remaining-amount-info" name="upfront_due_date" class="form-text text-muted"></small></span>
                             </div>
                         </div>
@@ -245,7 +245,7 @@
                         <div class="col-12 col-sm-7">
                             <div class="form-group local-forms">
                                 <label>Commencement Date</label>
-                                <input type="date" class="form-control" name="commencement_date" value="{{ trainee.commencement_date|date:'Y-m-d' }}">
+                                <input type="date" class="form-control" name="commencement_date" value="{{ commencement_date|date:'Y-m-d' }}">
                             </div>
                         </div>
                         <!-- Next of Kin -->
