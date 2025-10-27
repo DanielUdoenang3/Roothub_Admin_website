@@ -1313,7 +1313,7 @@ def search(request):
                     Q(trainer_name__email__icontains=search)|
                     Q(phone__icontains=search)|
                     Q(state__icontains=search)|
-                    Q(religion__icontains=search)|
+                    # Q(religion__icontains=search)|
                     Q(city__icontains=search)
                 )
                 trainee_search = Trainee.objects.filter(
@@ -1324,7 +1324,7 @@ def search(request):
                     Q(trainee_name__email__icontains=search)|
                     Q(phone__icontains=search)|
                     Q(state__icontains=search)|
-                    Q(religion__icontains=search)|
+                    # Q(religion__icontains=search)|
                     Q(city__icontains=search)
                 )
                 data = {
@@ -1488,19 +1488,20 @@ def delete_announcement(request, announcement_title):
 @login_required(login_url="/")
 def trainee_details(request, username):
     user = get_object_or_404(CustomUser, username=username)
-    trainee = get_object_or_404(Trainee, trainee_name=user)
+    trainee = Trainee.objects.filter(trainee_name=user).first()
+    payment_history = PaymentHistory.objects.filter(trainee=trainee)
     monthly = None
 
     if trainee.payment_option == "70% upfront and 30% later":
         main = float(trainee.course_id.price) * 0.3
-        not_main = float(trainee.course_id.price) - float(trainee.paymenthistory_id.amount_paid)
-        if (float(trainee.course_id.price) - float(trainee.paymenthistory_id.amount_paid)) == main:
+        not_main = float(trainee.course_id.price) - float(payment_history.amount_paid)
+        if (float(trainee.course_id.price) - float(payment_history.amount_paid)) == main:
             remaining = main
         else:
             remaining = not_main
     elif trainee.payment_option == "Monthly Payment":
         monthly = int(trainee.course_id.price) // int(trainee.course_id.months)
-        remaining = float(trainee.course_id.price) - float(trainee.paymenthistory_id.amount_paid)
+        remaining = float(trainee.course_id.price) - float(payment_history.amount_paid)
     else:
         remaining =  float(trainee.course_id.price) - trainee.paymenthistory_id.amount_paid
 
@@ -1599,7 +1600,7 @@ def create_invited_admin(request, token):
     return render(request, "create-admin.html")
 
 def payment(request):
-    pass
+    return render(request, "admin_template/payment.html")
 
 
 # def star_trainees_view(request):
