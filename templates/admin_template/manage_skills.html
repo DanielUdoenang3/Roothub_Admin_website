@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title"><i class="fas fa-cogs me-2 text-primary"></i>Manage Skills</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'admin_home' %}"><i class="fas fa-home me-1"></i>Dashboard</a>
+                </li>
+                <li class="breadcrumb-item active">Manage Skills</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% include "includes/messages.html" %}
+
+<div class="row">
+    <!-- Skill Expertise Management -->
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-brain me-2"></i>Skill Expertise
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'add_skill_expertise' %}" class="mb-4">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Expertise Name</label>
+                        <input type="text" class="form-control" name="expertise_name" 
+                               placeholder="e.g., Data Analysis, Project Management" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea class="form-control" name="expertise_description" rows="3" 
+                                  placeholder="Brief description of this expertise area"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Expertise
+                    </button>
+                </form>
+
+                <div class="expertise-list">
+                    <h6 class="fw-bold mb-3">Existing Expertise Areas</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Skills Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expertise in skill_expertise %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ expertise.name }}</strong>
+                                        {% if expertise.description %}
+                                        <br><small class="text-muted">{{ expertise.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ expertise.competent_skills.count }}</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteExpertise({{ expertise.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No expertise areas added yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competent Skills Management -->
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tools me-2"></i>Competent Skills
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'add_competent_skill' %}" class="mb-4">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Select Expertise Area</label>
+                        <select class="form-control form-select" name="skill_expertise_id" required>
+                            <option value="">Choose expertise area...</option>
+                            {% for expertise in skill_expertise %}
+                            <option value="{{ expertise.id }}">{{ expertise.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Skill Name</label>
+                        <input type="text" class="form-control" name="skill_name" 
+                               placeholder="e.g., Python Programming, Statistical Analysis" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea class="form-control" name="skill_description" rows="3" 
+                                  placeholder="Brief description of this skill"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Add Skill
+                    </button>
+                </form>
+
+                <div class="skills-list">
+                    <h6 class="fw-bold mb-3">Existing Skills</h6>
+                    <div class="accordion" id="skillsAccordion">
+                        {% for expertise in skill_expertise %}
+                        {% if expertise.competent_skills.all %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ expertise.id }}">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse{{ expertise.id }}">
+                                    {{ expertise.name }} 
+                                    <span class="badge bg-primary ms-2">{{ expertise.competent_skills.count }}</span>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ expertise.id }}" class="accordion-collapse collapse" 
+                                 data-bs-parent="#skillsAccordion">
+                                <div class="accordion-body">
+                                    {% for skill in expertise.competent_skills.all %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                        <div>
+                                            <strong>{{ skill.name }}</strong>
+                                            {% if skill.description %}
+                                            <br><small class="text-muted">{{ skill.description|truncatechars:40 }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteSkill({{ skill.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteExpertise(id) {
+    if (confirm('Are you sure you want to delete this expertise area? This will also delete all associated skills.')) {
+        fetch(`/delete_skill_expertise/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function deleteSkill(id) {
+    if (confirm('Are you sure you want to delete this skill?')) {
+        fetch(`/delete_competent_skill/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+
+{% endif %}
+{% endblock main_content %}

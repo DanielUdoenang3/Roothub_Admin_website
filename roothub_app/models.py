@@ -70,7 +70,7 @@ class Trainers(models.Model):
     address = models.TextField()
     city = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
-    skill_expertise = models.TextField(max_length=700)
+    skill_expertise = models.ManyToManyField('SkillExpertise', related_name='trainers', blank=True)
     phone = models.CharField(
         max_length=15,
         blank=True,
@@ -83,7 +83,7 @@ class Trainers(models.Model):
     )
     country = models.CharField(max_length=255)
     birthday = models.DateField(max_length=255, blank=True, null=True)
-    competent_skills = models.TextField()
+    competent_skills = models.ManyToManyField('CompetentSkill', related_name='trainers', blank=True)
     account_no = models.CharField(max_length=255, blank=True, null=True)
     bank = models.CharField(max_length=255, blank=True, null=True)
 
@@ -97,6 +97,33 @@ class Trainers(models.Model):
 
     def __str__(self):
         return f"{self.trainer_name.first_name} {self.trainer_name.last_name}"
+
+class SkillExpertise(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Skill Expertise"
+
+class CompetentSkill(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    name = models.CharField(max_length=255)
+    skill_expertise = models.ForeignKey(SkillExpertise, on_delete=models.CASCADE, related_name='competent_skills')
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.skill_expertise.name})"
+
+    class Meta:
+        unique_together = ['name', 'skill_expertise']
 
 class Courses(models.Model):
     id = models.AutoField(primary_key=True, unique=True)

@@ -123,5 +123,13 @@ urlpatterns = [
     # Payment
     path("payment", AdminView.payment, name="payment"),
 
+    # Skill Management
+    path('manage_skills/', AdminView.manage_skills, name='manage_skills'),
+    path('add_skill_expertise/', AdminView.add_skill_expertise, name='add_skill_expertise'),
+    path('add_competent_skill/', AdminView.add_competent_skill, name='add_competent_skill'),
+    path('delete_skill_expertise/<int:expertise_id>/', AdminView.delete_skill_expertise, name='delete_skill_expertise'),
+    path('delete_competent_skill/<int:skill_id>/', AdminView.delete_competent_skill, name='delete_competent_skill'),
+    path('api/get_skills_by_expertise/', AdminView.get_skills_by_expertise, name='get_skills_by_expertise'),
+
 ]
 

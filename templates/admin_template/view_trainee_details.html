@@ -156,13 +156,74 @@
                                 </div>
                                 {% endif %}
                                 <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount Paid</p>
-                                    <p class="col-sm-9">{{ trainee.amount_paid }}</p>
+                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Total Amount Paid</p>
+                                    <p class="col-sm-9">{{ total_amount_paid }}</p>
                                 </div>
                                 <div class="row">
                                     <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount Remaining</p>
                                     <p class="col-sm-9">{{ remaining }}</p>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment History Section -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Payment History</h5>
+                                {% if payment_history %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Installment</th>
+                                                <th>Amount Paid</th>
+                                                <th>Payment Date</th>
+                                                <th>Payment Method</th>
+                                                <th>Due Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payment in payment_history %}
+                                            <tr>
+                                                <td>{{ payment.installmental_payment }}</td>
+                                                <td>
+                                                    {% if payment.amount_paid and payment.amount_paid != '0' %}
+                                                        {{ payment.amount_paid }}
+                                                    {% else %}
+                                                        <span class="text-muted">Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if payment.payment_date %}
+                                                        {{ payment.payment_date }}
+                                                    {% else %}
+                                                        <span class="text-muted">Not paid</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ payment.payment_method|default:"N/A" }}</td>
+                                                <td>
+                                                    {% if payment.upfront_due_date %}
+                                                        {{ payment.upfront_due_date }}
+                                                    {% else %}
+                                                        <span class="text-muted">N/A</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if payment.amount_paid and payment.amount_paid != '0.0' %}
+                                                        <span class="badge bg-success">Paid</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">No payment history available.</p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

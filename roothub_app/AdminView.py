@@ -68,7 +68,11 @@ def home(request):
 
 @login_required(login_url="/")
 def add_trainer(request):
-    return render(request, "admin_template/add_trainer.html")
+    skill_expertise = SkillExpertise.objects.prefetch_related('competent_skills').all()
+    context = {
+        'skill_expertise': skill_expertise
+    }
+    return render(request, "admin_template/add_trainer.html", context)
 
 @login_required(login_url="/")
 def add_trainer_save(request):
@@ -79,7 +83,6 @@ def add_trainer_save(request):
             last_name = request.POST.get("last_name").capitalize()
             gender = request.POST.get("gender")
             phone  = request.POST.get("phone")
-            experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic', 'blank.webp')
             username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
@@ -89,7 +92,11 @@ def add_trainer_save(request):
             state = request.POST.get("state")
             country = request.POST.get("country")
             birthday = request.POST.get("birthday")
-            competent_skills = request.POST.get("competent_skills")
+            
+            # Get selected skill expertise and competent skills
+            selected_skill_expertise = request.POST.getlist("skill_expertise")
+            selected_competent_skills = request.POST.getlist("competent_skills")
+            
             account_no = request.POST.get("account_no")
             bank = request.POST.get("bank")
             commission_rate = request.POST.get("commission_rate")
@@ -132,15 +139,23 @@ def add_trainer_save(request):
                 trainer.address = address
                 trainer.state = state
                 trainer.city = city
-                trainer.skill_expertise = experience
                 trainer.country = country
                 trainer.phone = phone
                 trainer.account_no = account_no
                 trainer.birthday = birthday
-                trainer.competent_skills = competent_skills
                 trainer.bank = bank
                 trainer.commission_rate = commission_rate
                 trainer.save()
+                
+                # Set many-to-many relationships after saving the trainer
+                if selected_skill_expertise:
+                    skill_expertise_objects = SkillExpertise.objects.filter(id__in=selected_skill_expertise)
+                    trainer.skill_expertise.set(skill_expertise_objects)
+                
+                if selected_competent_skills:
+                    competent_skills_objects = CompetentSkill.objects.filter(id__in=selected_competent_skills)
+                    trainer.competent_skills.set(competent_skills_objects)
+                
                 user.save()
 
                 send_add_trainer(first_name, middle_name, last_name, username, password, schoolname, SCHOOL_NUM1, SCHOOL_NUM2, SCHOOL_WEB, ALOWED_HOST_ONLINE, email)
@@ -1492,22 +1507,29 @@ def trainee_details(request, username):
     payment_history = PaymentHistory.objects.filter(trainee=trainee)
     monthly = None
 
-    if trainee.payment_option == "70% upfront and 30% later":
-        main = float(trainee.course_id.price) * 0.3
-        not_main = float(trainee.course_id.price) - float(payment_history.amount_paid)
-        if (float(trainee.course_id.price) - float(payment_history.amount_paid)) == main:
-            remaining = main
-        else:
-            remaining = not_main
-    elif trainee.payment_option == "Monthly Payment":
-        monthly = int(trainee.course_id.price) // int(trainee.course_id.months)
-        remaining = float(trainee.course_id.price) - float(payment_history.amount_paid)
-    else:
-        remaining =  float(trainee.course_id.price) - trainee.paymenthistory_id.amount_paid
+    # Calculate total amount paid by summing all payment records for this trainee
+    total_amount_paid = 0
+    for payment in payment_history:
+        if payment.amount_paid:
+            try:
+                total_amount_paid += float(payment.amount_paid)
+            except (ValueError, TypeError):
+                # Skip invalid payment amounts
+                continue
+
+    # Calculate remaining amount based on course price and total paid
+    course_price = float(trainee.course_id.price) if trainee.course_id and trainee.course_id.price else 0
+    
+    if trainee.payment_option == "Monthly Payment":
+        monthly = course_price // int(trainee.course_id.months) if trainee.course_id.months else 0
+    
+    remaining = course_price - total_amount_paid
 
     context={
         'user':user,
         'trainee':trainee,
+        'payment_history': payment_history,
+        'total_amount_paid': total_amount_paid,
         "remaining":remaining,
         "monthly":monthly,
     }
@@ -1642,3 +1664,138 @@ def payment(request):
 #         self.object.save()
 #         messages.success(self.request, "Announcement sent successfully!")
 #         return super().form_valid(form)
+# Skill 
+# Management Views
+@login_required(login_url="/")
+def manage_skills(request):
+    skill_expertise = SkillExpertise.objects.prefetch_related('competent_skills').all()
+    context = {
+        'skill_expertise': skill_expertise
+    }
+    return render(request, 'admin_template/manage_skills.html', context)
+
+@login_required(login_url="/")
+def add_skill_expertise(request):
+    if request.method == "POST":
+        try:
+            expertise_name = request.POST.get("expertise_name").strip()
+            expertise_description = request.POST.get("expertise_description", "").strip()
+            
+            if not expertise_name:
+                messages.error(request, "Expertise name is required!")
+                return redirect("manage_skills")
+            
+            if SkillExpertise.objects.filter(name__iexact=expertise_name).exists():
+                messages.error(request, f"Skill expertise '{expertise_name}' already exists!")
+                return redirect("manage_skills")
+            
+            SkillExpertise.objects.create(
+                name=expertise_name,
+                description=expertise_description
+            )
+            
+            messages.success(request, f"Skill expertise '{expertise_name}' added successfully!")
+            return redirect("manage_skills")
+            
+        except Exception as e:
+            print(f"Error adding skill expertise: {e}")
+            messages.error(request, "An error occurred while adding the skill expertise.")
+            return redirect("manage_skills")
+    
+    return redirect("manage_skills")
+
+@login_required(login_url="/")
+def add_competent_skill(request):
+    if request.method == "POST":
+        try:
+            skill_expertise_id = request.POST.get("skill_expertise_id")
+            skill_name = request.POST.get("skill_name").strip()
+            skill_description = request.POST.get("skill_description", "").strip()
+            
+            if not skill_expertise_id or not skill_name:
+                messages.error(request, "Both expertise area and skill name are required!")
+                return redirect("manage_skills")
+            
+            try:
+                skill_expertise = SkillExpertise.objects.get(id=skill_expertise_id)
+            except SkillExpertise.DoesNotExist:
+                messages.error(request, "Selected expertise area does not exist!")
+                return redirect("manage_skills")
+            
+            if CompetentSkill.objects.filter(name__iexact=skill_name, skill_expertise=skill_expertise).exists():
+                messages.error(request, f"Skill '{skill_name}' already exists under '{skill_expertise.name}'!")
+                return redirect("manage_skills")
+            
+            CompetentSkill.objects.create(
+                name=skill_name,
+                skill_expertise=skill_expertise,
+                description=skill_description
+            )
+            
+            messages.success(request, f"Skill '{skill_name}' added successfully under '{skill_expertise.name}'!")
+            return redirect("manage_skills")
+            
+        except Exception as e:
+            print(f"Error adding competent skill: {e}")
+            messages.error(request, "An error occurred while adding the skill.")
+            return redirect("manage_skills")
+    
+    return redirect("manage_skills")
+
+@login_required(login_url="/")
+@csrf_exempt
+def delete_skill_expertise(request, expertise_id):
+    if request.method == "POST":
+        try:
+            expertise = SkillExpertise.objects.get(id=expertise_id)
+            expertise_name = expertise.name
+            expertise.delete()
+            messages.success(request, f"Skill expertise '{expertise_name}' deleted successfully!")
+            return JsonResponse({'success': True})
+        except SkillExpertise.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Expertise not found'})
+        except Exception as e:
+            print(f"Error deleting skill expertise: {e}")
+            return JsonResponse({'success': False, 'error': 'An error occurred'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required(login_url="/")
+@csrf_exempt
+def delete_competent_skill(request, skill_id):
+    if request.method == "POST":
+        try:
+            skill = CompetentSkill.objects.get(id=skill_id)
+            skill_name = skill.name
+            skill.delete()
+            messages.success(request, f"Skill '{skill_name}' deleted successfully!")
+            return JsonResponse({'success': True})
+        except CompetentSkill.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Skill not found'})
+        except Exception as e:
+            print(f"Error deleting competent skill: {e}")
+            return JsonResponse({'success': False, 'error': 'An error occurred'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required(login_url="/")
+def get_skills_by_expertise(request):
+    """API endpoint to get competent skills for selected expertise areas"""
+    expertise_ids = request.GET.getlist('expertise_ids[]')
+    
+    if not expertise_ids:
+        return JsonResponse({'skills': []})
+    
+    try:
+        skills = CompetentSkill.objects.filter(
+            skill_expertise_id__in=expertise_ids
+        ).select_related('skill_expertise').values(
+            'id', 'name', 'description', 'skill_expertise__name', 'skill_expertise_id'
+        )
+        
+        skills_data = list(skills)
+        return JsonResponse({'skills': skills_data})
+        
+    except Exception as e:
+        print(f"Error fetching skills: {e}")
+        return JsonResponse({'skills': [], 'error': 'An error occurred'})
