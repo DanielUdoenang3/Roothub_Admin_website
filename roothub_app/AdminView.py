@@ -859,17 +859,20 @@ def edit_trainer(request,trainer):
             last_name = request.POST.get("last_name").capitalize()
             gender = request.POST.get("gender")
             phone  = request.POST.get("phone")
-            experience = request.POST.get("experience")
             profile_pic = request.FILES.get('profile_pic')
             username = request.POST.get("username").lower().strip()
             email = request.POST.get("email").lower().replace(' ', '')
-            # password = request.POST.get("password1")
             address = request.POST.get("address")
             city = request.POST.get("city")
             state = request.POST.get("state")
             country = request.POST.get("country")
             birthday = request.POST.get("birthday")
-            competent_skills = request.POST.get("competent_skills")
+            commission = request.POST.get('commission_rate')
+            
+            # Get selected skill expertise and competent skills
+            selected_skill_expertise = request.POST.getlist("skill_expertise")
+            selected_competent_skills = request.POST.getlist("competent_skills")
+            
             account_no = request.POST.get("account_no")
             bank = request.POST.get("bank")
 
@@ -912,14 +915,26 @@ def edit_trainer(request,trainer):
             trainers.address = address
             trainers.state = state
             trainers.city = city
-            trainers.skill_expertise=experience
             trainers.country = country
             trainers.phone = phone
             trainers.account_no = account_no
             trainers.birthday = birthday
-            trainers.competent_skills = competent_skills
             trainers.bank = bank
+            trainers.commission_rate = commission
             trainers.save()
+            
+            # Update many-to-many relationships
+            if selected_skill_expertise:
+                skill_expertise_objects = SkillExpertise.objects.filter(id__in=selected_skill_expertise)
+                trainers.skill_expertise.set(skill_expertise_objects)
+            else:
+                trainers.skill_expertise.clear()
+            
+            if selected_competent_skills:
+                competent_skills_objects = CompetentSkill.objects.filter(id__in=selected_competent_skills)
+                trainers.competent_skills.set(competent_skills_objects)
+            else:
+                trainers.competent_skills.clear()
 
             messages.success(request, "Trainer Edited Successfully")
             return redirect("edit_trainer",trainer)
@@ -929,8 +944,10 @@ def edit_trainer(request,trainer):
             messages.error(request, "An Unexcepted error occured")
             return redirect("edit_trainer",trainer)
     
+    skill_expertise = SkillExpertise.objects.prefetch_related('competent_skills').all()
     content = {
-        "trainer":trainers,
+        "trainer": trainers,
+        "skill_expertise": skill_expertise,
     }
     return render(request, "admin_template/edit_trainer.html", content)
 

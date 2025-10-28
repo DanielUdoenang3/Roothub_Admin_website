@@ -80,17 +80,48 @@
                                 <input type="email" class="form-control" name="email" placeholder="Edit Email" value="{{ trainer.trainer_name.email }}">
                             </div>
                         </div>
+                        <!-- Skills Section -->
+                        <div class="col-12">
+                            <h5 class="form-title">
+                                <span>Skills & Expertise</span>
+                            </h5>
+                        </div>
+
+                        <!-- Skill Expertise Selection -->
                         <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
-                                <label>Skill Expertise</label>
-                                <textarea class="form-control" name="experience" placeholder="Enter Expertise" rows="5" cols="5">{{ trainer.skill_expertise }}</textarea>
+                                <label class="fw-bold">Skill Expertise Areas</label>
+                                <div class="skills-container border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                    {% for expertise in skill_expertise %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input expertise-checkbox" type="checkbox" 
+                                               value="{{ expertise.id }}" id="expertise{{ expertise.id }}"
+                                               name="skill_expertise" onchange="updateCompetentSkills()"
+                                               {% if expertise in trainer.skill_expertise.all %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="expertise{{ expertise.id }}">
+                                            {{ expertise.name }}
+                                        </label>
+                                        {% if expertise.description %}
+                                        <small class="text-muted d-block">{{ expertise.description }}</small>
+                                        {% endif %}
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-muted">No expertise areas available. 
+                                        <a href="{% url 'manage_skills' %}" class="text-primary">Add some here</a>
+                                    </p>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
 
+                        <!-- Competent Skills Selection -->
                         <div class="col-12 col-sm-6">
                             <div class="form-group local-forms">
-                                <label>Competent Skills</label>
-                                <textarea class="form-control" name="competent_skills" placeholder="Enter Competent Skills" rows="5" cols="5">{{ trainer.competent_skills }}</textarea>
+                                <label class="fw-bold">Competent Skills</label>
+                                <div id="competent-skills-container" class="skills-container border rounded p-3" 
+                                     style="max-height: 300px; overflow-y: auto;">
+                                    <p class="text-muted">Select expertise areas to see available skills</p>
+                                </div>
                             </div>
                         </div>
 
@@ -138,7 +169,7 @@
                             <div class="form-group local-forms">
                                 <label>Commission Rate</label>
                                 <input type="text" name="commission_rate" class="form-control"
-                                    placeholder="e.g 70% or 40%" {% if trainer.commission_rate == None %}{% else %}value="{{trainer.commission_rate}}"{% endif %} required>
+                                    placeholder="e.g 70% or 40%" {% if trainer.commission_rate == None %}value="{{trainer.commission_rate}}"{% else %}value="{{trainer.commission_rate}}"{% endif %} required>
                             </div>
                         </div>
 
@@ -182,4 +213,89 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+// Store all skills data for dynamic filtering
+const skillsData = {
+    {% for expertise in skill_expertise %}
+    {{ expertise.id }}: [
+        {% for skill in expertise.competent_skills.all %}
+        {
+            id: {{ skill.id }},
+            name: "{{ skill.name|escapejs }}",
+            description: "{{ skill.description|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+// Store trainer's current skills
+const trainerSkills = [
+    {% for skill in trainer.competent_skills.all %}
+    {{ skill.id }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+function updateCompetentSkills() {
+    const selectedExpertise = [];
+    const expertiseCheckboxes = document.querySelectorAll('.expertise-checkbox:checked');
+    
+    expertiseCheckboxes.forEach(checkbox => {
+        selectedExpertise.push(parseInt(checkbox.value));
+    });
+    
+    const competentSkillsContainer = document.getElementById('competent-skills-container');
+    
+    if (selectedExpertise.length === 0) {
+        competentSkillsContainer.innerHTML = '<p class="text-muted">Select expertise areas to see available skills</p>';
+        return;
+    }
+    
+    let skillsHtml = '';
+    selectedExpertise.forEach(expertiseId => {
+        const skills = skillsData[expertiseId] || [];
+        if (skills.length > 0) {
+            const expertiseName = document.querySelector(`#expertise${expertiseId}`).nextElementSibling.textContent.trim();
+            skillsHtml += `
+                <div class="expertise-group mb-3">
+                    <h6 class="text-primary fw-bold">${expertiseName}</h6>
+                    <div class="skills-list">
+            `;
+            
+            skills.forEach(skill => {
+                const isChecked = trainerSkills.includes(skill.id) ? 'checked' : '';
+                skillsHtml += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" 
+                               value="${skill.id}" id="skill${skill.id}"
+                               name="competent_skills" ${isChecked}>
+                        <label class="form-check-label" for="skill${skill.id}">
+                            ${skill.name}
+                        </label>
+                        ${skill.description ? `<small class="text-muted d-block">${skill.description}</small>` : ''}
+                    </div>
+                `;
+            });
+            
+            skillsHtml += `
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    if (skillsHtml === '') {
+        competentSkillsContainer.innerHTML = '<p class="text-muted">No skills available for selected expertise areas</p>';
+    } else {
+        competentSkillsContainer.innerHTML = skillsHtml;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCompetentSkills();
+});
+</script>
+
 {% endblock main_content %}
