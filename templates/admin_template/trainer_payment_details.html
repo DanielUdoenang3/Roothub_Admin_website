@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">
+                <i class="fas fa-chalkboard-teacher me-2 text-success"></i>
+                {{ trainer.trainer_name.get_full_name }} - Payment History
+            </h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'payment' %}">Payment Management</a></li>
+                <li class="breadcrumb-item active">{{ trainer.trainer_name.first_name }}'s Payments</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% include "includes/messages.html" %}
+
+<div class="row">
+    <!-- Trainer Info -->
+    <div class="col-lg-4">
+        <div class="card shadow-lg border-0 mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>Trainer Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <img src="{{ trainer.trainer_name.profile_pic.url }}" 
+                         class="rounded-circle mb-2" width="80" height="80">
+                    <h6 class="fw-bold">{{ trainer.trainer_name.get_full_name }}</h6>
+                    <small class="text-muted">{{ trainer.trainer_name.email }}</small>
+                </div>
+                
+                <div class="trainer-info">
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Commission Rate:</strong></div>
+                        <div class="col-6">{{ trainer.commission_rate }}%</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Bank:</strong></div>
+                        <div class="col-6">{{ trainer.bank }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Account No:</strong></div>
+                        <div class="col-6">{{ trainer.account_no }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="col-lg-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>Payment History
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Month/Year</th>
+                                <th>Calculated Salary</th>
+                                <th>Amount Paid</th>
+                                <th>Payment Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payment_history %}
+                            <tr>
+                                <td><strong>{{ payment.month }} {{ payment.year }}</strong></td>
+                                <td>₦{{ payment.total_salary|floatformat:0 }}</td>
+                                <td>
+                                    {% if payment.amount_paid and payment.amount_paid != '0' %}
+                                    <span class="text-success fw-bold">₦{{ payment.amount_paid|floatformat:0 }}</span>
+                                    {% else %}
+                                    <span class="text-muted">₦0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if payment.payment_date %}
+                                    {{ payment.payment_date|date:"M d, Y" }}
+                                    {% else %}
+                                    <span class="text-muted">Not paid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if payment.amount_paid and payment.amount_paid != '0' %}
+                                    <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No payment history available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock main_content %}

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">
+                <i class="fas fa-money-bill-wave me-2 text-success"></i>
+                Process Trainer Payment - {{ trainer.trainer_name.get_full_name }}
+            </h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'payment' %}">Payment Management</a></li>
+                <li class="breadcrumb-item"><a href="#">{{ trainer.trainer_name.first_name }}'s Payments</a></li>
+                <li class="breadcrumb-item active">Process Payment</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% include "includes/messages.html" %}
+
+<div class="row">
+    <!-- Trainer Info -->
+    <div class="col-lg-4">
+        <div class="card shadow-lg border-0 mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>Trainer Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <img src="{{ trainer.trainer_name.profile_pic.url }}" 
+                         class="rounded-circle mb-2" width="80" height="80">
+                    <h6 class="fw-bold">{{ trainer.trainer_name.get_full_name }}</h6>
+                    <small class="text-muted">{{ trainer.trainer_name.email }}</small>
+                </div>
+                
+                <div class="trainer-info">
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Commission Rate:</strong></div>
+                        <div class="col-6">{{ trainer.commission_rate }}%</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Bank:</strong></div>
+                        <div class="col-6">{{ trainer.bank }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Account No:</strong></div>
+                        <div class="col-6">{{ trainer.account_no }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Payment Month:</strong></div>
+                        <div class="col-6 fw-bold">{{ payment_month }} {{ payment_year }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Calculated Salary:</strong></div>
+                        <div class="col-6 fw-bold text-success">₦{{ calculated_salary|floatformat:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Form -->
+    <div class="col-lg-8">
+        <!-- Salary Breakdown -->
+        <div class="card shadow-lg border-0 mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calculator me-2"></i>Salary Breakdown - {{ payment_month }} {{ payment_year }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Course</th>
+                                <th>Level/Type</th>
+                                <th>Students</th>
+                                <th>Course Price</th>
+                                <th>Level Price</th>
+                                <th>Commission ({{ trainer.commission_rate }}%)</th>
+                                <th>Total Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for breakdown in salary_breakdown %}
+                            <tr>
+                                <td><strong>{{ breakdown.course_name }}</strong></td>
+                                <td>
+                                    {% if breakdown.level_name %}
+                                    <span class="badge bg-warning">{{ breakdown.level_name }}</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Full Course</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-info">{{ breakdown.student_count }}</span></td>
+                                <td>₦{{ breakdown.course_price|floatformat:0 }}</td>
+                                <td>₦{{ breakdown.level_price|floatformat:0 }}</td>
+                                <td>₦{{ breakdown.commission_per_student|floatformat:0 }}</td>
+                                <td><strong>₦{{ breakdown.total_earned|floatformat:0 }}</strong></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No courses assigned for this month</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if salary_breakdown %}
+                        <tfoot class="table-success">
+                            <tr>
+                                <th colspan="6" class="text-end">Total Monthly Salary:</th>
+                                <th>₦{{ calculated_salary|floatformat:0 }}</th>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Processing Form -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-credit-card me-2"></i>Process Payment
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="#">
+                    {% csrf_token %}
+                    <input type="hidden" name="payment_month" value="{{ payment_month_num }}">
+                    <input type="hidden" name="payment_year" value="{{ payment_year }}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Calculated Salary</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    <input type="text" class="form-control" 
+                                           value="{{ calculated_salary|floatformat:0 }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Amount to Pay</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    <input type="number" class="form-control" name="amount_paid" 
+                                           value="{{ calculated_salary }}" required>
+                                </div>
+                                <small class="text-muted">You can adjust the amount if needed</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Payment Date</label>
+                                <input type="date" class="form-control" name="payment_date" 
+                                       value="{{ today }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Payment Method</label>
+                                <select class="form-control" name="payment_method" required>
+                                    <option value="">Select Payment Method</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Cheque">Cheque</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Reference Number (Optional)</label>
+                                <input type="text" class="form-control" name="reference_number" 
+                                       placeholder="Transaction reference">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Deductions (Optional)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    <input type="number" class="form-control" name="deductions" 
+                                           value="0" min="0">
+                                </div>
+                                <small class="text-muted">Any deductions (tax, advance, etc.)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold">Payment Notes (Optional)</label>
+                                <textarea class="form-control" name="payment_notes" rows="3" 
+                                          placeholder="Additional notes about this payment"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="#" 
+                                   class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Payment History
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check me-2"></i>Process Payment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate net payment when deductions change
+document.querySelector('input[name="deductions"]').addEventListener('input', function() {
+    const amountToPay = parseFloat(document.querySelector('input[name="amount_paid"]').value) || 0;
+    const deductions = parseFloat(this.value) || 0;
+    const netAmount = amountToPay - deductions;
+    
+    // You can add a display for net amount if needed
+    console.log('Net amount after deductions:', netAmount);
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.querySelector('input[name="amount_paid"]').value);
+    const paymentMethod = document.querySelector('select[name="payment_method"]').value;
+    
+    if (!amount || amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid payment amount.');
+        return;
+    }
+    
+    if (!paymentMethod) {
+        e.preventDefault();
+        alert('Please select a payment method.');
+        return;
+    }
+    
+    // Confirm payment
+    if (!confirm(`Are you sure you want to process payment of ₦${amount.toLocaleString()} to ${document.querySelector('h6.fw-bold').textContent}?`)) {
+        e.preventDefault();
+    }
+});
+</script>
+
+{% endif %}
+{% endblock main_content %}

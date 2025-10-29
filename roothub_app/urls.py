@@ -131,5 +131,7 @@ urlpatterns = [
     path('delete_competent_skill/<int:skill_id>/', AdminView.delete_competent_skill, name='delete_competent_skill'),
     path('api/get_skills_by_expertise/', AdminView.get_skills_by_expertise, name='get_skills_by_expertise'),
 
+    path('me/', AdminView.show_me_trainee, name='me')
+
 ]
 

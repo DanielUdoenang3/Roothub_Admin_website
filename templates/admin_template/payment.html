@@ -6,28 +6,407 @@
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
-            <h3 class="page-title">Payment</h3>
+            <h3 class="page-title"><i class="fas fa-credit-card me-2 text-primary"></i>Payment Management</h3>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#">Trainers and Trainees</a></li>
-                <li class="breadcrumb-item active">Payment</li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+                <li class="breadcrumb-item active">Payment Management</li>
             </ul>
         </div>
     </div>
 </div>
 
-<div class="main-wrapper">
-<div class="error-box">
-<h1>500</h1>
-<h3 class="h2 mb-3"><i class="fas fa-exclamation-triangle"></i> Oops! Internal Server Error!</h3>
-<p class="h4 font-weight-normal">The page you requested is under development.</p>
-{% if user.user_type == "1" %}
-<a href="{% url "admin_home" %}" class="btn btn-primary">Back to Home</a>
-{% elif user.user_type == "2" %}
-<a href="{% url "trainer_home" %}" class="btn btn-primary">Back to Home</a>
-{% elif user.user_type == "3" %}
-<a href="{% url "trainee_home" %}" class="btn btn-primary">Back to Home</a>
-{% endif %}
+{% include "includes/messages.html" %}
+
+<!-- Payment Type Selection -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-body text-center">
+                <h4 class="card-title mb-4">Select Payment Type</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="payment-type-card" onclick="showPaymentSection('trainee')">
+                            <div class="card border-primary h-100 payment-card" id="trainee-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Trainee Payments</h5>
+                                    <p class="card-text">Manage trainee course payments, installments, and payment history</p>
+                                    <button class="btn btn-primary">Manage Trainee Payments</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="payment-type-card" onclick="showPaymentSection('trainer')">
+                            <div class="card border-success h-100 payment-card" id="trainer-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Trainer Payments</h5>
+                                    <p class="card-text">Manage trainer salaries, commissions, and payment schedules</p>
+                                    <button class="btn btn-success">Manage Trainer Payments</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Trainee Payment Section -->
+<div id="trainee-payment-section" class="payment-section" style="display: none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-graduate me-2"></i>Trainee Payment Management
+                        <button class="btn btn-light btn-sm float-end" onclick="hidePaymentSections()">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </button>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="fw-bold">Search Trainee</label>
+                                <input type="text" class="form-control" id="trainee-search" 
+                                       placeholder="Search by name, email, or username">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="fw-bold">Payment Status</label>
+                                <select class="form-control" id="payment-status-filter">
+                                    <option value="">All Status</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="overdue">Overdue</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="fw-bold">Course</label>
+                                <select class="form-control" id="course-filter">
+                                    <option value="">All Courses</option>
+                                    {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trainees List -->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="trainees-table">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Trainee</th>
+                                    <th>Course</th>
+                                    <th>Payment Plan</th>
+                                    <th>Total Fee</th>
+                                    <th>Amount Paid</th>
+                                    <th>Outstanding</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trainee in trainees %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ trainee.trainee_name.profile_pic.url }}" 
+                                                 class="rounded-circle me-2" width="40" height="40">
+                                            <div>
+                                                <strong>{{ trainee.trainee_name.get_full_name }}</strong>
+                                                <br><small class="text-muted">{{ trainee.trainee_name.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ trainee.course_id.course_name }}</strong>
+                                        {% if trainee.portion_type == "Level" %}
+                                        <br><small class="text-info">Selected Levels Only</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ trainee.payment_option }}</span>
+                                    </td>
+                                    <td>₦{{ trainee.total_course_fee|floatformat:0 }}</td>
+                                    <td>₦{{ trainee.total_amount_paid|floatformat:0 }}</td>
+                                    <td>
+                                        {% if trainee.outstanding_amount > 0 %}
+                                        <span class="text-danger fw-bold">₦{{ trainee.outstanding_amount|floatformat:0 }}</span>
+                                        {% else %}
+                                        <span class="text-success fw-bold">₦0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if trainee.outstanding_amount <= 0 %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif trainee.has_overdue %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-primary" 
+                                                    onclick="viewTraineePayments({{ trainee.id }})">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            {% if trainee.outstanding_amount > 0 %}
+                                            <button class="btn btn-sm btn-success" 
+                                                    onclick="processPayment({{ trainee.id }})">
+                                                <i class="fas fa-plus"></i> Pay
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Trainer Payment Section -->
+<div id="trainer-payment-section" class="payment-section" style="display: none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Trainer Payment Management
+                        <button class="btn btn-light btn-sm float-end" onclick="hidePaymentSections()">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </button>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Month/Year Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="fw-bold">Month</label>
+                                <select class="form-control" id="payment-month">
+                                    {% for month in months %}
+                                    <option value="{{ month.value }}" {% if month.value == current_month %}selected{% endif %}>
+                                        {{ month.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="fw-bold">Year</label>
+                                <select class="form-control" id="payment-year">
+                                    {% for year in years %}
+                                    <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>
+                                        {{ year }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="fw-bold">Search Trainer</label>
+                                <input type="text" class="form-control" id="trainer-search" 
+                                       placeholder="Search by name or email">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="fw-bold">&nbsp;</label>
+                                <button class="btn btn-primary d-block w-100" onclick="loadTrainerPayments()">
+                                    <i class="fas fa-search me-1"></i>Load Payments
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trainers Payment List -->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="trainers-table">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Trainer</th>
+                                    <th>Courses Teaching</th>
+                                    <th>Total Students</th>
+                                    <th>Commission Rate</th>
+                                    <th>Calculated Salary</th>
+                                    <th>Amount Paid</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trainer-payments-tbody">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.payment-section {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>
+
+<script>
+function showPaymentSection(type) {
+    // Hide all sections first
+    hidePaymentSections();
+    
+    // Show selected section
+    if (type === 'trainee') {
+        document.getElementById('trainee-payment-section').style.display = 'block';
+    } else if (type === 'trainer') {
+        document.getElementById('trainer-payment-section').style.display = 'block';
+        loadTrainerPayments();
+    }
+}
+
+function hidePaymentSections() {
+    document.getElementById('trainee-payment-section').style.display = 'none';
+    document.getElementById('trainer-payment-section').style.display = 'none';
+}
+
+function viewTraineePayments(traineeId) {
+    window.location.href = `/trainee_payment_details/${traineeId}/`;
+}
+
+function processPayment(traineeId) {
+    window.location.href = `/process_trainee_payment/${traineeId}/`;
+}
+
+function loadTrainerPayments() {
+    const month = document.getElementById('payment-month').value;
+    const year = document.getElementById('payment-year').value;
+    
+    fetch(`/api/trainer_payments/?month=${month}&year=${year}`)
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('trainer-payments-tbody');
+            tbody.innerHTML = '';
+            
+            data.trainers.forEach(trainer => {
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${trainer.profile_pic}" class="rounded-circle me-2" width="40" height="40">
+                                <div>
+                                    <strong>${trainer.name}</strong>
+                                    <br><small class="text-muted">${trainer.email}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            ${trainer.courses.map(course => `<span class="badge bg-info me-1">${course}</span>`).join('')}
+                        </td>
+                        <td><span class="badge bg-primary">${trainer.total_students}</span></td>
+                        <td>${trainer.commission_rate}%</td>
+                        <td>₦${trainer.calculated_salary.toLocaleString()}</td>
+                        <td>₦${trainer.amount_paid.toLocaleString()}</td>
+                        <td>
+                            ${trainer.is_paid ? 
+                                '<span class="badge bg-success">Paid</span>' : 
+                                '<span class="badge bg-warning">Pending</span>'
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary" onclick="viewTrainerPayments(${trainer.id})">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                ${!trainer.is_paid ? 
+                                    `<button class="btn btn-sm btn-success" onclick="payTrainer(${trainer.id})">
+                                        <i class="fas fa-money-bill-wave"></i> Pay
+                                    </button>` : ''
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        })
+        .catch(error => {
+            console.error('Error loading trainer payments:', error);
+        });
+}
+
+function viewTrainerPayments(trainerId) {
+    window.location.href = `/trainer_payment_details/${trainerId}/`;
+}
+
+function payTrainer(trainerId) {
+    window.location.href = `/process_trainer_payment/${trainerId}/`;
+}
+
+// Search functionality
+document.getElementById('trainee-search')?.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#trainees-table tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+document.getElementById('trainer-search')?.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#trainers-table tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+</script>
+
 {% endif %}
 {% endblock main_content %}
