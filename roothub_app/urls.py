@@ -120,8 +120,22 @@ urlpatterns = [
     path("invite_admin", AdminView.invite_admin, name="invite_admin"),
     path("set_password/<str:token>/", AdminView.create_invited_admin, name="invite_admin"),
 
-    # Payment
-    path("payment", AdminView.payment, name="payment"),
+    # Payment Management
+    path("payment/", AdminView.payment, name="payment"),
+    
+    # Trainee Payment Routes
+    path('trainee_payment_details/<int:trainee_id>/', AdminView.trainee_payment_details, name='trainee_payment_details'),
+    path('process_trainee_payment/<int:trainee_id>/', AdminView.process_trainee_payment, name='process_trainee_payment'),
+    path('process_trainee_payment_save/<int:trainee_id>/', AdminView.process_trainee_payment_save, name='process_trainee_payment_save'),
+    path('process_installment_payment/<int:trainee_id>/<int:payment_id>/', AdminView.process_installment_payment, name='process_installment_payment'),
+    
+    # Trainer Payment Routes
+    path('trainer_payment_details/<int:trainer_id>/', AdminView.trainer_payment_details, name='trainer_payment_details'),
+    path('process_trainer_payment/<int:trainer_id>/', AdminView.process_trainer_payment, name='process_trainer_payment'),
+    path('process_trainer_payment_save/<int:trainer_id>/', AdminView.process_trainer_payment_save, name='process_trainer_payment_save'),
+    
+    # Payment API Routes
+    path('api/trainer_payments/', AdminView.api_trainer_payments, name='api_trainer_payments'),
 
     # Skill Management
     path('manage_skills/', AdminView.manage_skills, name='manage_skills'),
@@ -131,7 +145,7 @@ urlpatterns = [
     path('delete_competent_skill/<int:skill_id>/', AdminView.delete_competent_skill, name='delete_competent_skill'),
     path('api/get_skills_by_expertise/', AdminView.get_skills_by_expertise, name='get_skills_by_expertise'),
 
-    path('me/', AdminView.show_me_trainee, name='me')
+    # path('me/', AdminView.show_me_trainee, name='me')
 
 ]
 

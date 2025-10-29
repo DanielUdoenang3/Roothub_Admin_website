@@ -38,6 +38,10 @@
                     </ul>
                 </li>
 
+                <li class="{% if '/manage_skills' in request.path %}active{% endif %}">
+                    <a href="{% url "manage_skills" %}" ><i class="fas fa-cogs"></i> <span>Manage Skills</span></a>
+                </li>
+
                 <li class="{% if request.path == '/assign_trainer' %}active{% endif %}">
                     <a href="{% url "assign_trainer" %}" ><i class="fas fa-clipboard"></i> <span>Assign Trainer</span></a>
                 </li>
@@ -75,10 +79,6 @@
 
                 <li class="{% if request.path == '/payment' %}active{% endif %}">
                     <a href="{% url "payment" %}" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
-                </li>
-
-                <li class="{% if '/manage_skills' in request.path %}active{% endif %}">
-                    <a href="{% url "manage_skills" %}" ><i class="fas fa-cogs"></i> <span>Manage Skills</span></a>
                 </li>
 
                 <li class="{% if request.path == '/invite_admin' %}active{% endif %}">

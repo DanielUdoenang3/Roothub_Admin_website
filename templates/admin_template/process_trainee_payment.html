@@ -13,7 +13,7 @@
             <ul class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'payment' %}">Payment Management</a></li>
-                <li class="breadcrumb-item"><a href="#">{{ trainee.trainee_name.first_name }}'s Payments</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'trainee_payment_details' trainee.id %}">{{ trainee.trainee_name.first_name }}'s Payments</a></li>
                 <li class="breadcrumb-item active">Process Payment</li>
             </ul>
         </div>
@@ -79,7 +79,7 @@
             <div class="card-body">
                 {% if trainee.payment_option == "Monthly Payment" %}
                 <!-- Monthly Payment Selection -->
-                <form method="POST" action="#">
+                <form method="POST" action="{% url 'process_trainee_payment_save' trainee.id %}">
                     {% csrf_token %}
                     <div class="row mb-4">
                         <div class="col-12">
@@ -117,7 +117,7 @@
 
                 {% elif trainee.payment_option == "70% upfront and 30% later" %}
                 <!-- 70/30 Payment Selection -->
-                <form method="POST" action="#">
+                <form method="POST" action="{% url 'process_trainee_payment_save' trainee.id %}">
                     {% csrf_token %}
                     <div class="row mb-4">
                         <div class="col-12">
@@ -238,11 +238,11 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="d-flex justify-content-between">
-                            <a href="#" 
+                            <a href="{% url 'trainee_payment_details' trainee.id %}" 
                                class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Back to Payment Details
                             </a>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-check me-2"></i>Process Payment
                             </button>
                         </div>

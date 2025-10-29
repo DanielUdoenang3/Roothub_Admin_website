@@ -13,7 +13,7 @@
             <ul class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'payment' %}">Payment Management</a></li>
-                <li class="breadcrumb-item"><a href="#">{{ trainer.trainer_name.first_name }}'s Payments</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'trainer_payment_details' trainer.id %}">{{ trainer.trainer_name.first_name }}'s Payments</a></li>
                 <li class="breadcrumb-item active">Process Payment</li>
             </ul>
         </div>
@@ -133,7 +133,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="#">
+                <form method="POST" action="{% url 'process_trainer_payment_save' trainer.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="payment_month" value="{{ payment_month_num }}">
                     <input type="hidden" name="payment_year" value="{{ payment_year }}">
@@ -218,7 +218,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="d-flex justify-content-between">
-                                <a href="#" 
+                                <a href="{% url 'trainer_payment_details' trainer.id %}" 
                                    class="btn btn-secondary">
                                     <i class="fas fa-arrow-left me-2"></i>Back to Payment History
                                 </a>

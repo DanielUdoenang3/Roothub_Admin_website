@@ -376,25 +376,79 @@ class PaymentHistory(models.Model):
     installmental_payment = models.CharField(max_length=255) #for monthly Payment Users and for 70% upfront and 30% later Users(2 installment)
     payment_date = models.DateField(blank=True, null=True)
     payment_method = models.CharField(max_length=255, choices=Payment_Method)
+    
+    # Enhanced fields for professional payment system
+    reference_number = models.CharField(max_length=255, blank=True, null=True)  # Transaction reference
+    payment_notes = models.TextField(blank=True, null=True)  # Additional notes
+    processed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="processed_payments")  # Who processed the payment
+    expected_due_date = models.DateField(blank=True, null=True)  # When payment was expected
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Payment of {self.amount_paid} by {self.trainee.trainee_name.username} for {self.course.course_name}"
+    
+    @property
+    def is_paid(self):
+        """Check if this installment is paid"""
+        return self.amount_paid and float(self.amount_paid or 0) > 0
+    
+    @property
+    def is_overdue(self):
+        """Check if payment is overdue"""
+        if not self.is_paid and self.expected_due_date:
+            return self.expected_due_date < timezone.now().date()
+        return False
 
 class TrainerPayroll(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('Bank Transfer', 'Bank Transfer'),
+        ('Cash', 'Cash'),
+        ('Cheque', 'Cheque'),
+    ]
+    
     id = models.AutoField(primary_key=True, unique=True)
     trainer = models.ForeignKey(Trainers, on_delete=models.CASCADE, related_name="payrolls")
     month = models.CharField(max_length=100)
     year = models.CharField(max_length=100)
     total_salary = models.CharField(max_length=255)
     amount_paid = models.CharField(max_length=255)
-    payment_date = models.DateField()
+    payment_date = models.DateField(blank=True, null=True)
+    
+    # Enhanced fields for professional payment system
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default='Bank Transfer')
+    reference_number = models.CharField(max_length=255, blank=True, null=True)  # Transaction reference
+    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Tax, advance, etc.
+    payment_notes = models.TextField(blank=True, null=True)  # Additional notes
+    processed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="processed_trainer_payments")  # Who processed the payment
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Payroll of {self.amount_paid} to {self.trainer.trainer_name.username} for {self.month}/{self.year}"
+    
+    @property
+    def is_paid(self):
+        """Check if trainer is paid for this month"""
+        return self.amount_paid and float(self.amount_paid or 0) > 0
+    
+    @property
+    def net_amount(self):
+        """Calculate net amount after deductions"""
+        total = float(self.total_salary or 0)
+        deduction = float(self.deductions or 0)
+        return total - deduction
+    
+    @property
+    def month_name(self):
+        """Get month name from month number"""
+        try:
+            from calendar import month_name
+            return month_name[int(self.month)]
+        except (ValueError, IndexError):
+            return self.month
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):

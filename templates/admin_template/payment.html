@@ -3,6 +3,35 @@
 
 {% block main_content %}
 {% if request.user.user_type == "1" %}
+<style>
+.payment-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.payment-section {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
@@ -158,15 +187,13 @@
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <button class="btn btn-sm btn-primary" 
-                                                    onclick="viewTraineePayments({{ trainee.id }})">
+                                            <a href="{% url 'trainee_payment_details' trainee.id %}" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-eye"></i> View
-                                            </button>
+                                            </a>
                                             {% if trainee.outstanding_amount > 0 %}
-                                            <button class="btn btn-sm btn-success" 
-                                                    onclick="processPayment({{ trainee.id }})">
+                                            <a href="{% url 'process_trainee_payment' trainee.id %}" class="btn btn-sm btn-success">
                                                 <i class="fas fa-plus"></i> Pay
-                                            </button>
+                                            </a>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -263,36 +290,6 @@
         </div>
     </div>
 </div>
-
-<style>
-.payment-card {
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.payment-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-
-.payment-section {
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.table th {
-    border-top: none;
-    font-weight: 600;
-}
-
-.badge {
-    font-size: 0.75em;
-}
-</style>
 
 <script>
 function showPaymentSection(type) {
