@@ -52,18 +52,13 @@ def payment(request):
     # Get courses for filtering
     courses = Courses.objects.all()
     
-    # Generate months and years for trainer payments
+    # Generate years for trainer payments (current year and 2 years back/forward)
     current_date = datetime.now()
-    months = [
-        {'value': i, 'name': month_name[i]} 
-        for i in range(1, 13)
-    ]
-    years = list(range(current_date.year - 2, current_date.year + 2))
+    years = list(range(current_date.year - 2, current_date.year + 3))
     
     context = {
         'trainees': trainees,
         'courses': courses,
-        'months': months,
         'years': years,
         'current_month': current_date.month,
         'current_year': current_date.year,
@@ -211,42 +206,58 @@ def process_installment_payment(request, trainee_id, payment_id):
     return redirect('process_trainee_payment', trainee_id=trainee_id)
 
 def calculate_trainer_salary(trainer, month, year):
-    """Calculate trainer salary for a specific month/year"""
+    """Calculate trainer salary for a specific month/year based on TraineeCourseAssignment"""
     commission_rate = float(trainer.commission_rate or 0) / 100
     total_salary = 0
     course_breakdown = []
     
-    # Get all assignments for this trainer
-    assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer).select_related('course_id', 'level_id')
+    # Get all trainer assignments for this trainer
+    trainer_assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer).select_related('course_id', 'level_id')
     
-    for assignment in assignments:
+    # Group by course and level to avoid duplicates
+    course_level_groups = {}
+    for assignment in trainer_assignments:
         course = assignment.course_id
         level = assignment.level_id
+        key = f"{course.id}_{level.id if level else 'full'}"
+        print(f"This is key: {key}")
         
-        # Get trainees for this course/level combination
+        if key not in course_level_groups:
+            course_level_groups[key] = {
+                'course': course,
+                'level': level,
+                'assignments': []
+            }
+            print(f"This is the Course_lebel_group: {course_level_groups}")
+        course_level_groups[key]['assignments'].append(assignment)
+    
+    for key, group in course_level_groups.items():
+        course = group['course']
+        level = group['level']
+        
+        # Count trainees assigned to this trainer for this specific course/level
         if level:
-            # Specific level
-            trainees = Trainee.objects.filter(
-                course_id=course,
-                levels=level,
-                created_at__month=month,
-                created_at__year=year
-            )
+            # Specific level - count trainees assigned to this trainer for this level
+            trainee_assignments = TraineeCourseAssignment.objects.filter(trainer_id=trainer,course_id=course,level_id=level).select_related('trainee_id')
+            print(f"This is for trainee_assignment in level: {trainee_assignments}")
             course_price = float(course.price or 0)
             total_levels = Level.objects.filter(course_id=course).count()
             level_price = course_price / total_levels if total_levels > 0 else course_price
         else:
-            # Full course
-            trainees = Trainee.objects.filter(
+            # Full course - count trainees assigned to this trainer for full course
+            trainee_assignments = TraineeCourseAssignment.objects.filter(
+                trainer_id=trainer,
                 course_id=course,
-                portion_type="Full Course",
+                level_id__isnull=True,  # Full course assignments have no specific level
                 created_at__month=month,
                 created_at__year=year
-            )
+            ).select_related('trainee_id')
+            
             course_price = float(course.price or 0)
             level_price = course_price
         
-        student_count = trainees.count()
+        student_count = trainee_assignments.count()
+        
         if student_count > 0:
             commission_per_student = level_price * commission_rate
             total_earned = commission_per_student * student_count
@@ -254,7 +265,7 @@ def calculate_trainer_salary(trainer, month, year):
             
             course_breakdown.append({
                 'course_name': course.course_name,
-                'level_name': level.level if level else None,
+                'level_name': level.level if level else 'Full Course',
                 'student_count': student_count,
                 'course_price': course_price,
                 'level_price': level_price,
@@ -313,8 +324,8 @@ def process_trainer_payment(request, trainer_id):
     
     # Get month and year from query params or use current
     current_date = datetime.now()
-    payment_month_num = int(request.GET.get('month', current_date.month))
-    payment_year = int(request.GET.get('year', current_date.year))
+    payment_month_num = int(request.GET.get('month')) or current_date.month
+    payment_year = int(request.GET.get('year')) or current_date.year
     payment_month = month_name[payment_month_num]
     
     # Calculate salary for the specified month/year
@@ -405,20 +416,23 @@ def api_trainer_payments(request):
         assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
         courses = list(set([assignment.course_id.course_name for assignment in assignments]))
         
-        # Count total students
+        # Count total students across all courses for this trainer
         total_students = sum(c['student_count'] for c in course_breakdown)
         
-        trainers_data.append({
-            'id': trainer.id,
-            'name': trainer.trainer_name.get_full_name(),
-            'email': trainer.trainer_name.email,
-            'profile_pic': trainer.trainer_name.profile_pic.url,
-            'commission_rate': trainer.commission_rate or '0',
-            'courses': courses,
-            'total_students': total_students,
-            'calculated_salary': calculated_salary,
-            'amount_paid': amount_paid,
-            'is_paid': is_paid,
-        })
+        # Only include trainers who have students or assignments
+        if total_students > 0 or courses:
+            trainers_data.append({
+                'id': trainer.id,
+                'name': trainer.trainer_name.get_full_name(),
+                'email': trainer.trainer_name.email,
+                'profile_pic': trainer.trainer_name.profile_pic.url,
+                'commission_rate': trainer.commission_rate or '0',
+                'courses': courses,
+                'total_students': total_students,
+                'calculated_salary': calculated_salary,
+                'amount_paid': amount_paid,
+                'is_paid': is_paid,
+                'course_breakdown': course_breakdown,  # Include detailed breakdown per course
+            })
     
     return JsonResponse({'trainers': trainers_data})

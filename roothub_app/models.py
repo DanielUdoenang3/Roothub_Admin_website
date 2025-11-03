@@ -224,6 +224,8 @@ class TrainerCourseAssignment(models.Model):
     trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class TraineeCourseAssignment(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -231,6 +233,8 @@ class TraineeCourseAssignment(models.Model):
     trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     
 class Attendance(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -298,6 +302,8 @@ class AssignmentSubmission(models.Model):
     file = models.FileField(upload_to="submissions", blank=True, null=True)
     link = models.URLField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def is_late(self):
         return self.submitted_at > self.assignment.due_date
@@ -333,6 +339,8 @@ class Fix_Class(models.Model):
     class_date = models.DateField()
     start_class = models.TimeField()
     end_class = models.TimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.title} - {self.description} at {self.class_date} during {self.start_class} to {self.end_class}"

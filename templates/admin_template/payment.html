@@ -4,32 +4,187 @@
 {% block main_content %}
 {% if request.user.user_type == "1" %}
 <style>
+/* Professional Payment Management Styles */
 .payment-card {
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .payment-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 .payment-section {
-    animation: fadeIn 0.5s ease-in;
+    animation: slideInUp 0.6s ease-out;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes slideInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
 }
 
-.table th {
-    border-top: none;
+/* Custom Form Styles */
+.payment-filters {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+}
+
+.filter-label {
     font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 14px;
 }
 
-.badge {
-    font-size: 0.75em;
+.custom-select {
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Professional Table Styles */
+.professional-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.professional-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    padding: 16px;
+    border: none;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.professional-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+}
+
+.professional-table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-completed { background: #d4edda; color: #155724; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-overdue { background: #f8d7da; color: #721c24; }
+
+/* Action Buttons */
+.action-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.action-btn-primary:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.action-btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.action-btn-success:hover {
+    background: #229954;
+    transform: translateY(-2px);
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .payment-filters {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+    
+    .professional-table {
+        font-size: 12px;
+    }
+    
+    .professional-table th,
+    .professional-table td {
+        padding: 12px 8px;
+    }
 }
 </style>
 <div class="page-header">
@@ -223,30 +378,33 @@
                 </div>
                 <div class="card-body">
                     <!-- Month/Year Selection -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="fw-bold">Month</label>
-                                <select class="form-control" id="payment-month">
-                                    {% for month in months %}
-                                    <option value="{{ month.value }}" {% if month.value == current_month %}selected{% endif %}>
-                                        {{ month.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                    <div class="payment-filters">
+                        <div class="filter-group">
+                            <label class="filter-label">Month</label>
+                            <select class="custom-select" id="payment-month">
+                                <option value="1" {% if current_month == 1 %}selected{% endif %}>January</option>
+                                <option value="2" {% if current_month == 2 %}selected{% endif %}>February</option>
+                                <option value="3" {% if current_month == 3 %}selected{% endif %}>March</option>
+                                <option value="4" {% if current_month == 4 %}selected{% endif %}>April</option>
+                                <option value="5" {% if current_month == 5 %}selected{% endif %}>May</option>
+                                <option value="6" {% if current_month == 6 %}selected{% endif %}>June</option>
+                                <option value="7" {% if current_month == 7 %}selected{% endif %}>July</option>
+                                <option value="8" {% if current_month == 8 %}selected{% endif %}>August</option>
+                                <option value="9" {% if current_month == 9 %}selected{% endif %}>September</option>
+                                <option value="10" {% if current_month == 10 %}selected{% endif %}>October</option>
+                                <option value="11" {% if current_month == 11 %}selected{% endif %}>November</option>
+                                <option value="12" {% if current_month == 12 %}selected{% endif %}>December</option>
+                            </select>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="fw-bold">Year</label>
-                                <select class="form-control" id="payment-year">
-                                    {% for year in years %}
-                                    <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>
-                                        {{ year }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Year</label>
+                            <select class="custom-select" id="payment-year">
+                                {% for year in years %}
+                                <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>
+                                    {{ year }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
@@ -321,47 +479,63 @@ function processPayment(traineeId) {
 function loadTrainerPayments() {
     const month = document.getElementById('payment-month').value;
     const year = document.getElementById('payment-year').value;
+    const tbody = document.getElementById('trainer-payments-tbody');
+    
+    // Show loading state
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center"><div class="loading-spinner"></div> Loading trainer payments...</td></tr>';
     
     fetch(`/api/trainer_payments/?month=${month}&year=${year}`)
         .then(response => response.json())
         .then(data => {
-            const tbody = document.getElementById('trainer-payments-tbody');
             tbody.innerHTML = '';
             
+            if (data.trainers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No trainers found for the selected month/year</td></tr>';
+                return;
+            }
+            
             data.trainers.forEach(trainer => {
+                // Create course breakdown tooltip
+                const courseBreakdown = trainer.course_breakdown.map(course => 
+                    `${course.course_name} (${course.level_name}): ${course.student_count} students - ₦${course.total_earned.toLocaleString()}`
+                ).join('\\n');
+                
                 const row = `
-                    <tr>
+                    <tr class="trainer-row">
                         <td>
-                            <div class="d-flex align-items-center">
-                                <img src="${trainer.profile_pic}" class="rounded-circle me-2" width="40" height="40">
-                                <div>
+                            <div class="trainer-info">
+                                <img src="${trainer.profile_pic}" class="trainer-avatar" width="40" height="40">
+                                <div class="trainer-details">
                                     <strong>${trainer.name}</strong>
-                                    <br><small class="text-muted">${trainer.email}</small>
+                                    <small>${trainer.email}</small>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            ${trainer.courses.map(course => `<span class="badge bg-info me-1">${course}</span>`).join('')}
-                        </td>
-                        <td><span class="badge bg-primary">${trainer.total_students}</span></td>
-                        <td>${trainer.commission_rate}%</td>
-                        <td>₦${trainer.calculated_salary.toLocaleString()}</td>
-                        <td>₦${trainer.amount_paid.toLocaleString()}</td>
-                        <td>
-                            ${trainer.is_paid ? 
-                                '<span class="badge bg-success">Paid</span>' : 
-                                '<span class="badge bg-warning">Pending</span>'
-                            }
+                            <div class="courses-list">
+                                ${trainer.courses.map(course => `<span class="course-badge">${course}</span>`).join('')}
+                            </div>
                         </td>
                         <td>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-primary" onclick="viewTrainerPayments(${trainer.id})">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
+                            <span class="student-count" title="${courseBreakdown}">${trainer.total_students}</span>
+                        </td>
+                        <td class="commission-rate">${trainer.commission_rate}%</td>
+                        <td class="salary-amount">₦${trainer.calculated_salary.toLocaleString()}</td>
+                        <td class="paid-amount">₦${trainer.amount_paid.toLocaleString()}</td>
+                        <td>
+                            <span class="status-badge ${trainer.is_paid ? 'status-completed' : 'status-pending'}">
+                                ${trainer.is_paid ? 'Paid' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/trainer_payment_details/${trainer.id}/" class="action-btn action-btn-primary">
+                                    View
+                                </a>
                                 ${!trainer.is_paid ? 
-                                    `<button class="btn btn-sm btn-success" onclick="payTrainer(${trainer.id})">
-                                        <i class="fas fa-money-bill-wave"></i> Pay
-                                    </button>` : ''
+                                    `<a href="/process_trainer_payment/${trainer.id}/?month=${month}&year=${year}" class="action-btn action-btn-success">
+                                        Pay
+                                    </a>` : ''
                                 }
                             </div>
                         </td>
@@ -369,10 +543,98 @@ function loadTrainerPayments() {
                 `;
                 tbody.innerHTML += row;
             });
+            
+            // Add additional CSS for the new elements
+            addTrainerTableStyles();
         })
         .catch(error => {
             console.error('Error loading trainer payments:', error);
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading trainer payments. Please try again.</td></tr>';
         });
+}
+
+function addTrainerTableStyles() {
+    if (!document.getElementById('trainer-table-styles')) {
+        const style = document.createElement('style');
+        style.id = 'trainer-table-styles';
+        style.textContent = `
+            .trainer-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .trainer-avatar {
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            
+            .trainer-details {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .trainer-details strong {
+                font-size: 14px;
+                color: #2c3e50;
+            }
+            
+            .trainer-details small {
+                font-size: 12px;
+                color: #7f8c8d;
+            }
+            
+            .courses-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .course-badge {
+                background: #e3f2fd;
+                color: #1976d2;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            
+            .student-count {
+                background: #f3e5f5;
+                color: #7b1fa2;
+                padding: 6px 12px;
+                border-radius: 16px;
+                font-weight: 600;
+                cursor: help;
+            }
+            
+            .commission-rate {
+                font-weight: 600;
+                color: #2e7d32;
+            }
+            
+            .salary-amount {
+                font-weight: 700;
+                color: #1565c0;
+                font-size: 15px;
+            }
+            
+            .paid-amount {
+                font-weight: 600;
+                color: #2e7d32;
+            }
+            
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+            }
+            
+            .trainer-row:hover {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 function viewTrainerPayments(trainerId) {

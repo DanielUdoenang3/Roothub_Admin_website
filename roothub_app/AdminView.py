@@ -10,6 +10,7 @@ from .models import *
 # from django.db.models import F, FloatField, ExpressionWrapper
 # from .forms import SendAnnouncement
 # from django.views.generic import CreateView
+from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -672,41 +673,68 @@ def assign_trainee(request):
     if request.method == "POST":
         trainee_id = request.POST.get('trainee')
         course_id = request.POST.get('course')
-        # Expecting: {level_id: trainer_id} mapping from frontend
+        
+        # Parse the {level_id: trainer_id} assignments from the form
         assignments = {}
         for key in request.POST:
             if key.startswith('trainer_for_level_'):
                 level_id = key.replace('trainer_for_level_', '')
                 trainer_id = request.POST.get(key)
-                assignments[level_id] = trainer_id
+                
+                # Ensure trainer_id is not empty, otherwise skip
+                if trainer_id:
+                    assignments[level_id] = trainer_id
 
+        # Validate that all required fields are present
         if not trainee_id or not course_id or not assignments:
-            messages.error(request, "Please select a trainee, course, and assign trainers for each selected level.")
+            messages.error(request, "Please select a trainee, course, and assign trainers for all selected levels.")
             return redirect('assign_trainee')
 
         try:
+            # Fetch the main objects *before* the transaction
             trainee = get_object_or_404(Trainee, id=trainee_id)
             course = get_object_or_404(Courses, id=course_id)
-            assigned = 0
-            for level_id, trainer_id in assignments.items():
-                level = get_object_or_404(Level, id=level_id)
-                trainer = get_object_or_404(Trainers, id=trainer_id)
-                if not TraineeCourseAssignment.objects.filter(trainee_id=trainee, trainer_id=trainer, course_id=course, level_id=level).exists():
-                    assignment = TraineeCourseAssignment.objects.create(
+            
+            # --- Professional Implementation: Use a Database Transaction ---
+            # transaction.atomic() ensures that all database operations
+            # either succeed together or fail together. If an error
+            # occurs, all changes (including the delete) are rolled back.
+            with transaction.atomic():
+                
+                # 1. Delete all previous assignments for this trainee and this course
+                # This is the "replace" logic you requested.
+                TraineeCourseAssignment.objects.filter(
+                    trainee_id=trainee, 
+                    course_id=course
+                ).delete()
+
+                assigned_count = 0
+                
+                # 2. Create the new assignments from the form data
+                for level_id, trainer_id in assignments.items():
+                    level = get_object_or_404(Level, id=level_id)
+                    trainer = get_object_or_404(Trainers, id=trainer_id)
+                    
+                    # We can now create directly, as all old records are gone.
+                    TraineeCourseAssignment.objects.create(
                         trainee_id=trainee,
                         trainer_id=trainer,
                         course_id=course,
                         level_id=level
                     )
-                    # trainer.trainee_assignment = assignment
-                    assigned += 1
-            if assigned:
-                messages.success(request, f"Trainee assigned to trainers for {assigned} level(s) successfully.")
+                    assigned_count += 1
+
+            if assigned_count > 0:
+                messages.success(request, f"Successfully updated assignments for {trainee.trainee_name.first_name} in {course.course_name}.")
             else:
-                messages.error(request, "This trainee is already assigned to these trainers, course, and selected level(s).")
+                # This would only happen if the form submission was empty
+                messages.warning(request, "No assignments were created. Please check the form.")
+
         except Exception as e:
-            print(e)
-            messages.error(request, "An error occurred while assigning the trainee.")
+            # Catch any database or object-not-found errors
+            print(f"Error during assignment: {e}") # Log the error for debugging
+            messages.error(request, f"An error occurred while updating assignments. Error: {e}")
+            
         return redirect('assign_trainee')
 
     return render(request, "admin_template/assign_trainee.html", context)
@@ -1088,7 +1116,6 @@ def edit_trainee(request, trainee):
 
                 # Replace M2M safely (this removes previous links and sets only the selected ones)
                 if hasattr(trainees, 'levels') and hasattr(trainees.levels, 'set'):
-                    from django.db import transaction
                     # with transaction.atomic():
                     # clear existing links then set new ones (atomic)
                     print("Check b4 clear", trainees.levels.all())
@@ -1127,7 +1154,7 @@ def edit_trainee(request, trainee):
                     print("Checking again for clearity", trainees.levels.all())
                 trainees.save()
                 # delete per-level assignments for this trainee + course
-                # TraineeCourseAssignment.objects.filter(trainee_id=trainees, course_id=trainees.course_id).delete()
+                TraineeCourseAssignment.objects.filter(trainee_id=trainees, course_id=trainees.course_id).delete()
 
             # --- update PaymentHistory for this course: remove old entries for this course and recreate ---
             try:
@@ -1169,7 +1196,6 @@ def edit_trainee(request, trainee):
                     # if payment option changed -> recreate; otherwise update first entry
                     recreate = (old_payment_type != payment)
 
-                    from django.db import transaction
                     if recreate:
                         with transaction.atomic():
                             # remove old entries first
