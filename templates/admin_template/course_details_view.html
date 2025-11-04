@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "1" %}
+
+<style>
+/* Professional Course Details Styles */
+.course-details-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+.course-header {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.course-navigation {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.course-title-badge {
+    background: #2c3e50;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.edit-course-btn {
+    background: white;
+    border: 2px solid #e9ecef;
+    color: #6c757d;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.edit-course-btn:hover {
+    border-color: #2c3e50;
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.course-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+    padding: 0 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.main-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+
+.sidebar-content {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    height: fit-content;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.course-summary {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.curriculum-link {
+    color: #3498db;
+    text-decoration: underline;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.curriculum-link:hover {
+    color: #2980b9;
+    text-decoration: none;
+}
+
+.course-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.stat-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.9;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.sub-courses-section {
+    margin-top: 40px;
+}
+
+.sub-courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.sub-course-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.sub-course-card:hover {
+    border-color: #3498db;
+    background: #e3f2fd;
+    transform: translateY(-2px);
+}
+
+.sub-course-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.sub-course-description {
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.tutors-section {
+    margin-bottom: 30px;
+}
+
+.tutor-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.tutor-item:last-child {
+    border-bottom: none;
+}
+
+.tutor-number {
+    background: #3498db;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tutor-info {
+    flex: 1;
+}
+
+.tutor-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.tutor-schedule {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.timestamp {
+    position: fixed;
+    bottom: 20px;
+    left: 30px;
+    right: 30px;
+    di}ent %ontblock main_c end}
+{%dif %{% enpt>
+
+/scrie');
+}
+<open herd + ' would levelIvel ' + ails for ledetcourse lert('Sub  alId) {
+   Course(leveion viewSubtails
+funct course de View sub
+//
+here');
+}open d m view woulcurriculut('Course alerm() {
+    lugleCurricu togew
+functioniculum vie curr
+// TogglateTime();
+ 1000);
+updme,(updateTintervalond
+setIe every sec tim
+// Update
+g;
+}timeStrinontent = ime').textCurrent-tementById('ccument.getEl');
+    do(/:/g, ' :   }).replace2-digit'
+  nd: '   secot',
+     giute: '2-di
+        min '2-digit',    hour: true,
+    r12:hou
+        , {ing('en-US'eTimeStrLocal= now.toString ime   const t
+ ew Date();nst now = n    coe() {
+on updateTimime
+functi t current>
+// Updateript
+
+<sciv>
+</div>an>
+    </dM</sp P4 : 00 : 1-time">02rrentid="cuspan        <n>
+  2024</spaES, 4TH NOV,    <span>TU    p">
+mestamass="tidiv cl-->
+    <Timestamp 
+    <!--     </div>
+div>
+      </div>
+            </}
+  or % {% endf          iv>
+           </d
+             </div>               
+  rse</div>this coututors to sign ">Please asedule="tutor-schss <div cla                 
+      >ed</divgnsi Tutors Asr-name">Nos="tutodiv clas     <         
+          tor-info">class="tuiv       <d        div>
+      </umber">!ss="tutor-n<div cla                    
+">ems="tutor-it clasiv     <d   }
+         empty %   {%           
+        </div>
+          /div>        <          </div>
+                         
+ dif %}    {% en                    - 4pm
+    rse • 2pm ull Cou      F                     se %}
+      el       {%                      - 12pm
+• 10amd.level }} el_inment.lev {{ assig                         %}
+       evel_idsignment.l    {% if as                      ">
+  or-schedule="tut <div class               v>
+          </di                }}
+      me last_na_name.d.trainerr_it.trainessignmene }} {{ airst_namname.fr_r_id.traineent.traine assignm         {{              
+     ">eams="tutor-n<div clas                
+        tor-info">="tu  <div class             iv>
+      }}</dunterop.corlo{{ fober">tor-numv class="tu<di          
+          item">"tutor-ss=div cla <               }
+gnments %course_assinment in ig for ass    {%     v>
+       sions</di Sese Tutors /tle">Coursn-tiiolass="sectdiv c <            ion">
+   ctutors-se class="t       <div
+     -->/Sessions utorsourse T     <!-- C">
+       tentonr-c"sideba<div class=    >
+    Sidebar --lumn - - Right Co!-     </div>
+
+         <
+  v>   </di
+          </div>               endfor %}
+   {%                div>
+         </           </div>
+  fined levelsdeurse has no  co>Thision"scriptdeourse-"sub-civ class= <d                   div>
+    b Courses</">No Suitle-t-courselass="subiv c   <d              
+       ">rdub-course-caass="sdiv cl         <
+           ty %}emp{%                     iv>
+         </d       
+     endif %}   {%                     }</div>
+riptions }.desc levelon">{{escriptisub-course-dlass="     <div c                  %}
+  scriptions level.de  {% if               
+       >l }}</div level.levee">{{title-ub-cours"sss=   <div cla              ">
+       el.id }}')'{{ levbCourse(Su"viewonclick=rse-card" ss="sub-cou  <div cla               l %}
+   t.als.level_setaile_de in coursvelfor le   {%            d">
+      -grisub-coursess="<div clas         
+       </div> Coursese">Subion-titl"sectlass= c     <div          ">
+ tionec-courses-sss="subcla   <div        
+  -->urses CoSub --   <!        >
+
+       </div       v>
+     </di          div>
+ :"0" }}</efaultes_count|dive_trainelue">{{ act-va="stativ class  <d            >
+      es</div Traine">Activel"stat-labes=<div clas          
+          tem">s="stat-i <div clas               </div>
+                }}</div>
+" "0ion|default:sentatmber_of_pree_details.nuurs>{{ coue"stat-valass="<div cl              v>
+      </diresentationsat-label">Pstlass="<div c            ">
+        "stat-item class=    <div         >
+          </div
+         :0 }}</div>ormatoatfils.price|fle_deta coursalue">{{t-vclass="sta <div               v>
+     e</di>Course Festat-label""class=iv          <d
+           -item">class="stat      <div 
+              </div>    
+        S</div>ths }} WEEKtails.monrse_de">{{ coutat-valuelass="s   <div c                
+ ion</div>urat>Course Del""stat-labdiv class=  <            m">
+      itetat-"s<div class=         
+       ">statsse-ss="cour    <div cla       -->
+ tistics Course Sta  <!--          >
+
+ div          </
+  urriculumrse C Cou  View             um()">
+ ggleCurricul="toickcl onink"iculum-l"curr <div class=    v>
+       di </          ystem.
+    s           e 
+   by thedcifi time speduring thenee e Traithtrain  who will r the Tutor,n foe Admiew by th  vi          
+     _name }} as.courseailsourse_detse is {{ c in this caichurse, whed coatbout the stary aa brief summ will be is Th              mary">
+ -sumrseclass="couv          <di>
+   y</divmmar">Course Suion-titles="sectiv clas <d          ->
+ mary -urse Sum     <!-- Co   ">
+    -contentain="mss  <div cla>
+      t --ten ConMaint Column -    <!-- Lefnt">
+     -contess="course    <div cla -->
+ntent!-- Main Co
+
+    <</div></div>
+            </a>
+           
+ t Course"></i> Edifa-editlass="fas     <i c       ">
+     e-btnit-cours"edlass=.id %}" cails' course_detit_course 'ed"{% urlef=   <a hr         }}</div>
+ame|upper ils.course_nse_deta{ cour>{-badge"itle="course-tlass     <div c      </span>
+ ">Courset: 500; font-weigh757d;"color: #6cpan style=          <s  button>
+   </      "></i>
+   rrow-leftfa-a="fas ss  <i cla              ">
+ck().ba"historyn" onclick=ttock-buss="batton clabu        <">
+    niorse-navigat class="cou     <div
+   >er"rse-headlass="cou    <div c>
+--e Header ours <!-- Ciner">
+   ls-contase-detaiurss="cov cladi
+<yle>
+
+}
+</stfr;
+    }s: 1umnmplate-col  grid-te   id {
+   -courses-gr
+    .sub
+    }
+    umns: 1fr;emplate-col   grid-tts {
+     -sta .course   
+   x;
+    }
+  20p    padding:     {
+ntentdebar-co    .sit,
+n-conten    .mai }
+    
+
+    0 20px;    padding:   
+ ent {nte-cors  .cou
+    
+  ;
+    }x 20pxpadding: 15p        r {
+course-heade {
+    .th: 768px)-widedia (max
+
+@m
+    }
+}: -1;der        orcontent {
+.sidebar-      
+ }
+     : 20px;
+        gap1fr;
+s: ate-column-templ       gridcontent {
+ se- .courpx) {
+   24width: 10edia (max-ign */
+@msive Des
+/* Respon}
+500;
+weight:  font-: 14px;
+   ont-size5a6;
+    fr: #95acolo
+    tween;be: space-y-content    justif: flex;
+splay

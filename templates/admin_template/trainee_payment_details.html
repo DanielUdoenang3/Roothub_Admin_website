@@ -117,7 +117,7 @@
                                 </td>
                                 <td>{{ payment.payment_method|default:"N/A" }}</td>
                                 <td>
-                                    {% if payment.amount_paid and payment.amount_paid != '0,0' %}
+                                    {% if payment.amount_paid and payment.amount_paid != '0.0' %}
                                     <span class="badge bg-success">Paid</span>
                                     {% else %}
                                     <span class="badge bg-warning">Pending</span>

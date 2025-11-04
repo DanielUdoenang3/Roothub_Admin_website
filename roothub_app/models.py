@@ -92,6 +92,8 @@ class Trainers(models.Model):
     trainer_assignment = models.ForeignKey('TrainerCourseAssignment', on_delete=models.CASCADE, related_name="trainer_assignment", blank=True, null=True)
     trainer_payroll = models.ForeignKey('TrainerPayroll', on_delete=models.CASCADE, related_name="trainer_payroll", blank=True, null=True)
     course_id = models.ManyToManyField('Courses', related_name='trainers', blank=True)
+    skill_expertise = models.ManyToManyField('SkillExpertise', related_name='skill_expertise', blank=True)
+    competent_skills = models.ManyToManyField('CompetentSkill', related_name='competent_skills', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 

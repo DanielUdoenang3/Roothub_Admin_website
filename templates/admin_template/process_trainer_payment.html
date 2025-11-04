@@ -14,7 +14,7 @@
                 <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'payment' %}">Payment Management</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'trainer_payment_details' trainer.id %}">{{ trainer.trainer_name.first_name }}'s Payments</a></li>
-                <li class="breadcrumb-item active">Process Payment</li>
+                {% comment %} <li class="breadcrumb-item active">Process Payment</li> {% endcomment %}
             </ul>
         </div>
     </div>

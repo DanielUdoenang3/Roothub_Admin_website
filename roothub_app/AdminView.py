@@ -357,11 +357,15 @@ def add_trainee_save(request):
                         months = course_months
 
                     payment_histories = []
+                    try:
+                        amt_paid_val = float(amount_paid) if amount_paid not in (None, "") else 0.0
+                    except Exception:
+                        amt_paid_val = 0.0
                     if payment == "Full Payment":
                         payment_histories.append(PaymentHistory(
                             trainee=trainees,
                             course=Courses.objects.get(id=course_choice),
-                            amount_paid=int(amount_paid),
+                            amount_paid=float(amt_paid_val),
                             installmental_payment="1",
                             payment_date=date_of_payment,
                             upfront_due_date=None,
@@ -374,7 +378,7 @@ def add_trainee_save(request):
                         payment_histories.append(PaymentHistory(
                             trainee=trainees,
                             course=Courses.objects.get(id=course_choice),
-                            amount_paid=amount_paid,
+                            amount_paid=amt_paid_val,
                             installmental_payment="1",
                             payment_date=date_of_payment,
                             upfront_due_date=upfront_due_date,
@@ -385,7 +389,7 @@ def add_trainee_save(request):
                         payment_histories.append(PaymentHistory(
                             trainee=trainees,
                             course=Courses.objects.get(id=course_choice),
-                            amount_paid=0,
+                            amount_paid=0.0,
                             installmental_payment="2",
                             payment_date=None,
                             upfront_due_date=upfront_due_date,
@@ -400,7 +404,7 @@ def add_trainee_save(request):
                         monthly_amount = round(final_price / months, 2)
                         paid_installment = int(installmental_payment or 1)
                         for i in range(1, months + 1):
-                            paid = amount_paid if i == paid_installment else 0
+                            paid = amount_paid if i == paid_installment else 0.0
                             payment_histories.append(PaymentHistory(
                                 trainee=trainees,
                                 course=Courses.objects.get(id=course_choice),
@@ -570,16 +574,34 @@ def view_course(request):
 
 @login_required(login_url="/")
 def course_details(request, course_id):
-    courses = Courses.objects.prefetch_related(
+    course = Courses.objects.prefetch_related(
         'level_set',
         'trainercourseassignment_set__trainer_id__trainer_name'
     ).filter(id=course_id).first()
-    print(courses)
+    
+    if not course:
+        messages.error(request, "Course not found.")
+        return redirect('view_course')
+    
+    # Get course assignments (trainers assigned to this course)
+    course_assignments = TrainerCourseAssignment.objects.filter(
+        course_id=course
+    ).select_related('trainer_id__trainer_name', 'level_id')
+    
+    # Count active trainees for this course
+    active_trainees_count = Trainee.objects.filter(
+        course_id=course,
+        completed=False,
+        suspended=False,
+        terminated=False
+    ).count()
 
     context = {
-        'course_details': courses,
+        'course_details': course,
+        'course_assignments': course_assignments,
+        'active_trainees_count': active_trainees_count,
     }
-    return render(request, 'admin_template/view_course.html', context)
+    return render(request, 'admin_template/course_details_professional.html', context)
 
 
 @login_required(login_url="/")
@@ -1317,6 +1339,7 @@ def edit_course(request, course):
         course_name = request.POST.get("course")
         price = request.POST.get("price").strip()
         month = request.POST.get("month")
+        presentations = request.POST.get("presentations")
 
         if not course_name:
             messages.error(request, "Course name cannot be empty.")
@@ -1340,6 +1363,7 @@ def edit_course(request, course):
         courses.course_name = course_name
         courses.price = price
         courses.months = month
+        courses.number_of_presentation=presentations
         courses.save()
 
         # Update levels
@@ -1675,15 +1699,17 @@ def create_invited_admin(request, token):
 
     return render(request, "create-admin.html")
 
-def payment(request):
-    return render(request, "admin_template/payment.html")
+# def payment(request):
+#     return render(request, "admin_template/payment.html")
 
 
 @login_required(login_url="/")
 def manage_skills(request):
     skill_expertise = SkillExpertise.objects.prefetch_related('competent_skills').all()
+    courses = Courses.objects.all()
     context = {
-        'skill_expertise': skill_expertise
+        'skill_expertise': skill_expertise,
+        "courses":courses,
     }
     return render(request, 'admin_template/manage_skills.html', context)
 

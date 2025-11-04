@@ -47,6 +47,7 @@ def payment(request):
         trainee.total_amount_paid = total_amount_paid
         trainee.outstanding_amount = outstanding_amount
         trainee.has_overdue = has_overdue
+        print(f"Trainee: {trainee}")
         trainees.append(trainee)
     
     # Get courses for filtering
@@ -54,6 +55,7 @@ def payment(request):
     
     # Generate years for trainer payments (current year and 2 years back/forward)
     current_date = datetime.now()
+    print(f"The datetime: {current_date}")
     years = list(range(current_date.year - 2, current_date.year + 3))
     
     context = {
@@ -119,11 +121,15 @@ def process_trainee_payment(request, trainee_id):
     trainee = get_object_or_404(Trainee, id=trainee_id)
     
     # Get pending payments
-    pending_payments = PaymentHistory.objects.filter(
-        trainee=trainee
-    ).filter(
-        Q(amount_paid__isnull=True) | Q(amount_paid='0') | Q(amount_paid='')
-    ).order_by('installmental_payment')
+    try:
+        pending_payments = PaymentHistory.objects.filter(
+            trainee=trainee
+        ).filter(
+            Q(amount_paid__isnull=True) | Q(amount_paid='0.0') | Q(amount_paid='')
+        ).order_by('installmental_payment')
+        print(f"This is for Pending: {pending_payments}")
+    except Exception as e:
+        print(f"The error is: {e}")
         
     # Calculate amounts
     if trainee.portion_type == "Level" and trainee.levels.exists():
@@ -238,7 +244,7 @@ def calculate_trainer_salary(trainer, month, year):
         # Count trainees assigned to this trainer for this specific course/level
         if level:
             # Specific level - count trainees assigned to this trainer for this level
-            trainee_assignments = TraineeCourseAssignment.objects.filter(trainer_id=trainer,course_id=course,level_id=level).select_related('trainee_id')
+            trainee_assignments = TraineeCourseAssignment.objects.filter(trainer_id=trainer,course_id=course,level_id=level,created_at__month=month, created_at__year=year,).select_related('trainee_id')
             print(f"This is for trainee_assignment in level: {trainee_assignments}")
             course_price = float(course.price or 0)
             total_levels = Level.objects.filter(course_id=course).count()
@@ -324,8 +330,8 @@ def process_trainer_payment(request, trainer_id):
     
     # Get month and year from query params or use current
     current_date = datetime.now()
-    payment_month_num = int(request.GET.get('month')) or current_date.month
-    payment_year = int(request.GET.get('year')) or current_date.year
+    payment_month_num = int(request.GET.get('month') or current_date.month)
+    payment_year = int(request.GET.get('year') or current_date.year)
     payment_month = month_name[payment_month_num]
     
     # Calculate salary for the specified month/year

@@ -5,64 +5,251 @@
 {% if request.user.user_type == "1" %}
 
 <style>
-    .course-ellipse {
-        width: 180px;
-        height: 80px;
-        background: linear-gradient(135deg, #007bff 60%, #6c757d 100%);
-        color: #fff;
-        border-radius: 50px / 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0 auto 10px auto;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        transition: transform 0.2s;
-        cursor: pointer;
-        text-decoration: none;
-        text-align: center; /* Ensure text is centered */
-        line-height: normal; /* Prevent vertical misalignment */
-        height: 80px; /* Explicit height for vertical centering */
+/* Professional Course Grid Styles */
+.courses-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.courses-header {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.courses-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.courses-subtitle {
+    color: #6c757d;
+    margin: 5px 0 0 0;
+    font-weight: 500;
+}
+
+.add-course-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.add-course-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.courses-grid-container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.course-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 30px 25px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.course-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.course-card:hover::before {
+    opacity: 1;
+}
+
+.course-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.course-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.course-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.course-duration {
+    background: rgba(255,255,255,0.2);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.course-price {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.course-levels {
+    margin-top: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.levels-count {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    color: #e9ecef;
+    margin-bottom: 20px;
+}
+
+.empty-state-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .courses-container {
+        padding: 20px;
     }
-    .course-ellipse:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        text-decoration: none;
+    
+    .courses-header {
+        padding: 20px;
+        text-align: center;
     }
-    .course-grid .col {
-        margin-bottom: 30px;
+    
+    .courses-title {
+        font-size: 24px;
     }
+    
+    .courses-grid-container {
+        padding: 25px;
+    }
+    
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .course-card {
+        padding: 25px 20px;
+    }
+}
 </style>
 
-<div class="page-header">
-    <div class="row align-items-center">
-        <div class="col">
-            <h3 class="page-title">Available Courses</h3>
-            <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'admin_home' %}">Dashboard</a></li>
-                <li class="breadcrumb-item active">View Available Courses</li>
-            </ul>
+<div class="courses-container">
+    <!-- Header -->
+    <div class="courses-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 class="courses-title">Available Courses</h1>
+                <p class="courses-subtitle">Manage and view all training courses</p>
+            </div>
+            <a href="{% url 'add_course' %}" class="add-course-btn">
+                <i class="fas fa-plus me-2"></i>Add New Course
+            </a>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-sm-12">
-        {% include "includes/messages.html" %}
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="row row-cols-1 row-cols-md-3 g-4 p-3 course-grid">
-                    {% for course in total_course %}
-                    <div class="col text-center">
-                        <a style="padding-top: 30px;" href="{% url 'course_details' course.id %}" class="course-ellipse mb-2 d-block">
-                            {{ course.course_name }}
-                        </a>
-                    </div>
-                    {% endfor %}
+    <!-- Messages -->
+    {% include "includes/messages.html" %}
+
+    <!-- Courses Grid -->
+    <div class="courses-grid-container">
+        {% if total_course %}
+        <div class="courses-grid">
+            {% for course in total_course %}
+            <a href="{% url 'course_details' course.id %}" class="course-card">
+                <div class="course-name">{{ course.course_name }}</div>
+                
+                <div class="course-meta">
+                    <div class="course-duration">{{ course.months }} {% if course.months == 0 %}Month{% else %}Months{% endif %}</div>
+                    <div class="course-price">₦{{ course.price|floatformat:0 }}</div>
                 </div>
-            </div>
+                
+                <div class="course-levels">
+                    <span class="levels-count">
+                        {{ course.level_set.count }} Level{{ course.level_set.count|pluralize }}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
         </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3 class="empty-state-title">No Courses Available</h3>
+            <p class="empty-state-text">Start by creating your first training course</p>
+            <a href="{% url 'add_course' %}" class="add-course-btn">
+                <i class="fas fa-plus me-2"></i>Create First Course
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
