@@ -226,7 +226,7 @@ def calculate_trainer_salary(trainer, month, year):
         course = assignment.course_id
         level = assignment.level_id
         key = f"{course.id}_{level.id if level else 'full'}"
-        print(f"This is key: {key}")
+        # print(f"This is key: {key}")
         
         if key not in course_level_groups:
             course_level_groups[key] = {
@@ -255,8 +255,8 @@ def calculate_trainer_salary(trainer, month, year):
                 trainer_id=trainer,
                 course_id=course,
                 level_id__isnull=True,  # Full course assignments have no specific level
-                created_at__month=month,
-                created_at__year=year
+                # created_at__month=month,
+                # created_at__year=year
             ).select_related('trainee_id')
             
             course_price = float(course.price or 0)

@@ -45,7 +45,7 @@
                             <h3>{% if not trainer %}
                                 <h3 style="color: rgb(217, 11, 11);font-size: 17px;">There is no current Trainer<br> for the Course your offering</h3>
                                 {% else %}
-                                {{ trainer }}
+                                {{ trainer.first_name }} {{ trainer.last_name }}
                                 {% endif %}
                                 </h3>
                         </p>

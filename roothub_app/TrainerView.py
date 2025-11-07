@@ -1,33 +1,56 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee, Fix_Class, TrainerCourseAssignment
+from .models import Assignment, AssignmentSubmission, Presentation, Trainers, Courses, Trainee, Fix_Class, TrainerCourseAssignment, TraineeCourseAssignment
 from django.db.models import Q
 from django.contrib import messages
 
 @login_required(login_url="/")
 def home(request):
     trainer = Trainers.objects.get(trainer_name=request.user)
-    assignment = TrainerCourseAssignment.objects.filter(trainer_id=trainer.id).all()
-    # print(assignment.course_id)
-    print(assignment.count())
-    dates = Presentation.objects.values_list('date', flat=True).distinct()
-    # trainer_courses = Courses.objects.filter(trainer_id=trainer)
-    fix_classes = Fix_Class.objects.all()
     
-    # courses_with_trainees = []
-    # for course in courses:
-    #     trainees_count = Trainee.objects.filter(course_id=course).count()
-    #     courses_with_trainees.append({
-    #         'course': course,
-    #         'trainees_count': trainees_count
-    #     })
+    # Get all courses assigned to this trainer
+    trainer_assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer).select_related('course_id')
+    
+    # Get all trainees assigned to this trainer with course and level details
+    trainee_assignments = TraineeCourseAssignment.objects.filter(
+        trainer_id=trainer
+    ).select_related('trainee_id', 'course_id', 'level_id')
+    
+    # Calculate statistics
+    total_courses = trainer_assignments.count()
+    total_trainees = trainee_assignments.count()
+    
+    # Get course names the trainer is offering
+    course_names = [f"{assignment.course_id.course_name} - {assignment.level_id.level}" for assignment in trainer_assignments]
+    
+    # Group trainees by course and level for detailed view
+    trainee_details = []
+    for assignment in trainee_assignments:
+        trainee_info = {
+            'trainee_name': assignment.trainee_id.trainee_name.get_full_name() if assignment.trainee_id.trainee_name.first_name else assignment.trainee_id.trainee_name.username,
+            'course_name': assignment.course_id.course_name,
+            'level': assignment.level_id.level if assignment.level_id else 'Full Course'
+        }
+        trainee_details.append(trainee_info)
+    
+    # Group trainees by course for summary
+    from collections import defaultdict
+    course_trainee_count = defaultdict(int)
+    for assignment in trainee_assignments:
+        course_trainee_count[assignment.course_id.course_name] += 1
+    dates = Presentation.objects.values_list('date', flat=True).distinct()
+    fix_classes = Fix_Class.objects.all()
 
     content = {
         'trainer': trainer,
-        # 'courses_with_trainees': courses_with_trainees,
-        "dates":dates,
-        # "trainer_courses":trainer_courses,
-        "fix_classes":fix_classes
+        'dates': dates,
+        'fix_classes': fix_classes,
+        'total_courses': total_courses,
+        'total_trainees': total_trainees,
+        'course_names': course_names,
+        'trainee_details': trainee_details,
+        'trainer_assignments': trainer_assignments,
+        'course_trainee_count': dict(course_trainee_count)
     }
     return render(request, "trainer_template/home.html", content)
 

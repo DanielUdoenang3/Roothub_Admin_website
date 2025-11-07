@@ -77,7 +77,11 @@
                     </ul>
                 </li>
 
-                <li class="{% if request.path == '/payment' %}active{% endif %}">
+                <li class="{% if '/curriculum' in request.path %}active{% endif %}">
+                    <a href="#" ><i class="fas fa-book-reader"></i> <span>Curriculum</span></a>
+                </li>
+
+                <li class="{% if '/payment' in request.path %}active{% endif %}">
                     <a href="{% url "payment" %}" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
                 </li>
 
@@ -131,6 +135,14 @@
                         <li><a href="{% url "view_upload_assignment" %}" class="{% if request.path == '/view_upload_assignment' %}active{% endif %}"><span class="fas fa-tasks"></span>View Uploaded Assignment</a></li>
                         <li><a href="{% url "view_submissions" %}" class="{% if request.path == '/view_submissions' %}active{% endif %}"><span class="fas fa-chart-area"></span>View Submissions</a></li>
                     </ul>
+                </li>
+
+                <li class="{% if '/curriculum' in request.path %}active{% endif %}">
+                    <a href="#" ><i class="fas fa-book-reader"></i> <span>Curriculum</span></a>
+                </li>
+
+                <li class="{% if request.path == '/trainer_payment' %}active{% endif %}">
+                    <a href="#" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
                 </li>
 
                 <li>

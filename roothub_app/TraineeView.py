@@ -2,7 +2,7 @@ from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Assignment, AssignmentSubmission, Fix_Class, AttendanceReport, Presentation_report, Trainers, Courses, Trainee
+from .models import Assignment, AssignmentSubmission, Fix_Class, AttendanceReport, Presentation_report, Trainers, Courses, Trainee, TraineeCourseAssignment
 from django.contrib import messages
 from django.http import HttpResponseBadRequest, JsonResponse
 
@@ -11,8 +11,12 @@ def home(request):
     try:
         context=None
         trainee = get_object_or_404(Trainee, trainee_name=request.user)
-        course = get_object_or_404(Courses, trainees=trainee)
-        trainer = get_object_or_404(Trainers, course_id=course)
+        # course = get_object_or_404(Courses, trainees=trainee)
+        assignment = TraineeCourseAssignment.objects.filter(trainee_id=trainee)
+        print(assignment)
+        # course = assignment.
+        # trainer = get_object_or_404(Trainers, course_id=course)
+        # trainer = assignment.trainer_name
         fix_classes = Fix_Class.objects.all()
         if not trainer:
             messages.error(request,"There's no current trainer")

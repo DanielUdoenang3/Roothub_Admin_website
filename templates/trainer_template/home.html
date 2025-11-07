@@ -26,50 +26,50 @@
     <label for="field-3" class="form-label">Select Course</label>
     <select name="course" id="course" class="form-control form-select">
         <option value="" disabled selected required hidden>Select Course</option>
-        {% for course in trainer_courses %}
-            <option value="{{ course.id }}">{{ course.course_name }}</option>
+        {% for assignment in trainer_assignments %}
+            <option value="{{ assignment.course_id.id }}">{{ assignment.course_id.course_name }}</option>
         {% endfor %}
     </select>
     </div>
     </div>
     </div>
+    <div class="row">
+    <div class="col-md-4">
+    <div class="mb-3">
+    <label for="field-4" class="form-label">Date of Class</label>
+    <input type="date" name="date_of_class" class="form-control" id="field-4" required>
+    </div>
+    </div>
+    <div class="col-md-4">
+    <div class="mb-3">
+    <label for="field-5" class="form-label">Start Class</label>
+    <input type="time" name="start_class" class="form-control" id="field-5" required>
+    </div>
+    </div>
+    <div class="col-md-4">
+    <div class="mb-3">
+    <label for="field-6" class="form-label">End Class</label>
+    <input type="time" name="end_class" class="form-control" id="field-6" required>
+    </div>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-12">
+    <div class="">
+    <label for="field-7" class="form-label">Description</label>
+    <textarea name="description" class="form-control" id="field-7" placeholder="Write something about the class"></textarea>
+    </div>
+    </div>
+    </div>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-info waves-effect waves-light">Submit</button>
+    </div>
+    </div>
+    </div>
+    </div>
 </form>
-<div class="row">
-<div class="col-md-4">
-<div class="mb-3">
-<label for="field-4" class="form-label">Date of Class</label>
-<input type="date" name="date_of_class" class="form-control" id="field-4" required>
-</div>
-</div>
-<div class="col-md-4">
-<div class="mb-3">
-<label for="field-5" class="form-label">Start Class</label>
-<input type="time" name="start_class" class="form-control" id="field-5" required>
-</div>
-</div>
-<div class="col-md-4">
-<div class="mb-3">
-<label for="field-6" class="form-label">End Class</label>
-<input type="time" name="end_class" class="form-control" id="field-6" required>
-</div>
-</div>
-</div>
-<div class="row">
-<div class="col-md-12">
-<div class="">
-<label for="field-7" class="form-label">Description</label>
-<textarea name="description" class="form-control" id="field-7" placeholder="Write something about the class"></textarea>
-</div>
-</div>
-</div>
-</div>
-<div class="modal-footer">
-<button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
-<button type="submit" class="btn btn-info waves-effect waves-light">Submit</button>
-</div>
-</div>
-</div>
-</div>
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -85,14 +85,14 @@
 </div>
 {% include "includes/messages.html" %}
 <div class="row">
-    <div class="col-xl-2 col-sm-4 col-6 d-flex">
+    <div class="col-xl-4 col-md-6 col-12 d-flex">
         <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
-                        <h6> Total Courses</h6>
+                        <h6>Total Courses</h6>
                         <p>
-                            <h3>{{ no_of_trainees|length }}</h3>
+                            <h3>{{ total_courses }}</h3>
                         </p>
                     </div>
                     <div class="db-icon">
@@ -102,20 +102,25 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-5 col-sm-6 col-12 d-flex">
+    <div class="col-xl-4 col-md-6 col-12 d-flex">
         <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
                         <h6>Total Trainees</h6>
-                        {% if not courses_with_trainees %}
-                        <h5 style="color: rgb(217, 11, 11);font-size: 17px;">There are No Trainees </h5>
+                        {% if total_trainees == 0 %}
+                        <h5 style="color: rgb(217, 11, 11);font-size: 17px;">There are No Trainees</h5>
                         {% else %}
-                        {% for course_info in courses_with_trainees %}
-                            <p>
-                                <h5>{{ course_info.trainees_count }} -- ({{ course_info.course.course_name }})</h5>
-                            </p>
-                        {% endfor %}
+                        <p>
+                            <h3>{{ total_trainees }}</h3>
+                        </p>
+                        {% if course_trainee_count %}
+                        <small class="text-muted">
+                            {% for course, count in course_trainee_count.items %}
+                            {{ course }}: {{ count }}<br>
+                            {% endfor %}
+                        </small>
+                        {% endif %}
                         {% endif %}
                     </div>
                     <div class="db-icon">
@@ -125,61 +130,100 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-5 col-sm-6 col-12 d-flex">
+    <div class="col-xl-4 col-md-12 col-12 d-flex">
         <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
                         <h6>Courses Teaching</h6>
-                        <h4>
-                            {% if courses_with_trainees %}
-                            {% for course in courses_with_trainees %}
-                            {{ course.course.course_name}}<br>
+                        <div>
+                            {% if course_names %}
+                            {% for course_name in course_names %}
+                            <span class="badge bg-primary me-1 mb-1">{{ course_name }}</span>
                             {% endfor %}
                             {% else %}
-                            <h5 style="color: rgb(217, 11, 11);font-size: 17px;">No Course has been <br> assigned to you to teach</h5>
+                            <h5 style="color: rgb(217, 11, 11);font-size: 17px;">No Course has been assigned to you to teach</h5>
                             {% endif %}
-                        </h4>
+                        </div>
                     </div>
-                    <div class="db-icon">
+                    {% comment %} <div class="db-icon">
                         <i class="fas fa-tasks"></i>
-                    </div>
+                    </div> {% endcomment %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Trainee Details Card -->
 <div class="row">
-    <div class="col-12 col-lg-12 col-xl-8 d-flex">
-    <div class="card flex-fill comman-shadow">
-    <div class="card-header">
-    <div class="row align-items-center">
-    <div class="col-6">
-    <h5 class="card-title">Teaching Activity</h5>
+    <div class="col-12 d-flex">
+        <div class="card shadow-lg border-0 bg-comman w-100">
+            <div class="card-header">
+                <h5 class="card-title">My Trainees</h5>
+            </div>
+            <div class="card-body">
+                {% if trainee_details %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Trainee Name</th>
+                                <th>Course</th>
+                                <th>Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trainee in trainee_details %}
+                            <tr>
+                                <td>{{ trainee.trainee_name }}</td>
+                                <td>{{ trainee.course_name }}</td>
+                                <td>{{ trainee.level }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No trainees assigned to you yet.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    <div class="col-6">
-    <ul class="chart-list-out">
-    <li><span class="circle-blue"></span>Trainer</li>
-    <li><span class="circle-green"></span>Trainee</li>
-    <li class="star-menus"><a href="#"><i class="fas fa-ellipsis-v"></i></a></li>
-    </ul>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill comman-shadow">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <h5 class="card-title">Teaching Activity</h5>
+                    </div>
+                    <div class="col-6">
+                        <ul class="chart-list-out">
+                            <li><span class="circle-blue"></span>Trainer</li>
+                            <li><span class="circle-green"></span>Trainee</li>
+                            <li class="star-menus"><a href="#"><i class="fas fa-ellipsis-v"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="school-area-graph"></div>
+            </div>
+        </div>
     </div>
-    </div>
-    </div>
-    <div class="card-body">
-    <div id="school-area-graph"></div>
-    </div>
-    </div>
-    </div>
-    <div class="col-12 col-lg-12 col-xl-4 d-flex">
+    <div class="col-12 col-lg-4 d-flex">
         <div class="card flex-fill comman-shadow">
             <div class="card-body">
                 <div id="calendar-doctor" class="calendar-container"></div>
-                    <div class="calendar-info calendar-info1">
-                        <div class="up-come-header">
-                            <h2>Upcoming Classes</h2>
-                            <span><a href="javascript:;" data-bs-toggle="modal" data-bs-target="#con-close-modal"><i class="feather-plus"></i></a></span>
-                        </div>
+                <div class="calendar-info calendar-info1">
+                    <div class="up-come-header">
+                        <h2>Upcoming Classes</h2>
+                        <span><a href="javascript:;" data-bs-toggle="modal" data-bs-target="#con-close-modal"><i class="feather-plus"></i></a></span>
+                    </div>
+                    {% if fix_classes %}
                         {% for classes in fix_classes %}
                         <div class="calendar-details">
                             <p style="font-size: 18px;">{{ classes.class_date|date:'F j' }}</p>
@@ -191,13 +235,18 @@
                                 <span>{{ classes.start_class|time:'h:i A' }} - {{ classes.end_class|time:'h:i A' }}</span>
                             </div>
                         </div>
-                        
                         {% endfor %}
-                    </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <p>No upcoming classes scheduled</p>
+                            <small>Click the + button to schedule a class</small>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+</div>
     <div class="col-12 col-lg-12 col-xl-12 d-flex">
         <div class="card flex-fill student-space comman-shadow">
             <div class="card-header d-flex align-items-center">

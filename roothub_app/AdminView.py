@@ -618,35 +618,42 @@ def assign_trainer(request):
         trainer = get_object_or_404(Trainers, id=trainer_id)
         selected_trainer = trainer
 
-        # Get already assigned courses/levels for this trainer
-        assignments = TrainerCourseAssignment.objects.filter(trainer_id=trainer)
-        assigned_courses = assignments.values_list('course_id', flat=True).distinct()
-        assigned_levels = {}
-        for assignment in assignments:
-            assigned_levels.setdefault(assignment.course_id.id, []).append(assignment.level_id.id)
-
         # Get selected course IDs (from multi-select)
         course_ids = request.POST.getlist('course_ids')
         assignment_summary = []
-        for course_id in course_ids:
-            course = get_object_or_404(Courses, id=course_id)
-            level_ids = request.POST.getlist(f'level_ids_{course_id}')
-            level_names = []
-            for level_id in level_ids:
-                level = get_object_or_404(Level, id=level_id)
-                # Prevent duplicate assignment
-                if not TrainerCourseAssignment.objects.filter(trainer_id=trainer, course_id=course, level_id=level).exists():
+        
+        with transaction.atomic():
+            for course_id in course_ids:
+                course = get_object_or_404(Courses, id=course_id)
+                level_ids = request.POST.getlist(f'level_ids_{course_id}')
+                level_names = []
+                    
+                for level_id in level_ids:
+                    level = get_object_or_404(Level, id=level_id)
+                        
+                    # Check if this specific trainer-course-level assignment exists
+                    existing_assignment = TrainerCourseAssignment.objects.filter(
+                        trainer_id=trainer, 
+                        course_id=course, 
+                        level_id=level
+                    ).first()
+                    
+                    # If assignment exists, delete it first
+                    if existing_assignment:
+                        existing_assignment.delete()
+                    
+                    # Create new assignment
                     TrainerCourseAssignment.objects.create(
                         trainer_id=trainer,
                         course_id=course,
                         level_id=level
                     )
-                level_names.append(level.level)
-            if level_names:
-                assignment_summary.append({
-                    "course_name": course.course_name,
-                    "levels": level_names
-                })
+                    level_names.append(level.level)
+                    if level_names:
+                        assignment_summary.append({
+                            "course_name": course.course_name,
+                            "levels": level_names
+                        })
 
         # Send assignment notification email once, after all assignments
         if assignment_summary:
@@ -1686,7 +1693,7 @@ def create_invited_admin(request, token):
                     email = email,
                     password = password2,
                     profile_pics = profile_pic,
-                    user_type = 4,
+                    user_type = 1,
                 )
                 admin.save()
                 messages.success(request, "Admin created successfully")

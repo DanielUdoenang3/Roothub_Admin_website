@@ -237,6 +237,11 @@ class TraineeCourseAssignment(models.Model):
     level_id = models.ForeignKey(Level, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+
+class Curriculum(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    trainer_id = models.ForeignKey(Trainers, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='curriculum', blank=True, null=True)
     
 class Attendance(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
