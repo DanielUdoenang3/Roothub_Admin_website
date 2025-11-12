@@ -93,6 +93,7 @@ urlpatterns = [
     path('edit_announcement/<announcement_title>', AdminView.edit_announcement, name="edit_announcement"),
     path('get-unread-announcements/', views.get_unread_announcements, name="get_unread_announcements"),
     path('mark-announcement-as-read/<int:announcement_id>/', views.mark_announcement_as_read, name="mark_announcement_as_read"),
+    path('dismiss-notification-badge/', views.dismiss_notification_badge, name="dismiss_notification_badge"),
 
     # Trainer Views
     path("trainer_home", TrainerView.home, name="trainer_home"),
@@ -103,6 +104,8 @@ urlpatterns = [
     path("delete_uploaded_assignment/<assignment_title>", TrainerView.delete_uploaded_assignment, name="delete_uploaded_assignment"),
     path("fix_classes", TrainerView.fix_classes, name="fix_classes"),
 
+    #Trainer Payment
+    path("trainer_payment", TrainerView.fix_classes, name="trainer_payment"), #Correct the function
     
     # Trainee Views
     path("trainee_home", TraineeView.home, name="trainee_home"),
@@ -112,6 +115,10 @@ urlpatterns = [
     path('get-trainee-attendance/', TraineeView.get_trainee_attendance, name='get_trainee_attendance'),
     path("view_trainee_presentation", TraineeView.view_trainee_presentation, name="view_trainee_presentation"),
     path('get-presentation-data-by-date/<str:date>/', TraineeView.get_presentation_data_by_date, name='get_presentation_data_by_date'),
+    path("upload_presentation_trainee", TraineeView.view_trainee_presentation, name="upload_presentation_trainee"), #Correct the function
+
+    #Trainee_Payment
+    path("trainee_payment", TraineeView.home, name="trainee_payment"), #Correct the function
 
     # Forgot Password
     path("forgot-password", views.forgot_password, name="forgot_password"),

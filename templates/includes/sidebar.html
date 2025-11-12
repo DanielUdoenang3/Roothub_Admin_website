@@ -137,12 +137,12 @@
                     </ul>
                 </li>
 
-                <li class="{% if '/curriculum' in request.path %}active{% endif %}">
+                <li class="{% if '/trainer_curriculum' in request.path %}active{% endif %}">
                     <a href="#" ><i class="fas fa-book-reader"></i> <span>Curriculum</span></a>
                 </li>
 
                 <li class="{% if request.path == '/trainer_payment' %}active{% endif %}">
-                    <a href="#" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
+                    <a href="{% url "view_submissions" %}" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
                 </li>
 
                 <li>
@@ -168,13 +168,26 @@
                 <li class="{% if request.path == '/view_assignments' %}active{% endif %}">
                     <a href="{% url "view_assignments" %}"><i class="fas fa-tags"></i> <span>Assignment</span></a>
                 </li>
+                
+                <li class="{% if request.path == '/view_trainee_presentation' %}active{% elif request.path == '/upload_presentation_trainee' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-braille"></i> <span>Presentation</span> <span
+                            class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "upload_presentation_trainee" %}" class="{% if request.path == '/upload_presentation_trainee' %}active{% endif %}"><span class="fas fa-tasks"></span>Upload Presentaion</a></li>
+                        <li><a href="{% url "view_trainee_presentation" %}" class="{% if request.path == '/view_trainee_presentation' %}active{% endif %}"><span class="fas fa-columns"></span>View Presentation Report</a></li>
+                    </ul>
+                </li>
 
                 <li class="{% if request.path == '/view_trainee_attendance' %}active{% endif %}">
                     <a href="{% url "view_trainee_attendance" %}"><i class="fas fa-tasks"></i> <span>View Attendance Report</span></a>
                 </li>
+                
+                <li class="{% if request.path == '/trainee_payment' %}active{% endif %}">
+                    <a href="#" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
+                </li>
 
-                <li class="{% if request.path == '/view_trainee_presentation' %}active{% endif %}">
-                    <a href="{% url "view_trainee_presentation" %}"><i class="fas fa-columns"></i> <span>View Presentation Report</span></a>
+                <li class="{% if '/trainee_view_curriculum' in request.path %}active{% endif %}">
+                    <a href="#" ><i class="fas fa-book-reader"></i> <span>Curriculum</span></a>
                 </li>
 
                 <li>

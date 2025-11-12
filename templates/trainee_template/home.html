@@ -521,7 +521,7 @@
 </div>
 {% include "includes/messages.html" %}
 <div class="row">
-    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+    <div class="col-xl-4 col-md-6 col-12 d-flex">
         <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
@@ -532,13 +532,13 @@
                         </p>
                     </div>
                     <div class="db-icon">
-                        <i class="fas fa-layer-group"></i>
+                        <i class="fas fa-graduation-cap"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+    <div class="col-xl-4 col-md-6 col-12 d-flex">
         <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
@@ -551,6 +551,8 @@
                             {% else %}
                             Partial Course
                             {% endif %}
+                            </h3>
+                            <span style="font-size: 1rem; margin-top: 0.5em; color: red;">
                             {% if not course_completion_info.is_full_course and trainee_levels %}
                             <div class="stat-label">
                                 {% for level in trainee_levels %}
@@ -558,7 +560,7 @@
                                 {% endfor %}
                             </div>
                             {% endif %}
-                            </h3>
+                        </sapn>
                         </p>
                     </div>
                     <div class="db-icon">
@@ -568,19 +570,36 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+    <div class="col-xl-4 col-md-6 col-12 d-flex">
         <div class="card shadow-lg border-0 bg-comman w-100">
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
                         <h6>Current Trainer</h6>
                         <p>
-                            <h3>{% if not trainer %}
-                                <h3 style="color: rgb(217, 11, 11);font-size: 17px;">There is no current Trainer<br> for the Course your offering</h3>
+                            {% if trainers_info %}
+                                <div class="trainers-list">
+                                    {% for trainer_info in trainers_info %}
+                                    <div class="trainer-item">
+                                        <div class="trainer-info">
+                                            <div class="trainer-name">
+                                                {{ trainer_info.trainer.trainer_name.first_name }} {{ trainer_info.trainer.trainer_name.last_name }} -- {{ trainer_info.level.level }}
+                                            </div>
+                                            {% comment %} <div class="trainer-level">
+                                                <i class="fas fa-layer-group"></i>
+                                                <span class="level-badge">{{ trainer_info.level.level }}</span>
+                                                <span>• {{ trainer_info.course.course_name }}</span>
+                                            </div> {% endcomment %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                                 {% else %}
-                                {{ trainer.first_name }} {{ trainer.last_name }}
-                                {% endif %}
-                                </h3>
+                                <div class="no-trainers">
+                                    <i class="fas fa-user-slash"></i>
+                                    <p>No trainers assigned yet</p>
+                                </div>
+                            {% endif %}
                         </p>
                     </div>
                     <div class="db-icon">
@@ -621,6 +640,7 @@
                         <div class="up-come-header">
                             <h2>Upcoming Classes</h2>
                         </div>
+                        {% if fix_classes %}
                         {% for classes in fix_classes %}
                         <div class="calendar-details">
                             <p style="font-size: 20px;">{{ classes.class_date|date:'F j' }}</p>
@@ -633,6 +653,12 @@
                             </div>
                         </div>
                         {% endfor %}
+                        {% else %}
+                        <div style="marigin-left:1rem" class="calendar-details">
+                            <i style="margin-right:0.8rem;" class="fas fa-calendar-times"></i>
+                            <p>No upcoming classes scheduled</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

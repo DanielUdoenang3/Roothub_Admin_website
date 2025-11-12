@@ -277,6 +277,16 @@ class Presentation_report(models.Model):
     def __str__(self):
         return f"Presentation Report for {self.trainee_id} - {self.presentation_id.title}"
 
+class PresentationSubmit(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    presentation_id = models.ForeignKey(Presentation, on_delete=models.CASCADE)
+    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
+    link = models.CharField()
+    file = models.FileField(upload_to='presentation', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+
 class AttendanceReport(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     student_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
@@ -296,6 +306,7 @@ class Assignment(models.Model):
     description = models.TextField()
     file = models.FileField(upload_to='assignments', blank=True, null=True)
     due_date = models.DateTimeField()
+    remark = models.CharField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -324,18 +335,84 @@ class Announcement(models.Model):
         ('Trainers', 'Trainers'),
         ('Trainees', 'Trainees'),
         ('Course', 'Course'),
+        ('Multi-Category', 'Multi-Category'),
     ]
+    
+    PRIORITY_CHOICES = [
+        ('Low', 'Low'),
+        ('Normal', 'Normal'),
+        ('High', 'High'),
+        ('Urgent', 'Urgent'),
+    ]
+    
     id = models.AutoField(primary_key=True, unique=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     file = models.FileField(upload_to='announcements', blank=True, null=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='General')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='Normal')
+    
+    # Enhanced targeting options
     course = models.ForeignKey('Courses', null=True, blank=True, on_delete=models.SET_NULL)
+    target_courses = models.ManyToManyField('Courses', related_name='targeted_announcements', blank=True)
+    target_trainers = models.BooleanField(default=False)
+    target_trainees = models.BooleanField(default=False)
+    target_admins = models.BooleanField(default=False)
+    
+    # Notification management
     read_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="read_announcements", blank=True)
+    notification_clicked = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="clicked_notifications", blank=True)
+    
+    # Scheduling
+    scheduled_for = models.DateTimeField(null=True, blank=True, help_text="Schedule announcement for future delivery")
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Announcement expiry date")
+    
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
     def __str__(self):
-        return f"{self.title} - {self.description}"
+        return f"{self.title} - {self.get_priority_display()}"
+    
+    @property
+    def is_active(self):
+        """Check if announcement is currently active"""
+        now = timezone.now()
+        if self.scheduled_for and self.scheduled_for > now:
+            return False
+        if self.expires_at and self.expires_at < now:
+            return False
+        return True
+    
+    @property
+    def target_summary(self):
+        """Get a summary of who this announcement targets"""
+        targets = []
+        if self.target_admins:
+            targets.append("Admins")
+        if self.target_trainers:
+            targets.append("Trainers")
+        if self.target_trainees:
+            targets.append("Trainees")
+        if self.target_courses.exists():
+            course_names = list(self.target_courses.values_list('course_name', flat=True))
+            targets.append(f"Courses: {', '.join(course_names)}")
+        return " + ".join(targets) if targets else "General"
+
+class NotificationStatus(models.Model):
+    """Track individual user notification status for announcements"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE)
+    is_read = models.BooleanField(default=False)
+    badge_dismissed = models.BooleanField(default=False)  # Track if user clicked notification icon
+    read_at = models.DateTimeField(null=True, blank=True)
+    dismissed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'announcement']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.announcement.title} ({'Read' if self.is_read else 'Unread'})"
 
 class Fix_Class(models.Model):
     id = models.AutoField(primary_key=True, unique=True)

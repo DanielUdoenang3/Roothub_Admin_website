@@ -1480,70 +1480,132 @@ def delete_course(request, course):
 
 @login_required(login_url="/")
 def send_announcement(request):
-    courses = Courses.objects.all()
+    from .forms import SendAnnouncement
+    
     if request.method == "POST":
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-        category = request.POST.get("category")
-        file = request.FILES.get("file")
-        course_obj = None
-        if category not in ["General", "Trainers", "Trainees"]:
+        form = SendAnnouncement(request.POST, request.FILES)
+        if form.is_valid():
             try:
-                course_obj = Courses.objects.get(id=category)
-                category_val = "Course"
-            except Courses.DoesNotExist:
-                course_obj = None
-                category_val = "General"
+                announcement = form.save(commit=False)
+                
+                # Determine category based on targets
+                targets = []
+                if announcement.target_admins:
+                    targets.append("Admins")
+                if announcement.target_trainers:
+                    targets.append("Trainers")
+                if announcement.target_trainees:
+                    targets.append("Trainees")
+                
+                if len(targets) > 1 or form.cleaned_data['target_courses']:
+                    announcement.category = "Multi-Category"
+                elif announcement.target_trainers:
+                    announcement.category = "Trainers"
+                elif announcement.target_trainees:
+                    announcement.category = "Trainees"
+                else:
+                    announcement.category = "General"
+                
+                announcement.save()
+                form.save_m2m()  # Save many-to-many relationships
+                
+                # Create notification status for targeted users
+                create_notification_status_for_announcement(announcement)
+                
+                target_summary = announcement.target_summary
+                messages.success(request, f"Announcement sent successfully to: {target_summary}")
+                return redirect("view_announcement")
+                
+            except Exception as e:
+                print(f"Error creating announcement: {e}")
+                messages.error(request, f"Failed to send announcement: {str(e)}")
         else:
-            category_val = category
-        try:
-            announcement = Announcement.objects.create(
-                title=title,
-                description=description,
-                file=file,
-                category=category_val,
-                course=course_obj
-            )
-            # Only mark as unread for intended recipients (do NOT add unintended users)
-            # Do NOT add users to read_by here; leave read_by empty so only intended users see it as unread
-            pass
-
-            messages.success(request, "Announcement sent successfully")
-        except Exception as e:
-            print(e)
-            messages.error(request, f"Announcement not sent due to {e}")
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = SendAnnouncement()
 
     context = {
-        "courses": courses,
+        "form": form,
+        "courses": Courses.objects.all(),
     }
     return render(request, "admin_template/send_announcement.html", context)
 
+def create_notification_status_for_announcement(announcement):
+    """Create NotificationStatus entries for all targeted users"""
+    from .models import NotificationStatus
+    
+    targeted_users = []
+    
+    # Add admins if targeted
+    if announcement.target_admins:
+        admin_users = CustomUser.objects.filter(user_type="1")
+        targeted_users.extend(admin_users)
+    
+    # Add trainers if targeted
+    if announcement.target_trainers:
+        trainer_users = CustomUser.objects.filter(user_type="2")
+        targeted_users.extend(trainer_users)
+    
+    # Add trainees if targeted
+    if announcement.target_trainees:
+        trainee_users = CustomUser.objects.filter(user_type="3")
+        targeted_users.extend(trainee_users)
+    
+    # Add users from specific courses
+    if announcement.target_courses.exists():
+        for course in announcement.target_courses.all():
+            # Get trainees in this course
+            course_trainees = CustomUser.objects.filter(
+                user_type="3",
+                trainee__course_id=course
+            )
+            targeted_users.extend(course_trainees)
+            
+            # Get trainers for this course
+            course_trainers = CustomUser.objects.filter(
+                user_type="2",
+                trainers__course_id=course
+            )
+            targeted_users.extend(course_trainers)
+    
+    # Remove duplicates
+    targeted_users = list(set(targeted_users))
+    
+    # Create notification status for each targeted user
+    for user in targeted_users:
+        NotificationStatus.objects.get_or_create(
+            user=user,
+            announcement=announcement,
+            defaults={'is_read': False, 'badge_dismissed': False}
+        )
+
 def get_user_announcements(user):
-    # user_type is stored as string of int, but model uses int for comparison
-    if str(user.user_type) == "1":  # Admin
-        return Announcement.objects.all()
-    elif str(user.user_type) == "2":  # Trainer
-        try:
-            trainer = Trainers.objects.get(trainer_name=user)
-            trainer_courses = trainer.course_id.all()
-            return Announcement.objects.filter(
-                Q(category="General") |
-                Q(category="Trainers") |
-                (Q(category="Course") & Q(course__in=trainer_courses))
-            )
-        except Trainers.DoesNotExist:
-            return Announcement.objects.none()
-    elif str(user.user_type) == "3":  # Trainee
-        try:
-            trainee = Trainee.objects.get(trainee_name=user)
-            return Announcement.objects.filter(
-                Q(category="General") |
-                Q(category="Trainees") |
-                (Q(category="Course") & Q(course=trainee.course_id))
-            )
-        except Trainee.DoesNotExist:
-            return Announcement.objects.none()
-    return Announcement.objects.none()
+    """Get announcements that are targeted to this specific user"""
+    from .models import NotificationStatus
+    from django.utils import timezone
+    from django.db.models import Q
+    
+    now = timezone.now()
+    
+    # Get announcements where this user has a NotificationStatus entry
+    # Filter for active announcements (not expired and not scheduled for future)
+    user_notification_statuses = NotificationStatus.objects.filter(
+        user=user
+    ).select_related('announcement').filter(
+        Q(
+            # No expiry date OR not expired
+            Q(announcement__expires_at__isnull=True) | Q(announcement__expires_at__gt=now)
+        ) & Q(
+            # No schedule date OR already scheduled
+            Q(announcement__scheduled_for__isnull=True) | Q(announcement__scheduled_for__lte=now)
+        )
+    )
+    
+    announcement_ids = user_notification_statuses.values_list('announcement_id', flat=True)
+    
+    return Announcement.objects.filter(
+        id__in=announcement_ids
+    ).order_by('-created_at')
 
 @login_required(login_url="/")
 def view_announcement(request):
@@ -1641,7 +1703,8 @@ def trainer_details(request, username):
             trainees = trainees.filter(trainee_id__payments__date__month=month)
         total_salary += len(trainees) * int(course_fee)  # 30% example
     # return total_salary
-
+    if not assignment:
+        assignment = None
     context={
         'user':user,
         'trainer':trainer,
