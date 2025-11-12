@@ -1,4 +1,507 @@
 {% extends "base.html" %}
+{% comment %} {% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "3" %}
+<style>
+    .trainee-dashboard {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+    
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb-custom {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+    
+    .breadcrumb-custom li:not(:last-child)::after {
+        content: "/";
+        margin-left: 0.5rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card.course-type::before {
+        background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .stat-card.progress::before {
+        background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .stat-card.attendance::before {
+        background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);
+    }
+    
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .stat-card.course-type .stat-icon {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .stat-card.progress .stat-icon {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .stat-card.attendance .stat-icon {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+    
+    .stat-content h3 {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #95a5a6;
+    }
+    
+    .course-badge {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+    
+    .badge-full {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .badge-partial {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .main-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .content-card h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .content-card h2 i {
+        color: #667eea;
+    }
+    
+    .trainers-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .trainer-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .trainer-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .trainer-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .trainer-info {
+        flex: 1;
+    }
+    
+    .trainer-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+    }
+    
+    .trainer-level {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .level-badge {
+        background: #667eea;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .no-trainers {
+        text-align: center;
+        padding: 2rem;
+        color: #95a5a6;
+    }
+    
+    .no-trainers i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .upcoming-classes {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .class-item {
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .class-date {
+        font-size: 0.85rem;
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .class-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+    }
+    
+    .class-time {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    @media (max-width: 1024px) {
+        .main-content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .trainee-dashboard {
+            padding: 1rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="trainee-dashboard">
+    <div class="dashboard-header">
+        <h1>Welcome {{ user.first_name|capfirst }} {{ user.middle_name|capfirst }} {{ user.last_name|capfirst }}!</h1>
+        <ul class="breadcrumb-custom">
+            <li>Home</li>
+            <li>Trainee Dashboard</li>
+        </ul>
+    </div>
+    
+    {% include "includes/messages.html" %}
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-content">
+                    <h3>Current Course</h3>
+                    <div class="stat-value">{{ course.course_name|default:"Not Assigned" }}</div>
+                    {% if course %}
+                    <div class="stat-label">{{ course.months }} months program</div>
+                    {% endif %}
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card course-type">
+            <div class="stat-header">
+                <div class="stat-content">
+                    <h3>Course Type</h3>
+                    <div class="stat-value">
+                        {% if course_completion_info.is_full_course %}
+                            Full Course
+                        {% else %}
+                            Partial Course
+                        {% endif %}
+                    </div>
+                    {% if not course_completion_info.is_full_course and trainee_levels %}
+                    <div class="stat-label">
+                        {% for level in trainee_levels %}
+                            <span class="level-badge">{{ level.level }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <span class="course-badge {% if course_completion_info.is_full_course %}badge-full{% else %}badge-partial{% endif %}">
+                        {% if course_completion_info.is_full_course %}
+                            Complete Program
+                        {% else %}
+                            {{ trainee_levels.count }} Level{{ trainee_levels.count|pluralize }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card progress">
+            <div class="stat-header">
+                <div class="stat-content">
+                    <h3>Assignment Progress</h3>
+                    <div class="stat-value">{{ completed_assignments }}/{{ total_assignments }}</div>
+                    <div class="stat-label">{{ progress_percentage|floatformat:0 }}% Complete</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: {{ progress_percentage }}%"></div>
+                    </div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card attendance">
+            <div class="stat-header">
+                <div class="stat-content">
+                    <h3>Attendance</h3>
+                    <div class="stat-value">{{ recent_attendance.count }}</div>
+                    <div class="stat-label">Recent records</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main-content-grid">
+        <div class="content-card">
+            <h2><i class="fas fa-chalkboard-teacher"></i> Your Trainers</h2>
+            {% if trainers_info %}
+            <div class="trainers-list">
+                {% for trainer_info in trainers_info %}
+                <div class="trainer-item">
+                    <div class="trainer-avatar">
+                        {{ trainer_info.trainer.trainer_name.first_name|first|upper }}{{ trainer_info.trainer.trainer_name.last_name|first|upper }}
+                    </div>
+                    <div class="trainer-info">
+                        <div class="trainer-name">
+                            {{ trainer_info.trainer.trainer_name.first_name }} {{ trainer_info.trainer.trainer_name.last_name }}
+                        </div>
+                        <div class="trainer-level">
+                            <i class="fas fa-layer-group"></i>
+                            <span class="level-badge">{{ trainer_info.level.level }}</span>
+                            <span>• {{ trainer_info.course.course_name }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-trainers">
+                <i class="fas fa-user-slash"></i>
+                <p>No trainers assigned yet</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="content-card">
+            <h2><i class="fas fa-calendar-alt"></i> Upcoming Classes</h2>
+            {% if fix_classes %}
+            <div class="upcoming-classes">
+                {% for classes in fix_classes %}
+                <div class="class-item">
+                    <div class="class-date">
+                        <i class="fas fa-calendar"></i> {{ classes.class_date|date:'F j, Y' }}
+                    </div>
+                    <div class="class-title">{{ classes.title }}</div>
+                    <div class="class-time">
+                        <i class="fas fa-clock"></i>
+                        {{ classes.start_class|time:'h:i A' }} - {{ classes.end_class|time:'h:i A' }}
+                    </div>
+                    {% if classes.description %}
+                    <div class="stat-label" style="margin-top: 0.5rem;">{{ classes.description|truncatechars:60 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-trainers">
+                <i class="fas fa-calendar-times"></i>
+                <p>No upcoming classes scheduled</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    // Smooth scroll animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.stat-card, .content-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 50);
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock custom_js %} {% endcomment %}
+
 {% load static %}
 
 {% block main_content %}
@@ -25,7 +528,37 @@
                     <div class="db-info">
                         <h6>Current Course</h6>
                         <p>
-                            <h3>{{ course }}</h3>
+                            <h3>{{ course|default:"Not Assigned" }}</h3>
+                        </p>
+                    </div>
+                    <div class="db-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-sm-4 col-6 d-flex">
+        <div class="card shadow-lg border-0 bg-comman w-100">
+            <div class="card-body">
+                <div class="db-widgets d-flex justify-content-between align-items-center">
+                    <div class="db-info">
+                        <h6>Course Type</h6>
+                        <p>
+                            <h3>
+                            {% if course_completion_info.is_full_course %}
+                            Full Course
+                            {% else %}
+                            Partial Course
+                            {% endif %}
+                            {% if not course_completion_info.is_full_course and trainee_levels %}
+                            <div class="stat-label">
+                                {% for level in trainee_levels %}
+                                    <span class="level-badge">{{ level.level }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            </h3>
                         </p>
                     </div>
                     <div class="db-icon">

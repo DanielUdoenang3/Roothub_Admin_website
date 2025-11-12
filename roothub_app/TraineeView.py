@@ -9,27 +9,65 @@ from django.http import HttpResponseBadRequest, JsonResponse
 @login_required(login_url="/")
 def home(request):
     try:
-        context=None
         trainee = get_object_or_404(Trainee, trainee_name=request.user)
-        # course = get_object_or_404(Courses, trainees=trainee)
-        assignment = TraineeCourseAssignment.objects.filter(trainee_id=trainee)
-        print(assignment)
-        # course = assignment.
-        # trainer = get_object_or_404(Trainers, course_id=course)
-        # trainer = assignment.trainer_name
-        fix_classes = Fix_Class.objects.all()
-        if not trainer:
-            messages.error(request,"There's no current trainer")
-        if not course:
-            pass
+        
+        # Get trainee's course and assignments
+        course = trainee.course_id
+        assignments = TraineeCourseAssignment.objects.filter(trainee_id=trainee).select_related('trainer_id', 'level_id')
+        
+        # Get all trainers for this trainee's course and levels
+        trainers_info = []
+        if assignments.exists():
+            for assignment in assignments:
+                trainer_info = {
+                    'trainer': assignment.trainer_id,
+                    'level': assignment.level_id,
+                    'course': assignment.course_id
+                }
+                trainers_info.append(trainer_info)
+        
+        # Get course completion info
+        course_completion_info = {
+            'portion_type': trainee.portion_type,
+            'portion_value': trainee.portion_value,
+            'is_full_course': trainee.portion_type == 'Full Course',
+            'completed': trainee.completed,
+            'suspended': trainee.suspended,
+            'terminated': trainee.terminated,
+            'commencement_date': trainee.commencement_date,
+            'end_date': trainee.end_date
+        }
+        
+        # Get trainee's levels if doing partial course
+        trainee_levels = trainee.levels.all() if trainee.portion_type == 'Level' else []
+        
+        # Get upcoming classes for trainee's course
+        fix_classes = Fix_Class.objects.filter(course=course).order_by('class_date', 'start_class')[:5] if course else []
+        
+        # Calculate progress statistics
+        total_assignments = Assignment.objects.filter(course=course).count() if course else 0
+        completed_assignments = AssignmentSubmission.objects.filter(trainee=trainee).count()
+        
+        # Get recent attendance
+        recent_attendance = AttendanceReport.objects.filter(student_id=trainee).order_by('-attendance_id__attendance_date')[:5]
+        
         context = {
-            "course":course,
-            "trainer":trainer,
-            "fix_classes":fix_classes
+            "trainee": trainee,
+            "course": course,
+            "trainers_info": trainers_info,
+            "course_completion_info": course_completion_info,
+            "trainee_levels": trainee_levels,
+            "fix_classes": fix_classes,
+            "total_assignments": total_assignments,
+            "completed_assignments": completed_assignments,
+            "recent_attendance": recent_attendance,
+            "progress_percentage": (completed_assignments / total_assignments * 100) if total_assignments > 0 else 0
         }
     except Exception as e:
-        print(e)
-        # messages.error(request, "You cannot not access a Trainee Url")
+        print(f"Error in trainee home view: {e}")
+        context = {
+            "error": "Unable to load dashboard data"
+        }
     return render(request, "trainee_template/home.html", context)
 @login_required(login_url="/")
 def view_assignments(request):
