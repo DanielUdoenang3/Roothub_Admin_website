@@ -262,22 +262,90 @@ def change_password(request):
 
 @login_required(login_url="/")
 def get_unread_announcements(request):
+    """Get unread announcements for the current user"""
+    from .models import NotificationStatus
+    from django.utils import timezone
+    from django.db.models import Q
+    
     user = request.user
-    announcements = get_user_announcements(user)
-    unread_announcements = announcements.exclude(read_by=user).values(
-        "id", "title", "description", "created_at"
-    )
-    unread_count = unread_announcements.count()
-    return JsonResponse({"unread_count": unread_count, "unread_announcements": list(unread_announcements)})
+    now = timezone.now()
+    
+    # Get notification statuses for this user where badge is not dismissed
+    # Filter for active announcements using Q objects for complex conditions
+    unread_statuses = NotificationStatus.objects.filter(
+        user=user,
+        badge_dismissed=False
+    ).select_related('announcement').filter(
+        Q(
+            # No expiry date OR not expired
+            Q(announcement__expires_at__isnull=True) | Q(announcement__expires_at__gt=now)
+        ) & Q(
+            # No schedule date OR already scheduled
+            Q(announcement__scheduled_for__isnull=True) | Q(announcement__scheduled_for__lte=now)
+        )
+    ).order_by('-announcement__created_at')
+    
+    unread_announcements = []
+    for status in unread_statuses:
+        announcement = status.announcement
+        unread_announcements.append({
+            "id": announcement.id,
+            "title": announcement.title,
+            "description": announcement.description[:100] + "..." if len(announcement.description) > 100 else announcement.description,
+            "priority": announcement.priority,
+            "created_at": announcement.created_at.isoformat(),
+            "is_read": status.is_read
+        })
+    
+    unread_count = len(unread_announcements)
+    return JsonResponse({
+        "unread_count": unread_count, 
+        "unread_announcements": unread_announcements
+    })
 
+@login_required(login_url="/")
+def dismiss_notification_badge(request):
+    """Dismiss all notification badges for the current user"""
+    from .models import NotificationStatus
+    
+    if request.method == "POST":
+        user = request.user
+        
+        # Mark all notification badges as dismissed for this user
+        NotificationStatus.objects.filter(
+            user=user,
+            badge_dismissed=False
+        ).update(
+            badge_dismissed=True,
+            dismissed_at=timezone.now()
+        )
+        
+        return JsonResponse({"success": True})
+    
+    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+
+@login_required(login_url="/")
 def mark_announcement_as_read(request, announcement_id):
+    """Mark a specific announcement as read"""
+    from .models import NotificationStatus
+    
     user = request.user
     try:
-        announcement = Announcement.objects.get(id=announcement_id)
-        announcement.read_by.add(user)
+        # Update the notification status
+        notification_status, created = NotificationStatus.objects.get_or_create(
+            user=user,
+            announcement_id=announcement_id,
+            defaults={'is_read': True, 'read_at': timezone.now()}
+        )
+        
+        if not created and not notification_status.is_read:
+            notification_status.is_read = True
+            notification_status.read_at = timezone.now()
+            notification_status.save()
+        
         return JsonResponse({"success": True})
-    except Announcement.DoesNotExist:
-        return JsonResponse({"success": False, "error": "Announcement not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=404)
 
 @login_required(login_url="/")
 def mark_attendance(request):

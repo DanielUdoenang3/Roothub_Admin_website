@@ -4,6 +4,174 @@
 {% block main_content %}
 {% if request.user.user_type == "1" %}
 
+<style>
+    .profile-header {
+        {% comment %} background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); {% endcomment %}
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: black;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-image img {
+        width: 120px;
+        height: 120px;
+        border: 4px solid white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .user-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-Location {
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    .profile-btn .btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid black;
+        color: black;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-btn .btn:hover {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    .nav-tabs-bottom {
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .nav-tabs-bottom .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs-bottom .nav-link.active {
+        border-bottom-color: #667eea;
+        color: #667eea;
+        background: none;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-title {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        min-width: 150px;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        color: #2c3e50;
+        flex: 1;
+    }
+    
+    .status-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #28a745;
+    }
+    
+    .status-card.inactive {
+        border-left-color: #dc3545;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        {% comment %} border-left: 4px solid #667eea; {% endcomment %}
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .assignment-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .assignment-header {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .assignment-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .assignment-detail {
+        color: #6c757d;
+    }
+    
+    .assignment-detail strong {
+        color: #2c3e50;
+    }
+</style>
+
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -30,123 +198,307 @@
                 </div>
                 <div class="col ms-md-n2 profile-user-info">
                     <h4 class="user-name mb-0">{{ trainer.trainer_name.get_full_name }}</h4>
-                    <h6 class="text-muted">{{ assignment.course_id.course_name }}</h6>
+                    <h6 class="">Professional Trainer</h6>
                     <div class="user-Location"><i class="fas fa-map-marker-alt"></i> {{ trainer.address }}</div>
-                    </div>
-                    <div class="col-auto profile-btn">
-                        <a href="{% url "edit_trainer" trainer.trainer_name.username %}" class="btn btn-primary">
-                            Edit
-                        </a>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-chalkboard-teacher"></i> 
+                            {{ courses.count }} Course{{ courses.count|pluralize }}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-users"></i> 
+                            {{ assignment_details|length }} Assignment{{ assignment_details|length|pluralize }}
+                        </span>
                     </div>
                 </div>
+                <div class="col-auto profile-btn">
+                    <a href="{% url "edit_trainer" trainer.trainer_name.username %}" class="btn btn-light">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
             </div>
-            <div class="profile-menu">
-            <ul class="nav nav-tabs nav-tabs-bottom nav-justified" id="traineeTab" role="tablist">
+        </div>
+        <div class="profile-menu">
+            <ul class="nav nav-tabs nav-tabs-bottom nav-justified" id="trainerTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#per_details_tab" role="tab">Personal Details</a>
+                    <a class="nav-link active" id="personal-tab" data-bs-toggle="tab" href="#personal-details" role="tab">
+                        <i class="fas fa-user"></i> Personal Details
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#bottom-justified-tab2" role="tab">Payment</a>
+                    <a class="nav-link" id="assignments-tab" data-bs-toggle="tab" href="#assignments" role="tab">
+                        <i class="fas fa-tasks"></i> Assignments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="payment-tab" data-bs-toggle="tab" href="#payment-details" role="tab">
+                        <i class="fas fa-money-bill-wave"></i> Payment Details
+                    </a>
                 </li>
             </ul>
         </div>
-            <div class="tab-content profile-tab-cont">
-    
-                <div class="tab-pane show active" id="per_details_tab">
-    
-                    <div class="row">
-                        <div class="col-lg-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title d-flex justify-content-between">
-                                    <span>Personal Details</span>
-                                    </h5>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name</p>
-                                        <p class="col-sm-9">{{ trainer.trainer_name.first_name }} {{ trainer.trainer_name.middle_name }} {{ trainer.trainer_name.last_name }}</p>
+        
+        <div class="tab-content profile-tab-cont">
+            <!-- Personal Details Tab -->
+            <div class="tab-pane show active" id="personal-details">
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">₦{{ total_salary|floatformat:0 }}</div>
+                        <div class="stat-label">Total Earnings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">₦{{ total_paid|floatformat:0 }}</div>
+                        <div class="stat-label">Amount Paid</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">₦{{ pending_amount|floatformat:0 }}</div>
+                        <div class="stat-label">Pending Payment</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ courses.count }}</div>
+                        <div class="stat-label">Courses Teaching</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-user-circle text-primary"></i> Personal Information
+                                </h5>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value">{{ trainer.trainer_name.get_full_name }}</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Email Address</div>
+                                    <div class="info-value">
+                                        <a href="mailto:{{trainer.trainer_name.email}}" class="text-decoration-none">
+                                            {{ trainer.trainer_name.email }}
+                                        </a>
                                     </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Email ID</p>
-                                        <p class="col-sm-9"><a href="mailto:{{trainer.trainer_name.email}}" class="__cf_email__" data-cfemail="{{trainer.trainer_name.email}}">{{ trainer.trainer_name.email|capfirst }}</a></p>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Phone Number</div>
+                                    <div class="info-value">
+                                        <a href="tel:{{ trainer.phone }}" class="text-decoration-none">
+                                            {{ trainer.phone|default:"Not provided" }}
+                                        </a>
                                     </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Mobile</p>
-                                        <p class="col-sm-9"><a href="tel:{{ trainer.phone }}">{{ trainer.phone }}</a></p>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Gender</div>
+                                    <div class="info-value">{{ trainer.gender }}</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Commission Rate</div>
+                                    <div class="info-value">{{ trainer.commission_rate|default:"30" }}%</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Courses Teaching</div>
+                                    <div class="info-value">
+                                        {% for course in courses %}
+                                            <span class="badge bg-primary me-1 mb-1">{{ course.course_name }}</span>
+                                        {% empty %}
+                                            <span class="text-muted">No courses assigned</span>
+                                        {% endfor %}
                                     </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course Teaching</p>
-                                        <p class="col-sm-9">
-                                            {% if course %}
-                                            {% for coursess in course %}
-                                            {{ coursess.course_name }}<br>
-                                            {% endfor %}
-                                            {% endif %}
-                                        </p>
-                                    </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Skill Expertise</p>
-                                        <p class="col-sm-9">{{ trainer.skill_expertise }}</p>
-                                    </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Competent Skills</p>
-                                        <p class="col-sm-9">{{ trainer.competent_skills }}</p>
-                                    </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0">Address</p>
-                                        <p class="col-sm-9 mb-0">{{ trainer.address }},<br>
-                                        {{ trainer.city }},<br>
-                                        {{ trainer.state }},<br>
-                                        {{ trainer.country }}.</p>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Address</div>
+                                    <div class="info-value">
+                                        {{ trainer.address }}<br>
+                                        {{ trainer.city }}, {{ trainer.state }}<br>
+                                        {{ trainer.country }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3">
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card {% if trainer.trainer_name.is_active %}status-card{% else %}status-card inactive{% endif %}">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <i class="fas fa-shield-alt"></i> Account Status
+                                </h5>
+                                {% if trainer.trainer_name.is_active %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="text-success">Active Account</h6>
+                                    <p class="text-muted small">Account is active and functional</p>
+                                {% else %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-times-circle text-danger" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="text-danger">Inactive Account</h6>
+                                    <p class="text-muted small">Account is currently disabled</p>
+                                {% endif %}
+                            </div>
+                        </div>
                         
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title d-flex justify-content-between">
-                                    <span>Account Status</span>
-                                    </h5>
-                                    {% if trainer.trainer_name.is_active == True %}
-                                        <button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Active</button>
-                                    {% else %}
-                                    <button class="btn btn-danger" type="button"><i class="fas fa-times"></i>      Not Active</button>
-                                    {% endif %}
-                                </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-calendar-alt text-info"></i> Joined Date
+                                </h6>
+                                <p class="mb-0">{{ trainer.created_at|date:"F d, Y" }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="tab-pane show" id="bottom-justified-tab2">
-    
-                    <div class="row">
-                        <div class="col-lg-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title d-flex justify-content-between">
-                                    <span>Payment</span>
-                                    </h5>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">How much to be paid</p>
-                                        <p class="col-sm-9">{{ total_salary }}</p>
-                                    </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Number of Trainee assigned</p>
-                                        <p class="col-sm-9">{{ total_salary }}</p>
-                                    </div>
-                                    <div class="row">
-                                        <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3"></p>
-                                        <p class="col-sm-9">{{ total_salary }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
+            
+            <!-- Assignments Tab -->
+            <div class="tab-pane" id="assignments">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-tasks text-primary"></i> Course Assignments
+                        </h5>
+                        
+                        {% if assignment_details %}
+                            {% for assignment in assignment_details %}
+                            <div class="assignment-card">
+                                <div class="assignment-header">
+                                    {{ assignment.course.course_name }} - {{ assignment.level.level }}
+                                </div>
+                                <div class="assignment-details">
+                                    <div class="assignment-detail">
+                                        <strong>Trainees:</strong> {{ assignment.trainee_count }}
+                                    </div>
+                                    <div class="assignment-detail">
+                                        <strong>Course Fee:</strong> ₦{{ assignment.course_fee|floatformat:0 }}
+                                    </div>
+                                    <div class="assignment-detail">
+                                        <strong>Commission:</strong> {{ assignment.commission_rate }}%
+                                    </div>
+                                    <div class="assignment-detail">
+                                        <strong>Earnings:</strong> ₦{{ assignment.assignment_salary|floatformat:0 }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-clipboard-list text-muted" style="font-size: 3rem;"></i>
+                                <h6 class="text-muted mt-3">No Assignments</h6>
+                                <p class="text-muted">This trainer has no course assignments yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Details Tab -->
+            <div class="tab-pane" id="payment-details">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-history text-primary"></i> Payment History
+                                </h5>
+                                
+                                {% if payroll_history %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Period</th>
+                                                <th>Total Salary</th>
+                                                <th>Amount Paid</th>
+                                                <th>Payment Date</th>
+                                                <th>Method</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payroll in payroll_history %}
+                                            <tr>
+                                                <td>{{ payroll.month_name }} {{ payroll.year }}</td>
+                                                <td>₦{{ payroll.total_salary|floatformat:0 }}</td>
+                                                <td>₦{{ payroll.amount_paid|floatformat:0 }}</td>
+                                                <td>
+                                                    {% if payroll.payment_date %}
+                                                        {{ payroll.payment_date }}
+                                                    {% else %}
+                                                        <span class="text-muted">Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ payroll.payment_method|default:"N/A" }}</td>
+                                                <td>
+                                                    {% if payroll.is_paid %}
+                                                        <span class="badge bg-success">Paid</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-money-bill-wave text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="text-muted mt-3">No Payment History</h6>
+                                    <p class="text-muted">No payments have been processed yet.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-calculator text-success"></i> Payment Summary
+                                </h6>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Total Earnings</div>
+                                    <div class="info-value text-success">₦{{ total_salary|floatformat:0 }}</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Amount Paid</div>
+                                    <div class="info-value text-primary">₦{{ total_paid|floatformat:0 }}</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Pending Amount</div>
+                                    <div class="info-value text-warning">₦{{ pending_amount|floatformat:0 }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Quick Actions</h6>
+                                <a href="{% url 'trainer_payment_details' trainer.id %}" class="btn btn-primary btn-sm mb-2 w-100">
+                                    <i class="fas fa-money-bill"></i> Process Payment
+                                </a>
+                                <a href="{% url "edit_trainer" trainer.trainer_name.username %}" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="fas fa-edit"></i> Edit Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </div>    
 </div>
