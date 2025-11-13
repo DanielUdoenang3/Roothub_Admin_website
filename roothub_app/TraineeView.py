@@ -173,3 +173,170 @@ def get_trainee_attendance(request):
     }
 
     return JsonResponse(attendance_data)
+
+@login_required(login_url="/")
+def view_payment_plan(request):
+    """View payment plan details for trainee"""
+    from .models import PaymentHistory
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    trainee = get_object_or_404(Trainee, trainee_name=request.user)
+    payment_history = PaymentHistory.objects.filter(trainee=trainee).order_by('-created_at')
+    
+    # Calculate payment summary
+    total_amount_paid = 0
+    for payment in payment_history:
+        if payment.amount_paid:
+            try:
+                total_amount_paid += float(payment.amount_paid)
+            except (ValueError, TypeError):
+                continue
+    
+    # Get course fee
+    course_price = 0
+    if trainee.course_id and trainee.course_id.price:
+        try:
+            course_price = float(trainee.course_id.price)
+        except (ValueError, TypeError):
+            course_price = 0
+    
+    # Calculate remaining balance
+    remaining_balance = course_price - total_amount_paid
+    
+    # Calculate monthly payment if applicable
+    monthly_payment = 0
+    if trainee.payment_option == "Monthly Payment" and trainee.course_id and trainee.course_id.months:
+        try:
+            monthly_payment = course_price / int(trainee.course_id.months)
+        except (ValueError, TypeError, ZeroDivisionError):
+            monthly_payment = 0
+    
+    # Get next payment due date (for notifications)
+    next_due_date = None
+    overdue_amount = 0
+    
+    # Find pending payments
+    pending_payments = payment_history.filter(
+        amount_paid__isnull=True
+    ).order_by('expected_due_date')
+    
+    if pending_payments.exists():
+        next_payment = pending_payments.first()
+        next_due_date = next_payment.expected_due_date
+        
+        # Check if overdue
+        if next_due_date and next_due_date < timezone.now().date():
+            try:
+                overdue_amount = float(next_payment.installmental_payment or 0)
+            except (ValueError, TypeError):
+                overdue_amount = 0
+    
+    # Payment progress percentage
+    payment_progress = (total_amount_paid / course_price * 100) if course_price > 0 else 0
+    
+    context = {
+        'trainee': trainee,
+        'payment_history': payment_history,
+        'total_course_fee': course_price,
+        'total_amount_paid': total_amount_paid,
+        'remaining_balance': remaining_balance,
+        'monthly_payment': monthly_payment,
+        'payment_progress': payment_progress,
+        'next_due_date': next_due_date,
+        'overdue_amount': overdue_amount,
+        'is_overdue': overdue_amount > 0,
+    }
+    
+    return render(request, 'trainee_template/payment_plan.html', context)
+
+@login_required(login_url="/")
+def payment_notifications_settings(request):
+    """Manage payment notification preferences"""
+    from .models import PaymentNotificationPreference
+    
+    trainee = get_object_or_404(Trainee, trainee_name=request.user)
+    
+    # Get or create notification preferences
+    preferences_obj, created = PaymentNotificationPreference.objects.get_or_create(
+        trainee=trainee,
+        defaults={
+            'email_notifications': True,
+            'sms_notifications': False,
+            'reminder_days': 7
+        }
+    )
+    
+    if request.method == 'POST':
+        # Update notification preferences
+        preferences_obj.email_notifications = request.POST.get('email_notifications') == 'on'
+        preferences_obj.sms_notifications = request.POST.get('sms_notifications') == 'on'
+        preferences_obj.reminder_days = int(request.POST.get('reminder_days', '7'))
+        preferences_obj.save()
+        
+        messages.success(request, "Notification preferences updated successfully!")
+        return redirect('payment_notifications_settings')
+    
+    context = {
+        'trainee': trainee,
+        'preferences': preferences_obj,
+    }
+    
+    return render(request, 'trainee_template/payment_notifications.html', context)
+
+@login_required(login_url="/")
+def get_payment_notifications(request):
+    """API endpoint to get payment notifications for trainee"""
+    from django.utils import timezone
+    from .models import PaymentHistory, PaymentNotificationPreference
+    
+    trainee = get_object_or_404(Trainee, trainee_name=request.user)
+    
+    # Get notification preferences
+    try:
+        preferences = PaymentNotificationPreference.objects.get(trainee=trainee)
+        reminder_days = preferences.reminder_days
+    except PaymentNotificationPreference.DoesNotExist:
+        reminder_days = 7
+    
+    notifications = []
+    
+    # Check for upcoming payments
+    pending_payments = PaymentHistory.objects.filter(
+        trainee=trainee,
+        amount_paid__isnull=True,
+        expected_due_date__isnull=False
+    ).order_by('expected_due_date')
+    
+    today = timezone.now().date()
+    
+    for payment in pending_payments:
+        if payment.expected_due_date:
+            days_until_due = (payment.expected_due_date - today).days
+            
+            # Overdue payments
+            if days_until_due < 0:
+                notifications.append({
+                    'type': 'overdue',
+                    'title': 'Payment Overdue',
+                    'message': f'Your payment of ₦{payment.installmental_payment} was due on {payment.expected_due_date.strftime("%B %d, %Y")}',
+                    'amount': payment.installmental_payment,
+                    'due_date': payment.expected_due_date.isoformat(),
+                    'priority': 'high'
+                })
+            
+            # Upcoming payments (within reminder period)
+            elif days_until_due <= reminder_days:
+                notifications.append({
+                    'type': 'upcoming',
+                    'title': f'Payment Due in {days_until_due} day{"s" if days_until_due != 1 else ""}',
+                    'message': f'Your payment of ₦{payment.installmental_payment} is due on {payment.expected_due_date.strftime("%B %d, %Y")}',
+                    'amount': payment.installmental_payment,
+                    'due_date': payment.expected_due_date.isoformat(),
+                    'priority': 'medium' if days_until_due > 3 else 'high'
+                })
+    
+    return JsonResponse({
+        'notifications': notifications,
+        'count': len(notifications)
+    })

@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "3" %}
+
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .settings-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .setting-group {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .setting-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .setting-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .setting-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: #007bff;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+        color: white;
+    }
+    
+    .notification-preview {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .preview-notification {
+        background: white;
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .preview-notification:last-child {
+        margin-bottom: 0;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .notification-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="settings-container">
+    <div class="page-header mb-4">
+        <h2><i class="fas fa-bell text-primary"></i> Payment Notification Settings</h2>
+        <p class="text-muted mb-0">Customize how you receive payment reminders and notifications</p>
+    </div>
+    
+    {% include "includes/messages.html" %}
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="settings-card">
+            <div class="setting-group">
+                <div class="setting-title">
+                    <i class="fas fa-envelope text-primary"></i>
+                    Email Notifications
+                </div>
+                <div class="setting-description">
+                    Receive payment reminders and updates via email
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Send email notifications</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_notifications" {% if preferences.email_notifications %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <div class="setting-title">
+                    <i class="fas fa-sms text-success"></i>
+                    SMS Notifications
+                </div>
+                <div class="setting-description">
+                    Receive payment reminders via SMS (if phone number is provided)
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Send SMS notifications</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="sms_notifications" {% if preferences.sms_notifications %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <div class="setting-title">
+                    <i class="fas fa-calendar-alt text-warning"></i>
+                    Reminder Timing
+                </div>
+                <div class="setting-description">
+                    How many days before the due date should we remind you?
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="reminder_days" class="form-label">Days before due date</label>
+                        <select name="reminder_days" id="reminder_days" class="form-control">
+                            <option value="1" {% if preferences.reminder_days == 1 %}selected{% endif %}>1 day</option>
+                            <option value="3" {% if preferences.reminder_days == 3 %}selected{% endif %}>3 days</option>
+                            <option value="7" {% if preferences.reminder_days == 7 %}selected{% endif %}>7 days</option>
+                            <option value="14" {% if preferences.reminder_days == 14 %}selected{% endif %}>14 days</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notification Preview -->
+        <div class="settings-card">
+            <h5><i class="fas fa-eye text-info"></i> Notification Preview</h5>
+            <p class="text-muted">Here's how your notifications will look:</p>
+            
+            <div class="notification-preview">
+                <div class="preview-notification">
+                    <div class="notification-title">Payment Reminder</div>
+                    <div class="notification-message">
+                        Your payment of ₦50,000 is due in <span id="preview-days">{{ preferences.reminder_days }}</span> day(s). 
+                        Please ensure timely payment to avoid any disruption to your learning.
+                    </div>
+                </div>
+                
+                <div class="preview-notification" style="border-left-color: #dc3545;">
+                    <div class="notification-title">Payment Overdue</div>
+                    <div class="notification-message">
+                        Your payment of ₦50,000 was due on March 15, 2024. Please make payment as soon as possible.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save"></i> Save Preferences
+            </button>
+            <a href="{% url 'view_payment_plan' %}" class="btn btn-outline-secondary ms-3">
+                <i class="fas fa-arrow-left"></i> Back to Payment Plan
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reminderDaysSelect = document.getElementById('reminder_days');
+    const previewDays = document.getElementById('preview-days');
+    
+    reminderDaysSelect.addEventListener('change', function() {
+        previewDays.textContent = this.value;
+    });
+});
+</script>
+
+{% endif %}
+{% endblock %}

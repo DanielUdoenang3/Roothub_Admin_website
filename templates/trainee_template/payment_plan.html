@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "3" %}
+
+<style>
+    .payment-dashboard {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .page-header {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #007bff;
+    }
+    
+    .summary-card.paid {
+        border-left-color: #28a745;
+    }
+    
+    .summary-card.pending {
+        border-left-color: #ffc107;
+    }
+    
+    .summary-card.overdue {
+        border-left-color: #dc3545;
+    }
+    
+    .card-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .progress-container {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar-custom {
+        height: 12px;
+        background: #e9ecef;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border-radius: 6px;
+        transition: width 0.5s ease;
+    }
+    
+    .payment-history {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f1f3f4;
+        transition: background 0.3s ease;
+    }
+    
+    .history-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .history-item:last-child {
+        border-bottom: none;
+    }
+    
+    .history-date {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .history-amount {
+        font-weight: 700;
+        color: #28a745;
+    }
+    
+    .history-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-paid {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-overdue {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .notification-banner {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .notification-banner.warning {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+    }
+    
+    .notification-banner i {
+        font-size: 1.5rem;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="payment-dashboard">
+    <div class="page-header">
+        <h2><i class="fas fa-credit-card text-primary"></i> Payment Plan Details</h2>
+        <p class="text-muted mb-0">Track your course payments and manage your financial commitments</p>
+    </div>
+    
+    {% include "includes/messages.html" %}
+    
+    <!-- Notification Banners -->
+    {% if is_overdue %}
+    <div class="notification-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <strong>Payment Overdue!</strong>
+            <p class="mb-0">You have an overdue payment of ₦{{ overdue_amount|floatformat:0 }}. Please make payment as soon as possible.</p>
+        </div>
+    </div>
+    {% elif next_due_date %}
+    <div class="notification-banner warning">
+        <i class="fas fa-clock"></i>
+        <div>
+            <strong>Upcoming Payment</strong>
+            <p class="mb-0">Your next payment is due on {{ next_due_date|date:"F d, Y" }}.</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="card-value">₦{{ total_course_fee|floatformat:0 }}</div>
+            <div class="card-label">Total Course Fee</div>
+        </div>
+        
+        <div class="summary-card paid">
+            <div class="card-value">₦{{ total_amount_paid|floatformat:0 }}</div>
+            <div class="card-label">Amount Paid</div>
+        </div>
+        
+        <div class="summary-card {% if remaining_balance <= 0 %}paid{% elif is_overdue %}overdue{% else %}pending{% endif %}">
+            <div class="card-value">₦{{ remaining_balance|floatformat:0 }}</div>
+            <div class="card-label">Outstanding Balance</div>
+        </div>
+        
+        {% if monthly_payment > 0 %}
+        <div class="summary-card">
+            <div class="card-value">₦{{ monthly_payment|floatformat:0 }}</div>
+            <div class="card-label">Monthly Payment</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Payment Progress -->
+    <div class="progress-container">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0"><i class="fas fa-chart-line text-success"></i> Payment Progress</h5>
+            <span class="badge bg-success">{{ payment_progress|floatformat:1 }}% Complete</span>
+        </div>
+        <div class="progress-bar-custom">
+            <div class="progress-fill" style="width: {{ payment_progress }}%"></div>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+            <span>₦0</span>
+            <span>₦{{ total_course_fee|floatformat:0 }}</span>
+        </div>
+    </div>
+    
+    <!-- Payment History -->
+    <div class="payment-history">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="fas fa-history text-info"></i> Payment History</h5>
+            <a href="{% url 'payment_notifications_settings' %}" class="btn btn-primary-custom btn-sm">
+                <i class="fas fa-bell"></i> Notification Settings
+            </a>
+        </div>
+        
+        {% if payment_history %}
+            {% for payment in payment_history %}
+            <div class="history-item">
+                <div>
+                    <div class="history-date">
+                        {% if payment.payment_date %}
+                            {{ payment.payment_date|date:"M d, Y" }}
+                        {% else %}
+                            Scheduled Payment
+                        {% endif %}
+                    </div>
+                    <div class="text-muted small">{{ payment.installmental_payment|default:"Payment" }}</div>
+                </div>
+                
+                <div class="text-end">
+                    <div class="history-amount">
+                        {% if payment.amount_paid and payment.amount_paid != '0' %}
+                            ₦{{ payment.amount_paid|floatformat:0 }}
+                        {% else %}
+                            ₦{{ payment.installmental_payment|default:"0"|floatformat:0 }}
+                        {% endif %}
+                    </div>
+                    <div class="history-status {% if payment.amount_paid and payment.amount_paid != '0' %}status-paid{% elif payment.expected_due_date and payment.expected_due_date < today %}status-overdue{% else %}status-pending{% endif %}">
+                        {% if payment.amount_paid and payment.amount_paid != '0' %}
+                            Paid
+                        {% elif payment.expected_due_date and payment.expected_due_date < today %}
+                            Overdue
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <h6>No Payment History</h6>
+                <p>Your payment history will appear here once you start making payments.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
