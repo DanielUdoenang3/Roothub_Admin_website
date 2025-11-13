@@ -3,75 +3,447 @@
 
 {% block main_content %}
 {% if request.user.user_type == "1" %}
+<style>
+    .announcement-form {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    }
+    
+    .form-header h4 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: #667eea;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .target-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .target-option {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .target-option:hover {
+        border-color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .target-option.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    }
+    
+    .target-option input[type="checkbox"] {
+        margin-right: 0.75rem;
+        transform: scale(1.2);
+    }
+    
+    .target-option label {
+        margin: 0;
+        font-weight: 500;
+        cursor: pointer;
+        flex: 1;
+    }
+    
+    .course-selection {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .course-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+        transition: background 0.3s ease;
+    }
+    
+    .course-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .course-item input[type="checkbox"] {
+        margin-right: 0.75rem;
+    }
+    
+    .submit-section {
+        text-align: center;
+        padding: 2rem 0;
+    }
+    
+    .btn-update {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+        color: white;
+    }
+    
+    .current-file-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .current-file-info i {
+        color: #2196f3;
+        margin-right: 0.5rem;
+    }
+    
+    .current-file-info a {
+        color: #1976d2;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .current-file-info a:hover {
+        text-decoration: underline;
+    }
+    
+    .preview-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .preview-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .preview-content {
+        background: white;
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .current-targets {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .current-targets h6 {
+        color: #856404;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .current-targets p {
+        color: #856404;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+</style>
 
 <div class="page-header">
     <div class="row align-items-center">
         <div class="col">
             <h3 class="page-title">Edit Announcement</h3>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'view_announcement' %}">Announcement</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'view_announcement' %}">Announcements</a></li>
                 <li class="breadcrumb-item active">Edit Announcement</li>
             </ul>
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-sm-10">
-        <div class="card">
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="announcement-form">
+            <div class="card-body p-4">
+                <div class="form-header">
+                    <h4><i class="fas fa-edit"></i> Edit Announcement</h4>
+                    <p>Update announcement details and modify targeting options</p>
+                </div>
+                
+                <!-- Current Targeting Info -->
+                <div class="current-targets">
+                    <h6><i class="fas fa-info-circle"></i> Current Targeting</h6>
+                    <p>{{ announcement.target_summary }}</p>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" id="announcement-form">
                     {% csrf_token %}
                     {% include "includes/messages.html" %}
-                    <div class="row">
-                        <div class="col-12 col-md-8">
-                            <div class="form-group">
-                                <label>Title</label>
-                                <input type="text" name="title" class="form-control" placeholder="Enter Title" value="{{ announcement.title }}" required />
+                    
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-edit"></i>
+                            Basic Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                                    {{ form.title }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.priority.id_for_label }}">{{ form.priority.label }}</label>
+                                    {{ form.priority }}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-8">
-                            <div class="form-group">
-                                <label>Message/Description</label>
-                                <textarea name="description" placeholder="Enter Description" class="form-control" rows="4" required>{{ announcement.description }}</textarea>
-                            </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                            {{ form.description }}
                         </div>
-                        <div class="col-12 col-sm-8">
-                            <div class="form-group local-forms">
-                                <label>Category</label>
-                                <select name="category" class="form-control form-select" required>
-                                    <option value="" disabled selected>Select Category</option>
-                                    <option value="General" {% if announcement.category == 'General' %}selected{% endif %}>General</option>
-                                    <option value="Trainers" {% if announcement.category == 'Trainers' %}selected{% endif %}>Trainers</option>
-                                    <option value="Trainees" {% if announcement.category == 'Trainees' %}selected{% endif %}>Trainees</option>
-                                    {% for course in courses %}
-                                        <option value="{{ course.id }}" {% if announcement.course.id == course.id %}selected{% endif %}>{{ course.course_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
+                        
                         {% if announcement.file %}
-                        <div class="col-8">
-                            <div class="form-group">
-                                <p >Current File: <a href="{{ announcement.file.url }}" target="_blank">{{ announcement.file.name}}</a></p>
-                            </div>
+                        <div class="current-file-info">
+                            <i class="fas fa-file-alt"></i>
+                            <strong>Current File:</strong> 
+                            <a href="{{ announcement.file.url }}" target="_blank">{{ announcement.file.name }}</a>
                         </div>
                         {% endif %}
-                        <div class="col-8">
-                            <div class="form-group">
-                                <label>Upload File (Optional)</label>
-                                <input type="file" name="file" class="form-control" />
+                        
+                        <div class="form-group">
+                            <label for="{{ form.file.id_for_label }}">{% if announcement.file %}Replace Attachment{% else %}Attachment (Optional){% endif %}</label>
+                            {{ form.file }}
+                            <small class="form-text text-muted">
+                                {% if announcement.file %}
+                                    Upload a new file to replace the current attachment, or leave empty to keep the current file
+                                {% else %}
+                                    Upload documents, images, or other files to include with your announcement
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Target Audience Section -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-users"></i>
+                            Target Audience
+                        </h5>
+                        
+                        <div class="target-options">
+                            <div class="target-option">
+                                {{ form.target_admins }}
+                                <label for="{{ form.target_admins.id_for_label }}">{{ form.target_admins.label }}</label>
+                            </div>
+                            <div class="target-option">
+                                {{ form.target_trainers }}
+                                <label for="{{ form.target_trainers.id_for_label }}">{{ form.target_trainers.label }}</label>
+                            </div>
+                            <div class="target-option">
+                                {{ form.target_trainees }}
+                                <label for="{{ form.target_trainees.id_for_label }}">{{ form.target_trainees.label }}</label>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <div class="student-submit">
-                                <button type="submit" class="btn btn-primary">Update Changes</button>
+                        
+                        <div class="form-group mt-3">
+                            <label>{{ form.target_courses.label }}</label>
+                            <div class="course-selection">
+                                {{ form.target_courses }}
+                            </div>
+                            <small class="form-text text-muted">Select specific courses to target users enrolled in those courses</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Scheduling Section -->
+                    <div class="form-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-clock"></i>
+                            Scheduling Options
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.scheduled_for.id_for_label }}">{{ form.scheduled_for.label }}</label>
+                                    {{ form.scheduled_for }}
+                                    <small class="form-text text-muted">Leave empty to keep current scheduling</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.expires_at.id_for_label }}">{{ form.expires_at.label }}</label>
+                                    {{ form.expires_at }}
+                                    <small class="form-text text-muted">When should this announcement expire?</small>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Preview Section -->
+                    <div class="preview-section" id="preview-section" style="display: none;">
+                        <h6 class="preview-title">Preview</h6>
+                        <div class="preview-content" id="preview-content">
+                            <!-- Preview will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="submit-section">
+                        <button type="submit" class="btn btn-update">
+                            <i class="fas fa-save"></i>
+                            Update Announcement
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle target option styling
+    const targetOptions = document.querySelectorAll('.target-option');
+    targetOptions.forEach(option => {
+        const checkbox = option.querySelector('input[type="checkbox"]');
+        
+        option.addEventListener('click', function(e) {
+            if (e.target !== checkbox) {
+                checkbox.checked = !checkbox.checked;
+            }
+            updateTargetOptionStyle(option, checkbox.checked);
+        });
+        
+        checkbox.addEventListener('change', function() {
+            updateTargetOptionStyle(option, this.checked);
+        });
+        
+        // Initial state
+        updateTargetOptionStyle(option, checkbox.checked);
+    });
+    
+    function updateTargetOptionStyle(option, isChecked) {
+        if (isChecked) {
+            option.classList.add('selected');
+        } else {
+            option.classList.remove('selected');
+        }
+    }
+    
+    // Live preview functionality
+    const titleInput = document.querySelector('input[name="title"]');
+    const descriptionInput = document.querySelector('textarea[name="description"]');
+    const previewSection = document.getElementById('preview-section');
+    const previewContent = document.getElementById('preview-content');
+    
+    function updatePreview() {
+        const title = titleInput.value.trim();
+        const description = descriptionInput.value.trim();
+        
+        if (title || description) {
+            previewSection.style.display = 'block';
+            previewContent.innerHTML = `
+                <h6 style="margin-bottom: 0.5rem; color: #2c3e50;">${title || 'Announcement Title'}</h6>
+                <p style="margin: 0; color: #6c757d;">${description || 'Announcement description will appear here...'}</p>
+            `;
+        } else {
+            previewSection.style.display = 'none';
+        }
+    }
+    
+    titleInput.addEventListener('input', updatePreview);
+    descriptionInput.addEventListener('input', updatePreview);
+    
+    // Initial preview
+    updatePreview();
+});
+</script>
+
 {% endif %}
 {% endblock %}

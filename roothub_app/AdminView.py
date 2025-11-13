@@ -1616,25 +1616,64 @@ def view_announcement(request):
     })
 
 def edit_announcement(request, announcement_title):
+    from .forms import SendAnnouncement
+    from .models import NotificationStatus
+    
     courses = Courses.objects.all()
     announcement = get_object_or_404(Announcement, title=announcement_title)
-    try:
-        if request.method == "POST":
-            title = request.POST.get("title")
-            description = request.POST.get("description")
-            file = request.FILES.get("file")
+    
+    if request.method == "POST":
+        form = SendAnnouncement(request.POST, request.FILES, instance=announcement)
+        if form.is_valid():
+            try:
+                updated_announcement = form.save(commit=False)
+                
+                # Determine category based on targets
+                targets = []
+                if updated_announcement.target_admins:
+                    targets.append("Admins")
+                if updated_announcement.target_trainers:
+                    targets.append("Trainers")
+                if updated_announcement.target_trainees:
+                    targets.append("Trainees")
+                
+                if len(targets) > 1 or form.cleaned_data['target_courses']:
+                    updated_announcement.category = "Multi-Category"
+                elif updated_announcement.target_trainers:
+                    updated_announcement.category = "Trainers"
+                elif updated_announcement.target_trainees:
+                    updated_announcement.category = "Trainees"
+                else:
+                    updated_announcement.category = "General"
+                
+                updated_announcement.save()
+                form.save_m2m()  # Save many-to-many relationships
+                
+                # Clear existing notification statuses
+                NotificationStatus.objects.filter(announcement=announcement).delete()
+                
+                # Create new notification status for updated targets
+                create_notification_status_for_announcement(updated_announcement)
+                
+                target_summary = updated_announcement.target_summary
+                messages.success(request, f"Announcement updated successfully! Now targeting: {target_summary}")
+                return redirect("view_announcement")
+                
+            except Exception as e:
+                print(f"Error updating announcement: {e}")
+                messages.error(request, f"Failed to update announcement: {str(e)}")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = SendAnnouncement(instance=announcement)
 
-            announcement.title = title
-            announcement.description = description
-            if file:
-                announcement.file = file
-            announcement.save()
-            messages.success(request, "Announcement Updated suucessfully")
-            return redirect("view_announcement")
-    except Exception as e:
-        print(e)
-        messages.error(request, f"An error occured {e}")
-    return render(request, "admin_template/edit_announcement.html", {"announcement":announcement, "course":courses})
+    context = {
+        "form": form,
+        "announcement": announcement,
+        "courses": courses,
+        "is_edit": True
+    }
+    return render(request, "admin_template/edit_announcement.html", context)
 
 @login_required(login_url="/")
 def delete_announcement(request, announcement_title):

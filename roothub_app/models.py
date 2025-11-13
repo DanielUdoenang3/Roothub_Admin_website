@@ -279,9 +279,9 @@ class Presentation_report(models.Model):
 
 class PresentationSubmit(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
-    presentation_id = models.ForeignKey(Presentation, on_delete=models.CASCADE)
-    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE)
-    link = models.CharField()
+    presentation_id = models.ForeignKey(Presentation, on_delete=models.CASCADE, blank=True, null=True)
+    trainee_id = models.ForeignKey(Trainee, on_delete=models.CASCADE, blank=True, null=True)
+    link = models.CharField(blank=True, null=True)
     file = models.FileField(upload_to='presentation', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -306,7 +306,7 @@ class Assignment(models.Model):
     description = models.TextField()
     file = models.FileField(upload_to='assignments', blank=True, null=True)
     due_date = models.DateTimeField()
-    remark = models.CharField()
+    remark = models.CharField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
