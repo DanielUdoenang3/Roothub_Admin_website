@@ -182,8 +182,12 @@
                     <a href="{% url "view_trainee_attendance" %}"><i class="fas fa-tasks"></i> <span>View Attendance Report</span></a>
                 </li>
                 
-                <li class="{% if request.path == '/trainee_payment' %}active{% endif %}">
-                    <a href="#" ><i class="fas fa-money-bill-wave"></i> <span>Payment</span></a>
+                <li class="{% if request.path == '/payment_plan' or request.path == '/payment_notifications' %}active{% endif %}">
+                    <a href="#"><i class="fas fa-money-bill-wave"></i> <span>Payment</span> <span class="menu-arrow"></span></a>
+                    <ul>
+                        <li><a href="{% url "view_payment_plan" %}" class="{% if request.path == '/payment_plan' %}active{% endif %}"><span class="fas fa-credit-card"></span>Payment Plan</a></li>
+                        <li><a href="{% url "payment_notifications_settings" %}" class="{% if request.path == '/payment_notifications' %}active{% endif %}"><span class="fas fa-bell"></span>Notification Settings</a></li>
+                    </ul>
                 </li>
 
                 <li class="{% if '/trainee_view_curriculum' in request.path %}active{% endif %}">

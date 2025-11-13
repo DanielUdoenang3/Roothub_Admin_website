@@ -115,6 +115,11 @@ urlpatterns = [
     path('get-trainee-attendance/', TraineeView.get_trainee_attendance, name='get_trainee_attendance'),
     path("view_trainee_presentation", TraineeView.view_trainee_presentation, name="view_trainee_presentation"),
     path('get-presentation-data-by-date/<str:date>/', TraineeView.get_presentation_data_by_date, name='get_presentation_data_by_date'),
+    
+    # Payment Plan Views
+    path("payment_plan", TraineeView.view_payment_plan, name="view_payment_plan"),
+    path("payment_notifications", TraineeView.payment_notifications_settings, name="payment_notifications_settings"),
+    path('api/payment-notifications/', TraineeView.get_payment_notifications, name='get_payment_notifications'),
     path("upload_presentation_trainee", TraineeView.view_trainee_presentation, name="upload_presentation_trainee"), #Correct the function
 
     #Trainee_Payment
