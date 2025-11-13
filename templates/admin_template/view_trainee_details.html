@@ -3,6 +3,158 @@
 
 {% block main_content %}
 {% if request.user.user_type == "1" %}
+
+<style>
+    .profile-header {
+        {% comment %} background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); {% endcomment %}
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: black;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-image img {
+        width: 120px;
+        height: 120px;
+        border: 4px solid white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .user-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-Location {
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    .profile-btn .btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid black;
+        color: black;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-btn .btn:hover {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    .nav-tabs-bottom {
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .nav-tabs-bottom .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs-bottom .nav-link.active {
+        border-bottom-color: #667eea;
+        color: #667eea;
+        background: none;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-title {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        min-width: 150px;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        color: #2c3e50;
+        flex: 1;
+    }
+    
+    .status-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #28a745;
+    }
+    
+    .status-card.inactive {
+        border-left-color: #dc3545;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        {% comment %} border-left: 4px solid #667eea; {% endcomment %}
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .payment-status-paid {
+        border-left-color: #28a745;
+    }
+    
+    .payment-status-pending {
+        border-left-color: #ffc107;
+    }
+    
+    .payment-status-overdue {
+        border-left-color: #dc3545;
+    }
+</style>
+
 <div class="page-header">
     <div class="row">
         <div class="col-sm-12">
@@ -29,12 +181,22 @@
                 </div>
                 <div class="col ms-md-n2 profile-user-info">
                     <h4 class="user-name mb-0">{{ trainee.trainee_name.get_full_name }}</h4>
-                    <h6 class="text-muted">{{ trainee.course_id.course_name }}</h6>
+                    <h6 class="">{{ trainee.course_id.course_name|default:"No Course Assigned" }}</h6>
                     <div class="user-Location"><i class="fas fa-map-marker-alt"></i> {{ trainee.address }}</div>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-user-graduate"></i> 
+                            {{ trainee.category }}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-credit-card"></i> 
+                            {{ trainee.payment_option }}
+                        </span>
+                    </div>
                 </div>
                 <div class="col-auto profile-btn">
-                    <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-primary">
-                        Edit
+                    <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-light">
+                        <i class="fas fa-edit"></i> Edit Profile
                     </a>
                 </div>
             </div>
@@ -42,143 +204,239 @@
         <div class="profile-menu">
             <ul class="nav nav-tabs nav-tabs-bottom nav-justified" id="traineeTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#bottom-justified-tab1" role="tab">Personal Details</a>
+                    <a class="nav-link active" id="personal-tab" data-bs-toggle="tab" href="#personal-details" role="tab">
+                        <i class="fas fa-user"></i> Personal Details
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#bottom-justified-tab2" role="tab">Payment Plan and History</a>
+                    <a class="nav-link" id="payment-tab" data-bs-toggle="tab" href="#payment-details" role="tab">
+                        <i class="fas fa-credit-card"></i> Payment & History
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="messages-tab" data-bs-toggle="tab" href="#bottom-justified-tab3" role="tab">Trainee Progress</a>
+                    <a class="nav-link" id="progress-tab" data-bs-toggle="tab" href="#progress-details" role="tab">
+                        <i class="fas fa-chart-line"></i> Progress
+                    </a>
                 </li>
             </ul>
         </div>
         <div class="tab-content profile-tab-cont" id="traineeTabContent">
-            <div class="tab-pane show active" id="bottom-justified-tab1" role="tabpanel">
+            <!-- Personal Details Tab -->
+            <div class="tab-pane show active" id="personal-details" role="tabpanel">
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card {% if remaining <= 0 %}payment-status-paid{% elif remaining > 0 %}payment-status-pending{% endif %}">
+                        <div class="stat-value">₦{{ trainee.course_id.price|floatformat:0|default:"0" }}</div>
+                        <div class="stat-label">Course Fee</div>
+                    </div>
+                    <div class="stat-card payment-status-paid">
+                        <div class="stat-value">₦{{ total_amount_paid|floatformat:0 }}</div>
+                        <div class="stat-label">Amount Paid</div>
+                    </div>
+                    <div class="stat-card {% if remaining <= 0 %}payment-status-paid{% else %}payment-status-pending{% endif %}">
+                        <div class="stat-value">₦{{ remaining|floatformat:0 }}</div>
+                        <div class="stat-label">Balance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ payment_history.count }}</div>
+                        <div class="stat-label">Payment Records</div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title d-flex justify-content-between">
-                                <span>Personal Details</span>
+                                <h5 class="card-title">
+                                    <i class="fas fa-user-circle text-primary"></i> Personal Information
                                 </h5>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name</p>
-                                    <p class="col-sm-9">{{ trainee.trainee_name.first_name }} {{ trainee.trainee_name.middle_name }} {{ trainee.trainee_name.last_name }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value">{{ trainee.trainee_name.get_full_name }}</div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Email ID</p>
-                                    <p class="col-sm-9"><a href="mailto:{{trainee.trainee_name.email}}" class="__cf_email__" data-cfemail="{{trainee.trainee_name.email}}">{{ trainee.trainee_name.email|capfirst }}</a></p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Email Address</div>
+                                    <div class="info-value">
+                                        <a href="mailto:{{trainee.trainee_name.email}}" class="text-decoration-none">
+                                            {{ trainee.trainee_name.email }}
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Mobile</p>
-                                    <p class="col-sm-9"><a href="tel:{{ trainee.phone }}">{{ trainee.phone }}</a></p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Phone Number</div>
+                                    <div class="info-value">
+                                        <a href="tel:{{ trainee.phone }}" class="text-decoration-none">
+                                            {{ trainee.phone|default:"Not provided" }}
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Gender</p>
-                                    <p class="col-sm-9">{{ trainee.gender }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Gender</div>
+                                    <div class="info-value">{{ trainee.gender }}</div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Trainee Category</p>
-                                    <p class="col-sm-9">{{ trainee.category }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Category</div>
+                                    <div class="info-value">
+                                        <span>{{ trainee.category }}</span>
+                                    </div>
                                 </div>
+                                
                                 {% if trainee.category == 'SIWES' %}
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Name of School</p>
-                                    <p class="col-sm-9">{{ trainee.name_of_school }}</p>
+                                <div class="info-row">
+                                    <div class="info-label">School</div>
+                                    <div class="info-value">{{ trainee.name_of_school|default:"Not provided" }}</div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course of Study</p>
-                                    <p class="col-sm-9">{{ trainee.course_of_study }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Course of Study</div>
+                                    <div class="info-value">{{ trainee.course_of_study|default:"Not provided" }}</div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Matric Number</p>
-                                    <p class="col-sm-9">{{ trainee.matric_number }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Matric Number</div>
+                                    <div class="info-value">{{ trainee.matric_number|default:"Not provided" }}</div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Duration of Internship</p>
-                                    <p class="col-sm-9">{{ trainee.duration_of_intership }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Internship Duration</div>
+                                    <div class="info-value">{{ trainee.duration_of_intership|default:"Not specified" }}</div>
                                 </div>
                                 {% endif %}
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Course Studing</p>
-                                    <p class="col-sm-9">{{ trainee.course_id.course_name }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Course Enrolled</div>
+                                    <div class="info-value">
+                                        {% if trainee.course_id %}
+                                            <span>{{ trainee.course_id.course_name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">No course assigned</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0">Address</p>
-                                    <p class="col-sm-9 mb-0">{{ trainee.address }},<br>
-                                    {{ trainee.city }},<br>
-                                    {{ trainee.state }},<br>
-                                    {{ trainee.country }}.</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Address</div>
+                                    <div class="info-value">
+                                        {{ trainee.address|default:"Not provided" }}<br>
+                                        {{ trainee.city|default:"" }}{% if trainee.city and trainee.state %}, {% endif %}{{ trainee.state|default:"" }}<br>
+                                        {{ trainee.country|default:"" }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    
+                    <div class="col-lg-4">
+                        <div class="card {% if trainee.trainee_name.is_active %}status-card{% else %}status-card inactive{% endif %}">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <i class="fas fa-shield-alt"></i> Account Status
+                                </h5>
+                                {% if trainee.trainee_name.is_active %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="text-success">Active Account</h6>
+                                    <p class="text-muted small">Account is active and functional</p>
+                                {% else %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-times-circle text-danger" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h6 class="text-danger">Inactive Account</h6>
+                                    <p class="text-muted small">Account is currently disabled</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title d-flex justify-content-between">
-                                <span>Account Status</span>
-                                </h5>
-                                {% if trainee.trainee_name.is_active == True %}
-                                    <button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Active</button>
-                                {% else %}
-                                <button class="btn btn-danger" type="button"><i class="fas fa-times"></i>      Not Active</button>
+                                <h6 class="card-title">
+                                    <i class="fas fa-calendar-alt text-info"></i> Enrollment Details
+                                </h6>
+                                <div class="info-row">
+                                    <div class="info-label">Joined</div>
+                                    <div class="info-value">{{ trainee.created_at|date:"M d, Y" }}</div>
+                                </div>
+                                {% if trainee.commencement_date %}
+                                <div class="info-row">
+                                    <div class="info-label">Started</div>
+                                    <div class="info-value">{{ trainee.commencement_date|date:"M d, Y" }}</div>
+                                </div>
                                 {% endif %}
-                                <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">If account is active do you want to deactivate</p>
-                                {% if trainee.trainee_name.is_active == True %}
-                                    <a href="#"><button class="btn btn-danger" type="button"><i class="fas fa-times"></i>      Deactivate</button></a>
-                                {% else %}
-                                <a href="#"><button class="btn btn-success" type="button"><i class="fas fa-check"></i>     Activate</button></a>
+                                {% if trainee.end_date %}
+                                <div class="info-row">
+                                    <div class="info-label">End Date</div>
+                                    <div class="info-value">{{ trainee.end_date|date:"M d, Y" }}</div>
+                                </div>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" id="bottom-justified-tab2" role="tabpanel">
+            <!-- Payment Details Tab -->
+            <div class="tab-pane" id="payment-details" role="tabpanel">
                 <div class="row">
-                    <div class="col-lg-9">
+                    <div class="col-lg-8">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Payment Plan</h5>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Plan</p>
-                                    <p class="col-sm-9">{{ trainee.payment_option }}</p>
+                                <h5 class="card-title">
+                                    <i class="fas fa-credit-card text-primary"></i> Payment Plan
+                                </h5>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Payment Plan</div>
+                                    <div class="info-value">
+                                        <span class="badge bg-info">{{ trainee.payment_option }}</span>
+                                    </div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Total Fee</p>
-                                    <p class="col-sm-9">{{ trainee.course_id.price }} --- {{ trainee.course_id.course_name }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Course Fee</div>
+                                    <div class="info-value">₦{{ trainee.course_id.price|floatformat:0|default:"0" }} - {{ trainee.course_id.course_name|default:"No course" }}</div>
                                 </div>
-                                {% if trainee.payment_option == "Monthly Payment" %}
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount to be paid Monthly</p>
-                                    <p class="col-sm-9">{{ monthly }}</p>
+                                
+                                {% if trainee.payment_option == "Monthly Payment" and monthly %}
+                                <div class="info-row">
+                                    <div class="info-label">Monthly Amount</div>
+                                    <div class="info-value">₦{{ monthly|floatformat:0 }}</div>
                                 </div>
                                 {% endif %}
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Total Amount Paid</p>
-                                    <p class="col-sm-9">{{ total_amount_paid }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Total Paid</div>
+                                    <div class="info-value text-success">₦{{ total_amount_paid|floatformat:0 }}</div>
                                 </div>
-                                <div class="row">
-                                    <p class="col-sm-3 text-muted text-sm-end mb-0 mb-sm-3">Amount Remaining</p>
-                                    <p class="col-sm-9">{{ remaining }}</p>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Balance</div>
+                                    <div class="info-value {% if remaining <= 0 %}text-success{% else %}text-warning{% endif %}">
+                                        ₦{{ remaining|floatformat:0 }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Payment History Section -->
-                        <div class="card mt-4">
+                        <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Payment History</h5>
+                                <h5 class="card-title">
+                                    <i class="fas fa-history text-primary"></i> Payment History
+                                </h5>
                                 {% if payment_history %}
                                 <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
                                             <tr>
                                                 <th>Installment</th>
-                                                <th>Amount Paid</th>
+                                                <th>Amount</th>
                                                 <th>Payment Date</th>
-                                                <th>Payment Method</th>
+                                                <th>Method</th>
                                                 <th>Due Date</th>
                                                 <th>Status</th>
                                             </tr>
@@ -186,17 +444,17 @@
                                         <tbody>
                                             {% for payment in payment_history %}
                                             <tr>
-                                                <td>{{ payment.installmental_payment }}</td>
+                                                <td>{{ payment.installmental_payment|default:"N/A" }}</td>
                                                 <td>
-                                                    {% if payment.amount_paid and payment.amount_paid != '0' %}
-                                                        {{ payment.amount_paid }}
+                                                    {% if payment.amount_paid and payment.amount_paid != '0' and payment.amount_paid != '0.0' %}
+                                                        ₦{{ payment.amount_paid|floatformat:0 }}
                                                     {% else %}
                                                         <span class="text-muted">Pending</span>
                                                     {% endif %}
                                                 </td>
                                                 <td>
                                                     {% if payment.payment_date %}
-                                                        {{ payment.payment_date }}
+                                                        {{ payment.payment_date|date:"M d, Y" }}
                                                     {% else %}
                                                         <span class="text-muted">Not paid</span>
                                                     {% endif %}
@@ -204,13 +462,13 @@
                                                 <td>{{ payment.payment_method|default:"N/A" }}</td>
                                                 <td>
                                                     {% if payment.upfront_due_date %}
-                                                        {{ payment.upfront_due_date }}
+                                                        {{ payment.upfront_due_date|date:"M d, Y" }}
                                                     {% else %}
                                                         <span class="text-muted">N/A</span>
                                                     {% endif %}
                                                 </td>
                                                 <td>
-                                                    {% if payment.amount_paid and payment.amount_paid != '0.0' %}
+                                                    {% if payment.amount_paid and payment.amount_paid != '0' and payment.amount_paid != '0.0' %}
                                                         <span class="badge bg-success">Paid</span>
                                                     {% else %}
                                                         <span class="badge bg-warning">Pending</span>
@@ -222,21 +480,72 @@
                                     </table>
                                 </div>
                                 {% else %}
-                                <p class="text-muted">No payment history available.</p>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-receipt text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="text-muted mt-3">No Payment History</h6>
+                                    <p class="text-muted">No payment records found for this trainee.</p>
+                                </div>
                                 {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-calculator text-success"></i> Payment Summary
+                                </h6>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Course Fee</div>
+                                    <div class="info-value">₦{{ trainee.course_id.price|floatformat:0|default:"0" }}</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Amount Paid</div>
+                                    <div class="info-value text-success">₦{{ total_amount_paid|floatformat:0 }}</div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Balance</div>
+                                    <div class="info-value {% if remaining <= 0 %}text-success{% else %}text-warning{% endif %}">
+                                        ₦{{ remaining|floatformat:0 }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Quick Actions</h6>
+                                <a href="{% url 'trainee_payment_details' trainee.id %}" class="btn btn-primary btn-sm mb-2 w-100">
+                                    <i class="fas fa-money-bill"></i> Process Payment
+                                </a>
+                                <a href="{% url "edit_trainee" trainee.trainee_name.username %}" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="fas fa-edit"></i> Edit Details
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" id="bottom-justified-tab3" role="tabpanel">
+            
+            <!-- Progress Tab -->
+            <div class="tab-pane" id="progress-details" role="tabpanel">
                 <div class="row">
-                    <div class="col-lg-9">
+                    <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Messages</h5>
-                                <p>No messages available.</p>
-                                <!-- Add your messages content here -->
+                                <h5 class="card-title">
+                                    <i class="fas fa-chart-line text-primary"></i> Learning Progress
+                                </h5>
+                                
+                                <div class="text-center py-4">
+                                    <i class="fas fa-graduation-cap text-muted" style="font-size: 3rem;"></i>
+                                    <h6 class="text-muted mt-3">Progress Tracking</h6>
+                                    <p class="text-muted">Progress tracking features will be available soon.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
