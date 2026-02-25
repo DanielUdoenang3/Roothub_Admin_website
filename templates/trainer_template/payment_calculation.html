@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main_content %}
+{% if request.user.user_type == "2" %}
+
+<style>
+    .payment-dashboard {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .page-header {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #007bff;
+        text-align: center;
+    }
+    
+    .summary-card.earnings {
+        border-left-color: #28a745;
+    }
+    
+    .summary-card.paid {
+        border-left-color: #17a2b8;
+    }
+    
+    .summary-card.pending {
+        border-left-color: #ffc107;
+    }
+    
+    .card-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .breakdown-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .breakdown-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .breakdown-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .breakdown-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    
+    .course-title {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+    
+    .trainee-count {
+        background: #007bff;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .breakdown-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .detail-item {
+        color: #6c757d;
+    }
+    
+    .detail-item strong {
+        color: #2c3e50;
+    }
+    
+    .trainee-list {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .trainee-names {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .trainee-badge {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+    
+    .payment-history {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .history-item:last-child {
+        border-bottom: none;
+    }
+    
+    .history-date {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.9rem;
+    }
+    
+    .history-amount {
+        font-weight: 700;
+        color: #28a745;
+        font-size: 0.9rem;
+    }
+    
+    .commission-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .commission-rate {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1976d2;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .btn-refresh {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-refresh:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        color: white;
+    }
+</style>
+
+<div class="payment-dashboard">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-calculator text-primary"></i> Payment Calculation</h2>
+                <p class="text-muted mb-0">Track your earnings based on trainee assignments</p>
+            </div>
+            <button class="btn btn-refresh" onclick="refreshPaymentData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    {% include "includes/messages.html" %}
+    
+    <!-- Commission Rate Info -->
+    <div class="commission-info">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-percentage text-primary"></i>
+                <strong>Your Commission Rate:</strong>
+                <span class="commission-rate">{{ commission_rate }}%</span>
+            </div>
+            <small class="text-muted">Set by administration</small>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="card-value">{{ total_trainees }}</div>
+            <div class="card-label">Total Trainees</div>
+        </div>
+        
+        <div class="summary-card earnings">
+            <div class="card-value">₦{{ total_earnings|floatformat:0 }}</div>
+            <div class="card-label">Total Earnings</div>
+        </div>
+        
+        <div class="summary-card paid">
+            <div class="card-value">₦{{ total_paid|floatformat:0 }}</div>
+            <div class="card-label">Amount Paid</div>
+        </div>
+        
+        <div class="summary-card pending">
+            <div class="card-value">₦{{ pending_amount|floatformat:0 }}</div>
+            <div class="card-label">Pending Payment</div>
+        </div>
+    </div>
+    
+    <!-- Payment Breakdown -->
+    <div class="breakdown-section">
+        <h5 class="section-title">
+            <i class="fas fa-list-alt text-success"></i>
+            Payment Breakdown by Course
+        </h5>
+        
+        {% if payment_breakdown %}
+            {% for breakdown in payment_breakdown %}
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <div class="course-title">{{ breakdown.course_name }} - {{ breakdown.level_name }}</div>
+                    <div class="trainee-count">{{ breakdown.trainee_count }} trainee{{ breakdown.trainee_count|pluralize }}</div>
+                </div>
+                
+                <div class="breakdown-details">
+                    <div class="detail-item">
+                        <strong>Course Fee:</strong> ₦{{ breakdown.course_fee|floatformat:0 }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Commission:</strong> {{ breakdown.commission_rate }}%
+                    </div>
+                    <div class="detail-item">
+                        <strong>Per Trainee:</strong> ₦{{ breakdown.earnings_per_trainee|floatformat:0 }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Total Earnings:</strong> ₦{{ breakdown.total_course_earnings|floatformat:0 }}
+                    </div>
+                </div>
+                
+                <div class="trainee-list">
+                    <small class="text-muted">Trainees:</small>
+                    <div class="trainee-names mt-2">
+                        {% for trainee_name in breakdown.trainee_names %}
+                        <span class="trainee-badge">{{ trainee_name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <h6>No Trainee Assignments</h6>
+                <p>You don't have any trainee assignments yet. Your payment calculations will appear here once trainees are assigned to you.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Recent Payment History -->
+    <div class="payment-history">
+        <h5 class="section-title">
+            <i class="fas fa-history text-info"></i>
+            Recent Payment History
+        </h5>
+        
+        {% if payment_history %}
+            {% for payment in payment_history %}
+            <div class="history-item">
+                <div>
+                    <div class="history-date">{{ payment.month_name }} {{ payment.year }}</div>
+                    <small class="text-muted">{{ payment.payment_method|default:"Bank Transfer" }}</small>
+                </div>
+                <div class="history-amount">₦{{ payment.amount_paid|floatformat:0 }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <h6>No Payment History</h6>
+                <p>Your payment history will appear here once payments are processed.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function refreshPaymentData() {
+    // Add loading state
+    const refreshBtn = document.querySelector('.btn-refresh');
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    refreshBtn.disabled = true;
+    
+    // Simulate refresh (in real implementation, you'd fetch updated data)
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+    fetch('/api/trainer-payment-summary/')
+        .then(response => response.json())
+        .then(data => {
+            // Update summary cards with new data
+            document.querySelector('.summary-card .card-value').textContent = data.total_trainees;
+            document.querySelectorAll('.summary-card')[1].querySelector('.card-value').textContent = `₦${Math.floor(data.total_earnings).toLocaleString()}`;
+            document.querySelectorAll('.summary-card')[2].querySelector('.card-value').textContent = `₦${Math.floor(data.total_paid).toLocaleString()}`;
+            document.querySelectorAll('.summary-card')[3].querySelector('.card-value').textContent = `₦${Math.floor(data.pending_amount).toLocaleString()}`;
+        })
+        .catch(error => console.error('Error updating payment data:', error));
+}, 300000); // 5 minutes
+</script>
+
+{% endif %}
+{% endblock %}

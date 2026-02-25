@@ -103,6 +103,10 @@ urlpatterns = [
     path("edit_assignment/<id>", TrainerView.edit_assignment, name="edit_assignment"),
     path("delete_uploaded_assignment/<assignment_title>", TrainerView.delete_uploaded_assignment, name="delete_uploaded_assignment"),
     path("fix_classes", TrainerView.fix_classes, name="fix_classes"),
+    
+    # Trainer Payment Views
+    path("payment_calculation", TrainerView.view_payment_calculation, name="view_payment_calculation"),
+    path('api/trainer-payment-summary/', TrainerView.get_payment_summary, name='get_payment_summary'),
 
     #Trainer Payment
     path("trainer_payment", TrainerView.fix_classes, name="trainer_payment"), #Correct the function
