@@ -135,20 +135,59 @@
             <div class="card-body">
                 <div class="db-widgets d-flex justify-content-between align-items-center">
                     <div class="db-info">
-                        <h6>Courses Teaching</h6>
-                        <div>
-                            {% if course_names %}
-                            {% for course_name in course_names %}
-                            <span class="badge bg-primary me-1 mb-1">{{ course_name }}</span>
-                            {% endfor %}
-                            {% else %}
-                            <h5 style="color: rgb(217, 11, 11);font-size: 17px;">No Course has been assigned to you to teach</h5>
-                            {% endif %}
+                        <h6>Expected Earnings</h6>
+                        <p>
+                            <h3 id="total-earnings">Loading...</h3>
+                        </p>
+                        <small class="text-muted">
+                            <a href="{% url 'view_payment_calculation' %}" class="text-decoration-none">View Details</a>
+                        </small>
+                    </div>
+                    <div class="db-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Summary Row -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-lg border-0 bg-comman">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Payment Summary</h5>
+                <a href="{% url 'view_payment_calculation' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-calculator"></i> View Full Calculation
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <h4 id="dashboard-trainees" class="text-primary">{{ total_trainees }}</h4>
+                            <small class="text-muted">Trainees</small>
                         </div>
                     </div>
-                    {% comment %} <div class="db-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div> {% endcomment %}
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <h4 id="dashboard-earnings" class="text-success">₦0</h4>
+                            <small class="text-muted">Total Earnings</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <h4 id="dashboard-paid" class="text-info">₦0</h4>
+                            <small class="text-muted">Amount Paid</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <h4 id="dashboard-pending" class="text-warning">₦0</h4>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -278,6 +317,9 @@
 {% block custom_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Load payment summary
+        loadPaymentSummary();
+        
         const dateSelect = document.getElementById('date-select');
 
         dateSelect.addEventListener('change', function () {
@@ -348,6 +390,23 @@
             }
         });
     });
+    
+    function loadPaymentSummary() {
+        fetch('/api/trainer-payment-summary/')
+            .then(response => response.json())
+            .then(data => {
+                // Update dashboard elements
+                document.getElementById('total-earnings').textContent = `₦${Math.floor(data.total_earnings).toLocaleString()}`;
+                document.getElementById('dashboard-trainees').textContent = data.total_trainees;
+                document.getElementById('dashboard-earnings').textContent = `₦${Math.floor(data.total_earnings).toLocaleString()}`;
+                document.getElementById('dashboard-paid').textContent = `₦${Math.floor(data.total_paid).toLocaleString()}`;
+                document.getElementById('dashboard-pending').textContent = `₦${Math.floor(data.pending_amount).toLocaleString()}`;
+            })
+            .catch(error => {
+                console.error('Error loading payment summary:', error);
+                document.getElementById('total-earnings').textContent = '₦0';
+            });
+    }
 </script>
 <script>
     $(document).ready(function (){
